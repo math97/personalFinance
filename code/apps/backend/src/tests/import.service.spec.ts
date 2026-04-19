@@ -19,13 +19,13 @@ describe('ImportService', () => {
   let batchRepo: InMemoryImportBatchRepository
   let txRepo: InMemoryTransactionRepository
   let categoryRepo: InMemoryCategoryRepository
-  let aiMock: { extractTransactions: jest.Mock; suggestCategory: jest.Mock }
+  let aiMock: { extractTransactions: ReturnType<typeof vi.fn>; suggestCategory: ReturnType<typeof vi.fn> }
 
   beforeEach(async () => {
     batchRepo = new InMemoryImportBatchRepository()
     categoryRepo = new InMemoryCategoryRepository()
     txRepo = new InMemoryTransactionRepository()
-    aiMock = { extractTransactions: jest.fn(), suggestCategory: jest.fn().mockResolvedValue(null) }
+    aiMock = { extractTransactions: vi.fn(), suggestCategory: vi.fn().mockResolvedValue(null) }
 
     const aiPort = aiMock as unknown as AIPort
     const categorization = new CategorizationDomainService(aiPort)
@@ -150,7 +150,7 @@ describe('ImportService', () => {
     it('throws ConflictException when tryClaimConfirm loses the race (still reviewing but claim fails)', async () => {
       const { batchId } = await uploadPdf()
       // Simulate the race: status stays 'reviewing' but tryClaimConfirm returns false
-      jest.spyOn(batchRepo, 'tryClaimConfirm').mockResolvedValueOnce(false)
+      vi.spyOn(batchRepo, 'tryClaimConfirm').mockResolvedValueOnce(false)
       await expect(service.confirmBatch(batchId)).rejects.toThrow(ConflictException)
     })
 
