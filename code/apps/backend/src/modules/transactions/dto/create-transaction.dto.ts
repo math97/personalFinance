@@ -1,4 +1,4 @@
-import { IsNumber, IsString, IsOptional, IsDateString, IsIn } from 'class-validator'
+import { IsNumber, IsString, IsOptional, IsDateString, IsIn, MaxLength } from 'class-validator'
 import { TransactionSource } from '../../../domain/entities/transaction.entity'
 
 const SOURCES: TransactionSource[] = ['manual', 'pdf', 'photo']
@@ -11,6 +11,7 @@ export class CreateTransactionDto {
   date: string
 
   @IsString()
+  @MaxLength(500)
   description: string
 
   @IsOptional()

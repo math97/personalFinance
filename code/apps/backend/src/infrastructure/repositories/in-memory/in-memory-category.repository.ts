@@ -19,8 +19,10 @@ export class InMemoryCategoryRepository extends CategoryRepository {
   }
 
   async save(entity: CategoryEntity): Promise<CategoryEntity> {
-    this.store.set(entity.id, entity)
-    return entity
+    const id = entity.id || crypto.randomUUID()
+    const persisted = new CategoryEntity(id, entity.name, entity.color, entity.rules, entity.transactionCount)
+    this.store.set(id, persisted)
+    return persisted
   }
 
   async update(id: string, data: Partial<{ name: string; color: string }>): Promise<CategoryEntity> {

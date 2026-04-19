@@ -1,4 +1,4 @@
-import { IsOptional, IsNumberString, IsString } from 'class-validator'
+import { IsOptional, IsNumberString, IsString, MaxLength } from 'class-validator'
 
 export class TransactionQueryDto {
   @IsOptional()
@@ -11,6 +11,7 @@ export class TransactionQueryDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   search?: string
 
   @IsOptional()

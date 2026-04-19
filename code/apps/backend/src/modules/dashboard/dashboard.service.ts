@@ -32,21 +32,13 @@ export class DashboardService {
 
   async getMonthlyTotals(year: number, month: number, months = 4) {
     const reference = new Date(year, month - 1)
-    const results = []
-
-    for (let i = months - 1; i >= 0; i--) {
-      const d = subMonths(reference, i)
+    const promises = Array.from({ length: months }, (_, i) => {
+      const d = subMonths(reference, months - 1 - i)
       const y = d.getFullYear()
       const m = d.getMonth() + 1
-      results.push({
-        label: format(d, 'MMM'),
-        year: y,
-        month: m,
-        total: await this.txRepo.monthlyTotal(y, m),
-      })
-    }
-
-    return results
+      return this.txRepo.monthlyTotal(y, m).then(total => ({ label: format(d, 'MMM'), year: y, month: m, total }))
+    })
+    return Promise.all(promises)
   }
 
   async getSummaryCards(year: number, month: number) {

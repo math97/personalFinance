@@ -80,6 +80,14 @@ export class PrismaImportBatchRepository extends ImportBatchRepository {
     await this.prisma.importBatch.delete({ where: { id } })
   }
 
+  async tryClaimConfirm(batchId: string): Promise<boolean> {
+    const result = await this.prisma.importBatch.updateMany({
+      where: { id: batchId, status: 'reviewing' },
+      data: { status: 'confirmed' },
+    })
+    return result.count > 0
+  }
+
   async deleteImportedTransaction(id: string): Promise<void> {
     await this.prisma.importedTransaction.delete({ where: { id } })
   }

@@ -9,9 +9,11 @@ export class OpenRouterAdapter extends AIPort {
 
   constructor() {
     super()
+    const apiKey = process.env.AI_API_KEY
+    if (!apiKey) throw new Error('Missing API key: set AI_API_KEY for the openrouter provider')
     this.model = process.env.AI_MODEL ?? 'anthropic/claude-haiku-4-5'
     this.client = new OpenAI({
-      apiKey: process.env.AI_API_KEY,
+      apiKey,
       baseURL: 'https://openrouter.ai/api/v1',
       defaultHeaders: {
         'HTTP-Referer': 'https://personal-finance-app',

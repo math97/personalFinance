@@ -73,6 +73,13 @@ export class InMemoryImportBatchRepository extends ImportBatchRepository {
     }).length
   }
 
+  async tryClaimConfirm(batchId: string): Promise<boolean> {
+    const batch = this.batchStore.get(batchId)
+    if (!batch || batch.status !== 'reviewing') return false
+    await this.updateStatus(batchId, 'confirmed')
+    return true
+  }
+
   async deleteImportedTransaction(id: string): Promise<void> {
     this.importedStore.delete(id)
   }
