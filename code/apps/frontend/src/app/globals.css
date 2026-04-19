@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+:root {
+  --bg:           #0c0c0e;
+  --surface:      #131316;
+  --surface-2:    #1c1c22;
+  --border:       #ffffff14;
+  --border-2:     #ffffff22;
+  --text:         #f4f4f5;
+  --text-2:       #71717a;
+  --text-3:       #3f3f46;
+  --accent:       #f59e0b;
+  --accent-dim:   #f59e0b22;
+  --amber-bg:     #f59e0b18;
+  --green:        #4ade80;
+  --red:          #f87171;
+
+  --cat-groceries:     #34d399;
+  --cat-restaurants:   #fb923c;
+  --cat-transport:     #38bdf8;
+  --cat-subscriptions: #c084fc;
+  --cat-rent:          #818cf8;
+  --cat-health:        #2dd4bf;
+  --cat-shopping:      #f472b6;
+  --cat-other:         #6b7280;
+}
+
+@theme inline {
+  --color-bg:           var(--bg);
+  --color-surface:      var(--surface);
+  --color-surface-2:    var(--surface-2);
+  --color-border:       var(--border);
+  --color-border-2:     var(--border-2);
+  --color-text:         var(--text);
+  --color-text-2:       var(--text-2);
+  --color-text-3:       var(--text-3);
+  --color-accent:       var(--accent);
+  --color-accent-dim:   var(--accent-dim);
+  --color-amber-bg:     var(--amber-bg);
+  --color-green:        var(--green);
+  --color-red:          var(--red);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }

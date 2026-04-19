@@ -1,0 +1,59 @@
+import { CategoryRepository } from '../../../domain/repositories/category.repository'
+import { CategoryEntity } from '../../../domain/entities/category.entity'
+import { CategoryRuleEntity } from '../../../domain/entities/category-rule.entity'
+
+export class InMemoryCategoryRepository extends CategoryRepository {
+  public readonly store = new Map<string, CategoryEntity>()
+  private ruleCounter = 0
+
+  async findAll(): Promise<CategoryEntity[]> {
+    return [...this.store.values()].sort((a, b) => a.name.localeCompare(b.name))
+  }
+
+  async findById(id: string): Promise<CategoryEntity | null> {
+    return this.store.get(id) ?? null
+  }
+
+  async findAllRules(): Promise<CategoryRuleEntity[]> {
+    return [...this.store.values()].flatMap(c => c.rules)
+  }
+
+  async save(entity: CategoryEntity): Promise<CategoryEntity> {
+    this.store.set(entity.id, entity)
+    return entity
+  }
+
+  async update(id: string, data: Partial<{ name: string; color: string }>): Promise<CategoryEntity> {
+    const existing = this.store.get(id)
+    if (!existing) throw new Error(`Category ${id} not found`)
+    const updated = new CategoryEntity(
+      existing.id,
+      data.name ?? existing.name,
+      data.color ?? existing.color,
+      existing.rules,
+      existing.transactionCount,
+    )
+    this.store.set(id, updated)
+    return updated
+  }
+
+  async delete(id: string): Promise<void> {
+    this.store.delete(id)
+  }
+
+  async addRule(categoryId: string, keyword: string): Promise<CategoryRuleEntity> {
+    const rule = new CategoryRuleEntity(`rule-${++this.ruleCounter}`, categoryId, keyword)
+    const cat = this.store.get(categoryId)
+    if (cat) this.store.set(categoryId, cat.withRule(rule))
+    return rule
+  }
+
+  async deleteRule(ruleId: string): Promise<void> {
+    for (const [id, cat] of this.store) {
+      if (cat.rules.some(r => r.id === ruleId)) {
+        this.store.set(id, cat.withoutRule(ruleId))
+        return
+      }
+    }
+  }
+}

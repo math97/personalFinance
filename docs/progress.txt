@@ -1,0 +1,101 @@
+═══════════════════════════════════════════════════════════
+PERSONAL FINANCE APP — PROGRESS LOG
+Last updated: 2026-04-19
+═══════════════════════════════════════════════════════════
+
+── DONE ────────────────────────────────────────────────────
+
+[STRUCTURE]
+✓ Monorepo setup (npm workspaces)
+  code/apps/frontend  ← Next.js 14 App Router
+  code/apps/backend   ← NestJS REST API
+✓ Project folders reorganized
+  research/   ← competitor files
+  design/     ← .pen files
+  docs/       ← specs + plans
+  code/       ← all application code
+
+[DESIGN (Pencil)]
+✓ Design system / tokens defined
+✓ Dashboard screen
+✓ Import Inbox screen
+✓ Add Transaction modal (type picker → manual form / batch upload)
+✓ Batch Upload modal
+✓ Batch Review screen (/import/[batchId])
+✓ Categories screen
+✓ All Transactions screen (with pagination, filters, inline edit row)
+
+[BACKEND — NestJS + Prisma + PostgreSQL]
+✓ Docker Compose (PostgreSQL)
+✓ Prisma schema (Transaction, Category, ImportBatch, ImportedTransaction, CategoryRule)
+✓ Migrations + seed (9 default categories including Food Delivery)
+✓ PrismaService (global module)
+✓ TransactionsModule — CRUD, month/search/page filters
+✓ CategoriesModule — CRUD + keyword rules
+✓ ImportModule — file upload → Claude extraction → batch review → confirm/discard
+✓ DashboardModule — spending by category, monthly totals, summary cards
+✓ ClaudeService — extractTransactions() + suggestCategory()
+✓ applyRules() — keyword matching (rules > Claude > uncategorized)
+✓ CORS configured for frontend (localhost:3000)
+✓ ValidationPipe + global prefix /api
+
+[FRONTEND — Next.js 14]
+✓ Dark theme with full design token system (CSS custom properties)
+✓ Sidebar with real inbox badge count from API
+✓ All pages wired to real NestJS API (no more mock data)
+✓ Dashboard — summary cards, spending bar chart (with salary/% spent),
+              4-month comparison chart, recent transactions
+✓ All Transactions — filters, search, pagination, per-page, inline row edit
+✓ Upload Files — real dropzone → POST /api/import/upload
+✓ Import Inbox — live batch list from DB
+✓ Batch Review — inline edit, amber uncategorized rows, confirm/discard
+✓ Categories — expand/collapse, add/delete keyword rules, add category
+✓ Transaction modal — type picker, manual form (saves to DB), batch upload
+✓ Edit salary — persisted in localStorage, shown as % spent
+✓ Edit transaction — inline edit in All Transactions table
+
+── MISSING FROM MVP SPEC ───────────────────────────────────
+
+[Feature 1 — Transaction Input]
+✗ Account field on manual entry form (spec says "optional" — removed from design)
+✗ "Processing" loading state while Claude extracts (currently no feedback between
+  upload and redirect to batch review)
+✗ Multiple files → multiple batches in one upload session (currently redirects
+  after first file)
+
+[Feature 2 — Categories]
+✗ "Always categorize [keyword] as [category]?" prompt when fixing a category
+  in the inbox (save-as-rule shortcut from batch review)
+✗ Category delete (UI exists on categories page but backend route needs testing)
+
+[Feature 3 — Dashboard]
+✗ Month comparison delta callout: "£X more/less than last month · [Category]
+  up/down £Y" — chart exists but no text callout identifying the biggest driver
+  category change (only shows overall delta)
+✗ "View all" link on recent transactions connects to /transactions ✓
+  but doesn't pass the current month as a filter
+
+[Polish / Task 9 from plan]
+✗ Empty states — dashboard with 0 transactions shows blank charts
+  (no friendly empty state message/illustration)
+✗ Loading skeletons — no Suspense/loading.tsx files yet
+✗ Error handling — API errors surface as uncaught exceptions in some pages
+✗ Settings page — sidebar link exists but page not built (disabled)
+✗ Redirect / → /dashboard ✓ (done)
+
+[Testing]
+✗ No tests written yet (vitest config not set up in new monorepo structure)
+
+[Deployment]
+✗ No production config (.env.production, build scripts)
+✗ No CI/CD
+
+── WHAT'S NEEDED TO TEST FULL FLOW ─────────────────────────
+
+1. Set ANTHROPIC_API_KEY in code/apps/backend/.env
+2. Start Docker:       cd code && docker compose up -d
+3. Start backend:      cd code/apps/backend && npm run start:dev
+4. Start frontend:     cd code/apps/frontend && npm run dev
+5. Add a transaction manually via "+ Add transaction"
+6. Upload a bank statement PDF → review in inbox → confirm
+7. Check dashboard updates with real data

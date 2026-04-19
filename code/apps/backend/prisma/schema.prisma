@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Transaction {
+  id           String               @id @default(cuid())
+  amount       Decimal              @db.Decimal(10, 2)
+  date         DateTime
+  description  String
+  merchant     String?
+  account      String?
+  source       TransactionSource
+  categoryId   String?
+  category     Category?            @relation(fields: [categoryId], references: [id])
+  importedFrom ImportedTransaction?
+  createdAt    DateTime             @default(now())
+}
+
+model Category {
+  id            String                @id @default(cuid())
+  name          String                @unique
+  color         String
+  transactions  Transaction[]
+  rules         CategoryRule[]
+  aiSuggestions ImportedTransaction[] @relation("AiCategory")
+}
+
+model ImportBatch {
+  id         String                @id @default(cuid())
+  filename   String
+  uploadedAt DateTime              @default(now())
+  status     BatchStatus
+  imported   ImportedTransaction[]
+}
+
+model ImportedTransaction {
+  id             String       @id @default(cuid())
+  batchId        String
+  batch          ImportBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  rawDate        String
+  rawDescription String
+  rawAmount      Decimal      @db.Decimal(10, 2)
+  aiCategoryId   String?
+  aiCategory     Category?    @relation("AiCategory", fields: [aiCategoryId], references: [id])
+  aiCategorized  Boolean      @default(false)
+  transactionId  String?      @unique
+  transaction    Transaction? @relation(fields: [transactionId], references: [id])
+}
+
+model CategoryRule {
+  id         String   @id @default(cuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  keyword    String
+}
+
+enum TransactionSource {
+  manual
+  pdf
+  photo
+}
+
+enum BatchStatus {
+  processing
+  reviewing
+  confirmed
+  discarded
+}

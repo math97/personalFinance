@@ -1,0 +1,187 @@
+═══════════════════════════════════════════════════════════
+PERSONAL FINANCE APP — PROGRESS LOG
+Last updated: 2026-04-19
+═══════════════════════════════════════════════════════════
+
+── DONE ────────────────────────────────────────────────────
+
+[PROJECT STRUCTURE]
+✓ Monorepo (npm workspaces): code/apps/frontend + code/apps/backend
+✓ Folders: research/ design/ docs/ code/
+✓ design/financeDesign.pen — all MVP screens designed in Pencil
+
+[DESIGN (Pencil — design/financeDesign.pen)]
+✓ Design system / tokens (dark theme, amber accent #f59e0b)
+✓ Dashboard
+✓ Import Inbox
+✓ Add Transaction modal (type picker → manual / batch upload)
+✓ Batch Review screen
+✓ Categories screen
+✓ All Transactions screen (incl. inline edit row state)
+
+[BACKEND — NestJS + Repository Pattern + Light DDD]
+✓ Docker Compose (PostgreSQL 16)
+✓ Prisma schema v5 + migrations + seed (9 categories)
+
+✓ Domain layer
+    entities/     — Transaction, Category, CategoryRule,
+                    ImportBatch, ImportedTransaction
+    repositories/ — abstract classes (Transaction, Category, ImportBatch)
+    ports/        — AIPort abstract class (extractTransactions, suggestCategory)
+    services/     — CategorizationDomainService (rules → AI → uncategorized)
+
+✓ Infrastructure layer
+    prisma/       — Prisma implementations + mappers
+    in-memory/    — In-memory implementations (unit tests)
+    ai/           — AnthropicAdapter + OpenRouterAdapter
+
+✓ NestJS modules — TransactionsModule, CategoriesModule, ImportModule,
+                   DashboardModule, AIModule
+
+✓ AIModule — provider-agnostic AI layer
+    AnthropicAdapter  — direct Anthropic SDK, supports PDF + images natively
+    OpenRouterAdapter — OpenAI SDK → OpenRouter (100+ models, PDF via file-parser)
+    Configured via .env: AI_PROVIDER, AI_API_KEY, AI_MODEL
+    .env.example committed to git
+
+✓ DashboardService — totalSpent + totalIncome + byCategory + monthlyTotals
+✓ applyRules() — keyword matching pure function
+✓ CORS, ValidationPipe, global prefix /api
+✓ Unit tests — 29 passing (in-memory repos, no DB)
+
+[FRONTEND — Next.js 14]
+✓ Dark theme, design tokens as CSS custom properties
+✓ 256px fixed sidebar with live inbox badge count
+✓ All pages wired to NestJS API (no mock data)
+
+✓ Dashboard
+    - Summary cards: totalSpent, biggest category, transaction count + inbox badge
+    - Delta callout: vs last month + biggest driver category with actual delta amount
+    - Spending by Category bar chart (color-coded)
+    - Last 4 months comparison chart
+    - Recent transactions list
+    - "View all" passes current year/month to /transactions
+    - Budget = income transactions + leftover (per-month localStorage)
+    - % of budget shown; falls back to manual salary when no income transactions
+    - Salary is per-month (changing April doesn't affect March)
+    - Leftover from previous month (per-month localStorage)
+
+✓ All Transactions
+    - Filters: search, category (incl. "No category"), amount min/max (client-side)
+    - Pagination (arrows hidden when single page / at boundaries)
+    - Per-page selector (native arrow removed)
+    - Inline row edit: date, description, category, Expense/Income toggle
+    - Delete transaction (trash icon, removes from DB instantly)
+    - Income transactions shown in green with + prefix
+
+✓ Upload Files
+    - Dropzone (PDF, JPG, PNG, HEIC) — multiple files supported
+    - Processing feedback: spinner + "Extracting (1/3)" + filename
+    - Single file → goes to batch review; multiple → goes to inbox
+
+✓ Import Inbox — live batch list with count
+
+✓ Batch Review
+    - Inline edit per row (date, description, category, amount)
+    - Income/expense toggle per row (green background for income)
+    - Delete individual imported transaction
+    - Amber highlight for uncategorized rows
+    - "Save as rule?" prompt when fixing a category on uncategorized row
+    - Confirm all / Discard batch
+
+✓ Categories
+    - Expand/collapse, add/delete rules, add/delete category
+
+✓ Transaction modal
+    - Type picker → manual form / batch upload
+    - Expense/Income toggle (income hides category, saves positive amount)
+
+✓ Settings page — salary fallback (localStorage, per-month)
+
+[Polish]
+✓ Empty states (Dashboard, Categories, Inbox, Charts)
+✓ Loading skeletons (all 6 routes)
+✓ Error handling (error.tsx + client isLoading/error states)
+
+[Testing]
+✓ Backend unit tests — 29 passing (in-memory repos, no DB)
+✓ Frontend unit tests — vitest (api.test.ts)
+✓ E2E — Playwright smoke tests
+
+── MVP SPEC AUDIT (vs 2026-04-15-personal-finance-mvp-design.md) ─────
+
+[Feature 1 — Transaction Input]   COMPLETE
+✓ Manual entry (amount, description, date, category, income/expense type)
+✓ Document upload (PDF + photos, multiple files)
+✓ AI extraction → batch review → confirm flow
+✓ Inbox: uncategorized highlighted, inline edit, confirm/discard
+✓ "Save as rule?" prompt on category fix
+✓ Processing feedback during extraction
+✗ Account field on manual entry (spec says optional) — LOW PRIORITY
+
+[Feature 2 — Categories]   COMPLETE
+✓ Flat list, name + color
+✓ Default starter set (9 categories)
+✓ Rule management (add/delete keyword rules)
+✓ Categorization pipeline: rules → AI → uncategorized
+✓ "Save as rule?" from batch inbox
+
+[Feature 3 — Dashboard]   COMPLETE
+✓ Summary cards (spent, biggest category, transaction count + inbox)
+✓ Spending by category chart
+✓ Last 4 months comparison with delta callout (biggest driver + amount)
+✓ Recent transactions with "View all" → correct month
+✓ Budget = income transactions + leftover; % of budget shown
+
+── MISSING / NEXT UPDATES ──────────────────────────────────
+
+[MVP Gaps — minor]
+✗ Account field on manual entry form (spec: optional text field)
+
+[Phase 2 — AI Provider Settings (UI)]
+  The provider abstraction (AIPort + adapters) is built.
+  What's missing is exposing it in the UI so users can configure
+  without editing .env:
+
+  ✗ Settings page: AI provider selector (Anthropic / OpenRouter)
+  ✗ Settings page: API key input (stored in DB or encrypted localStorage)
+  ✗ Settings page: Model selector per provider
+  ✗ Settings page: separate extraction vs categorization model (Option C)
+  ✗ Backend: read AI config from DB instead of only env vars
+  ✗ Backend: AIModule factory reads from DB config at request time
+
+[Phase 2 — Features]
+  ✗ Recurring transaction detection
+      "Netflix £10.99" appearing every month → suggest as recurring,
+      flag when missing
+  ✗ Budget goals per category
+      Set a monthly limit per category (e.g. Restaurants £150),
+      show % used in dashboard and warn when exceeded
+  ✗ CSV / OFX import (alternative to PDF for some banks)
+  ✗ Month-over-month category trends
+      Sparkline or mini chart per category showing 3-month trend
+
+[Phase 3 — Quality of Life]
+  ✗ Bulk categorize — select multiple uncategorized transactions,
+    assign category to all at once
+  ✗ Search across all months (not just current)
+  ✗ Export to CSV (all transactions for a date range)
+  ✗ Transaction notes / memo field
+  ✗ Mobile-responsive layout (currently desktop-only)
+
+── HOW TO RUN ───────────────────────────────────────────────
+
+cd code
+docker compose up -d                      # start DB
+cd apps/backend && npm run start:dev      # backend :3001
+cd apps/frontend && npm run dev           # frontend :3000
+
+# AI config (code/apps/backend/.env)
+AI_PROVIDER=openrouter                    # or: anthropic
+AI_API_KEY=sk-or-...                      # your key
+AI_MODEL=google/gemini-2.5-flash-preview  # or any OpenRouter model
+
+# Tests
+cd apps/backend && npm test               # unit tests (no DB needed)
+cd apps/frontend && npm test              # frontend unit tests
+cd apps/frontend && npx playwright test   # E2E tests
