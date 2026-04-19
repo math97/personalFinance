@@ -13,7 +13,7 @@ describe('CategorizationDomainService', () => {
 
   describe('rule matching', () => {
     it('returns matched category when keyword found (case-insensitive)', async () => {
-      const ai = { suggestCategory: jest.fn() }
+      const ai = { suggestCategory: vi.fn() }
       const service = makeService(ai)
       const rules = [{ categoryId: 'cat-1', keyword: 'tesco' }]
 
@@ -25,7 +25,7 @@ describe('CategorizationDomainService', () => {
     })
 
     it('returns first rule match when multiple rules match', async () => {
-      const ai = { suggestCategory: jest.fn() }
+      const ai = { suggestCategory: vi.fn() }
       const service = makeService(ai)
       const rules = [
         { categoryId: 'cat-1', keyword: 'uber' },
@@ -39,7 +39,7 @@ describe('CategorizationDomainService', () => {
 
   describe('AI fallback', () => {
     it('calls AI when no rule matches and returns matched category', async () => {
-      const ai = { suggestCategory: jest.fn().mockResolvedValue('Groceries') }
+      const ai = { suggestCategory: vi.fn().mockResolvedValue('Groceries') }
       const service = makeService(ai)
 
       const result = await service.categorize('WAITROSE EXPRESS', [], categories)
@@ -50,7 +50,7 @@ describe('CategorizationDomainService', () => {
     })
 
     it('returns null categoryId when AI returns "none" or unknown', async () => {
-      const ai = { suggestCategory: jest.fn().mockResolvedValue(null) }
+      const ai = { suggestCategory: vi.fn().mockResolvedValue(null) }
       const service = makeService(ai)
 
       const result = await service.categorize('XYZZY CORP', [], categories)

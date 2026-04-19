@@ -19,33 +19,103 @@ describe('CategoriesService', () => {
     service = module.get(CategoriesService)
   })
 
+  // ── helpers ──────────────────────────────────────────────────────
+  const mkCat = (name = 'Groceries', color = '#34d399') => service.create({ name, color })
+
+  // ── create ───────────────────────────────────────────────────────
   describe('create', () => {
-    it('saves and returns a new category', async () => {
-      const result = await service.create({ name: 'Groceries', color: '#34d399' })
+    it('saves and returns a new category with a generated id', async () => {
+      const result = await mkCat()
       expect(result.name).toBe('Groceries')
       expect(result.color).toBe('#34d399')
+      expect(result.id).toBeTruthy()
       expect(repo.store.size).toBe(1)
+    })
+
+    it('multiple categories each get unique ids', async () => {
+      const a = await mkCat('A', '#111111')
+      const b = await mkCat('B', '#222222')
+      expect(a.id).not.toBe(b.id)
     })
   })
 
+  // ── findAll ──────────────────────────────────────────────────────
+  describe('findAll', () => {
+    it('returns all categories sorted alphabetically', async () => {
+      await mkCat('Rent', '#aaaaaa')
+      await mkCat('Groceries', '#bbbbbb')
+      await mkCat('Transport', '#cccccc')
+      const all = await service.findAll()
+      const names = all.map(c => c.name)
+      expect(names).toEqual([...names].sort())
+    })
+
+    it('returns empty array when no categories exist', async () => {
+      const all = await service.findAll()
+      expect(all).toHaveLength(0)
+    })
+  })
+
+  // ── findOne ──────────────────────────────────────────────────────
   describe('findOne', () => {
     it('throws NotFoundException when category not found', async () => {
       await expect(service.findOne('nonexistent')).rejects.toThrow(NotFoundException)
     })
 
     it('returns category when found', async () => {
-      const created = await service.create({ name: 'Rent', color: '#818cf8' })
+      const created = await mkCat('Rent', '#818cf8')
       const found = await service.findOne(created.id)
       expect(found.name).toBe('Rent')
     })
   })
 
+  // ── update ───────────────────────────────────────────────────────
+  describe('update', () => {
+    it('updates the name of an existing category', async () => {
+      const cat = await mkCat('Old Name')
+      const updated = await service.update(cat.id, { name: 'New Name' })
+      expect(updated.name).toBe('New Name')
+    })
+
+    it('updates the color of an existing category', async () => {
+      const cat = await mkCat()
+      const updated = await service.update(cat.id, { color: '#ff0000' })
+      expect(updated.color).toBe('#ff0000')
+    })
+
+    it('throws NotFoundException when updating nonexistent category', async () => {
+      await expect(service.update('nonexistent', { name: 'x' })).rejects.toThrow(NotFoundException)
+    })
+  })
+
+  // ── remove ───────────────────────────────────────────────────────
+  describe('remove', () => {
+    it('deletes a category', async () => {
+      const cat = await mkCat()
+      await service.remove(cat.id)
+      expect(repo.store.size).toBe(0)
+    })
+
+    it('throws NotFoundException when removing nonexistent category', async () => {
+      await expect(service.remove('nonexistent')).rejects.toThrow(NotFoundException)
+    })
+  })
+
+  // ── addRule ──────────────────────────────────────────────────────
   describe('addRule', () => {
     it('adds a keyword rule to an existing category', async () => {
-      const cat = await service.create({ name: 'Groceries', color: '#34d399' })
+      const cat = await mkCat()
       const rule = await service.addRule(cat.id, { keyword: 'tesco' })
       expect(rule.keyword).toBe('tesco')
       expect(rule.categoryId).toBe(cat.id)
+    })
+
+    it('adds multiple rules to the same category', async () => {
+      const cat = await mkCat()
+      await service.addRule(cat.id, { keyword: 'tesco' })
+      await service.addRule(cat.id, { keyword: 'sainsburys' })
+      const found = await service.findOne(cat.id)
+      expect(found.rules).toHaveLength(2)
     })
 
     it('throws NotFoundException when category not found', async () => {
@@ -53,11 +123,18 @@ describe('CategoriesService', () => {
     })
   })
 
-  describe('remove', () => {
-    it('deletes a category', async () => {
-      const cat = await service.create({ name: 'Temp', color: '#000000' })
-      await service.remove(cat.id)
-      expect(repo.store.size).toBe(0)
+  // ── removeRule ───────────────────────────────────────────────────
+  describe('removeRule', () => {
+    it('removes a keyword rule', async () => {
+      const cat = await mkCat()
+      const rule = await service.addRule(cat.id, { keyword: 'tesco' })
+      await service.removeRule(rule.id)
+      const found = await service.findOne(cat.id)
+      expect(found.rules).toHaveLength(0)
+    })
+
+    it('removing a nonexistent rule does not throw', async () => {
+      await expect(service.removeRule('nonexistent-rule')).resolves.not.toThrow()
     })
   })
 })
