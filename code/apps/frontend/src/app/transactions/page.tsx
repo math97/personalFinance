@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
@@ -72,7 +72,7 @@ function TransactionsContent() {
   useEffect(() => {
     window.addEventListener('transaction-saved', refresh)
     return () => window.removeEventListener('transaction-saved', refresh)
-  }, [year, month])
+  }, [refresh])
 
   useEffect(() => {
     setIsLoading(true)
@@ -100,11 +100,11 @@ function TransactionsContent() {
   const totalPages = Math.ceil(total / perPage) || 1
   const pageItems = filteredItems.slice((page - 1) * perPage, page * perPage)
 
-  function refresh() {
+  const refresh = useCallback(() => {
     api.transactions.list({ year, month, perPage: 1000 })
       .then(r => setAllItems(r.items))
       .catch(() => {})
-  }
+  }, [year, month])
 
   function startEdit(tx: any) {
     setEditData(prev => ({
@@ -391,6 +391,7 @@ function TransactionsContent() {
                       <Pencil size={13} />
                     </button>
                     <button onClick={async () => {
+                      if (!window.confirm('Delete this transaction? This cannot be undone.')) return
                       await api.transactions.remove(tx.id)
                       setAllItems(prev => prev.filter(t => t.id !== tx.id))
                     }}

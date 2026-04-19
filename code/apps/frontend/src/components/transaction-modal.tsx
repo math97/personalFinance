@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { X, Sparkles, CloudUpload, PenLine, FileText, Trash2 } from 'lucide-react'
 import { api } from '@/lib/api'
@@ -104,7 +104,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
   const [form, setForm] = useState({ amount: '', description: '', date: new Date().toISOString().split('T')[0], categoryId: '' })
   const [loading, setLoading] = useState(false)
 
-  useState(() => { api.categories.list().then(setCategories) })
+  useEffect(() => { api.categories.list().then(setCategories).catch(() => {}) }, [])
 
   async function handleSubmit() {
     if (!form.amount || !form.description) return
@@ -263,6 +263,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
 function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => void }) {
   const [files, setFiles] = useState<QueuedFile[]>([])
   const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const onDrop = useCallback((accepted: File[]) => {
     setFiles(prev => [
@@ -273,13 +274,18 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
 
   async function handleUpload() {
     setUploading(true)
-    for (const { file } of files) {
-      const fd = new FormData()
-      fd.append('file', file)
-      await fetch('http://localhost:3001/api/import/upload', { method: 'POST', body: fd })
+    setError(null)
+    try {
+      for (const { file } of files) {
+        const res = await api.import.upload(file)
+        if (!res.batchId) throw new Error(`Failed to process ${file.name}`)
+      }
+      onClose()
+    } catch (e: any) {
+      setError(e.message ?? 'Upload failed')
+    } finally {
+      setUploading(false)
     }
-    setUploading(false)
-    onClose()
   }
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -374,11 +380,14 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
         className="flex items-center justify-between px-6 py-4"
         style={{ borderTop: '1px solid var(--border)' }}
       >
-        <p className="text-xs" style={{ color: 'var(--text-2)' }}>
-          {files.length > 0
-            ? `${files.length} file${files.length > 1 ? 's' : ''} · ${files.length} batch${files.length > 1 ? 'es' : ''}`
-            : 'No files selected'}
-        </p>
+        {error
+          ? <p className="text-xs" style={{ color: 'var(--red)' }}>{error}</p>
+          : <p className="text-xs" style={{ color: 'var(--text-2)' }}>
+              {files.length > 0
+                ? `${files.length} file${files.length > 1 ? 's' : ''} · ${files.length} batch${files.length > 1 ? 'es' : ''}`
+                : 'No files selected'}
+            </p>
+        }
         <div className="flex gap-2">
           <button
             onClick={onBack}
