@@ -8,9 +8,9 @@ export class AnthropicAdapter extends AIPort {
 
   constructor() {
     super()
-    this.client = new Anthropic({
-      apiKey: process.env.AI_API_KEY ?? process.env.ANTHROPIC_API_KEY,
-    })
+    const apiKey = process.env.AI_API_KEY ?? process.env.ANTHROPIC_API_KEY
+    if (!apiKey) throw new Error('Missing API key: set AI_API_KEY (or ANTHROPIC_API_KEY) for the anthropic provider')
+    this.client = new Anthropic({ apiKey })
   }
 
   async extractTransactions(buffer: Buffer, mediaType: string): Promise<ExtractedTransaction[]> {

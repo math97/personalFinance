@@ -18,7 +18,7 @@ export class CategorizationDomainService {
   ): Promise<CategorizationResult> {
     const ruleMatch = applyRules(description, rules)
     if (ruleMatch) {
-      return { categoryId: ruleMatch, aiCategorized: true }
+      return { categoryId: ruleMatch, aiCategorized: false }
     }
 
     const names = categories.map(c => c.name)

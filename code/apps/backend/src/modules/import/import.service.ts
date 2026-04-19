@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common'
+import { fromBuffer as fileTypeFromBuffer } from 'file-type'
 import { ImportBatchRepository } from '../../domain/repositories/import-batch.repository'
 import { CategoryRepository } from '../../domain/repositories/category.repository'
 import { TransactionRepository } from '../../domain/repositories/transaction.repository'
@@ -28,9 +29,12 @@ export class ImportService {
   }
 
   async uploadAndExtract(file: Express.Multer.File) {
-    const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/heic', 'image/webp']
-    if (!allowed.includes(file.mimetype)) {
-      throw new BadRequestException('Unsupported file type')
+    const ALLOWED_MIMES = new Set(['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic'])
+    const detected = await fileTypeFromBuffer(file.buffer)
+    // Fall back to client-supplied mime for formats file-type can't detect (e.g. HEIC)
+    const effectiveMime = detected?.mime ?? file.mimetype
+    if (!ALLOWED_MIMES.has(effectiveMime)) {
+      throw new BadRequestException(`Unsupported file type: ${effectiveMime}`)
     }
 
     const batch = await this.batchRepo.createBatch(file.originalname)
@@ -82,8 +86,13 @@ export class ImportService {
       throw new BadRequestException('Batch is not in reviewing state')
     }
 
-    const source = batch.isPdf() ? 'pdf' : 'photo'
+    // Atomic status claim — only one concurrent request wins the race
+    const claimed = await this.batchRepo.tryClaimConfirm(batchId)
+    if (!claimed) {
+      throw new ConflictException('Batch was already confirmed')
+    }
 
+    const source = batch.isPdf() ? 'pdf' : 'photo'
     for (const imp of batch.imported.filter(i => !i.transactionId)) {
       const tx = await this.txRepo.save(
         new TransactionEntity(
@@ -94,7 +103,6 @@ export class ImportService {
       await this.batchRepo.promoteToTransaction(imp.id, tx.id)
     }
 
-    await this.batchRepo.updateStatus(batchId, 'confirmed')
     return { confirmed: true }
   }
 
@@ -110,9 +118,15 @@ export class ImportService {
   }
 
   async saveRule(importedTxId: string, dto: SaveRuleDto) {
-    await this.categoryRepo.addRule(dto.categoryId, dto.keyword)
-    return this.batchRepo.updateImportedTransaction(importedTxId, {
+    // Verify the imported transaction exists before writing the rule (avoid partial writes)
+    const batch = await this.batchRepo.findById(
+      (await this.batchRepo.findById(importedTxId).catch(() => null))?.id ?? importedTxId,
+    ).catch(() => null)
+    // Simpler: just attempt the update first, let it throw if not found, then add the rule
+    const updated = await this.batchRepo.updateImportedTransaction(importedTxId, {
       aiCategoryId: dto.categoryId,
     })
+    await this.categoryRepo.addRule(dto.categoryId, dto.keyword)
+    return updated
   }
 }

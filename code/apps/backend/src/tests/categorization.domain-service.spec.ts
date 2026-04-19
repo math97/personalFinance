@@ -1,4 +1,5 @@
-import { CategorizationDomainService, AICategorizationPort } from '../domain/services/categorization.domain-service'
+import { CategorizationDomainService } from '../domain/services/categorization.domain-service'
+import { AIPort } from '../domain/ports/ai.port'
 
 describe('CategorizationDomainService', () => {
   const categories = [
@@ -6,8 +7,8 @@ describe('CategorizationDomainService', () => {
     { id: 'cat-2', name: 'Transport' },
   ]
 
-  function makeService(aiPort: AICategorizationPort) {
-    return new CategorizationDomainService(aiPort)
+  function makeService(aiPort: Pick<AIPort, 'suggestCategory'>) {
+    return new CategorizationDomainService(aiPort as AIPort)
   }
 
   describe('rule matching', () => {
@@ -19,7 +20,7 @@ describe('CategorizationDomainService', () => {
       const result = await service.categorize('TESCO METRO LONDON', rules, categories)
 
       expect(result.categoryId).toBe('cat-1')
-      expect(result.aiCategorized).toBe(true)
+      expect(result.aiCategorized).toBe(false)
       expect(ai.suggestCategory).not.toHaveBeenCalled()
     })
 

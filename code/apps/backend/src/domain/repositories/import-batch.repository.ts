@@ -27,6 +27,7 @@ export abstract class ImportBatchRepository {
   abstract updateImportedTransaction(id: string, data: UpdateImportedTxData): Promise<ImportedTransactionEntity>
   abstract promoteToTransaction(importedId: string, transactionId: string): Promise<void>
   abstract countReviewing(): Promise<number>
+  abstract tryClaimConfirm(batchId: string): Promise<boolean>
   abstract deleteImportedTransaction(id: string): Promise<void>
   abstract delete(id: string): Promise<void>
 }

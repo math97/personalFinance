@@ -1,8 +1,9 @@
 import {
   Controller, Get, Post, Patch, Delete, Param, Body,
-  UseInterceptors, UploadedFile,
+  UseInterceptors, UploadedFile, UseGuards,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { ThrottlerGuard } from '@nestjs/throttler'
 import { ImportService } from './import.service'
 import { UpdateImportedTransactionDto, SaveRuleDto } from './dto/import.dto'
 
@@ -21,6 +22,7 @@ export class ImportController {
   }
 
   @Post('upload')
+  @UseGuards(ThrottlerGuard)
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 20 * 1024 * 1024 } }))
   upload(@UploadedFile() file: Express.Multer.File) {
     return this.service.uploadAndExtract(file)
