@@ -56,8 +56,10 @@ export default async function DashboardPage({
 }) {
   const params = await searchParams
   const now = new Date()
-  const year  = Number(params.year  ?? now.getFullYear())
-  const month = Number(params.month ?? now.getMonth() + 1)
+  const rawYear  = Number(params.year)
+  const rawMonth = Number(params.month)
+  const year  = Number.isFinite(rawYear)  && rawYear  > 2000 && rawYear  < 2100 ? rawYear  : now.getFullYear()
+  const month = Number.isFinite(rawMonth) && rawMonth >= 1   && rawMonth <= 12  ? rawMonth : now.getMonth() + 1
 
   const prevMonth = month === 1  ? 12 : month - 1
   const prevYear  = month === 1  ? year - 1 : year

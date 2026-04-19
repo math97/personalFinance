@@ -56,9 +56,10 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
     },
   ]
 
-  function isActive(href: string, label: string) {
-    if (href === '/import/inbox') return pathname.startsWith('/import/inbox') || pathname.startsWith('/import/batch')
+  function isActive(href: string) {
+    if (href === '/import/inbox') return pathname.startsWith('/import/inbox') || /^\/import\/[^/]+$/.test(pathname)
     if (href === '/import')      return pathname === '/import'
+    if (href === '/dashboard')   return pathname === '/dashboard'
     return pathname.startsWith(href)
   }
 
@@ -109,7 +110,7 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
             </p>
             <div className="space-y-0.5">
               {section.items.map(item => {
-                const active = isActive(item.href, item.label)
+                const active = isActive(item.href)
                 return (
                   <Link
                     key={item.label}

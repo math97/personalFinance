@@ -38,6 +38,12 @@ async function del<T>(path: string): Promise<T> {
   return res.json()
 }
 
+async function postForm<T>(path: string, body: FormData): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, { method: 'POST', body })
+  if (!res.ok) throw new Error(`API POST ${path} → ${res.status}`)
+  return res.json()
+}
+
 // ── Dashboard ─────────────────────────────────────────────
 export const api = {
   dashboard: {
@@ -66,6 +72,11 @@ export const api = {
   import: {
     batches: () => get<any[]>('/import/batches'),
     batch: (id: string) => get<any>(`/import/batches/${id}`),
+    upload: (file: File) => {
+      const fd = new FormData()
+      fd.append('file', file)
+      return postForm<{ batchId: string }>('/import/upload', fd)
+    },
     confirm: (id: string) => post<any>(`/import/batches/${id}/confirm`),
     discard: (id: string) => del<any>(`/import/batches/${id}`),
     updateTransaction: (id: string, data: any) => patch<any>(`/import/transactions/${id}`, data),

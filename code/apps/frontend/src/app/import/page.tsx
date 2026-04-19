@@ -6,6 +6,7 @@ import { useDropzone } from 'react-dropzone'
 import { useRouter } from 'next/navigation'
 import { CloudUpload, FileText, ChevronRight, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
+import { api } from '@/lib/api'
 
 export default function ImportPage() {
   const router = useRouter()
@@ -15,10 +16,7 @@ export default function ImportPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/import/batches')
-      .then(r => r.json())
-      .then(setBatches)
-      .catch(() => {})
+    api.import.batches().then(setBatches).catch(() => {})
   }, [])
 
   const onDrop = useCallback(async (accepted: File[]) => {
@@ -29,11 +27,7 @@ export default function ImportPage() {
       for (let i = 0; i < accepted.length; i++) {
         const file = accepted[i]
         setUploadStatus({ current: i + 1, total: accepted.length, filename: file.name })
-        const fd = new FormData()
-        fd.append('file', file)
-        const res = await fetch('http://localhost:3001/api/import/upload', { method: 'POST', body: fd })
-        if (!res.ok) throw new Error(`Failed to process ${file.name}`)
-        const { batchId } = await res.json()
+        const { batchId } = await api.import.upload(file)
         batchIds.push(batchId)
       }
       if (batchIds.length === 1) {
@@ -42,7 +36,7 @@ export default function ImportPage() {
         router.push('/import/inbox')
       }
     } catch (e: any) {
-      setError(e.message)
+      setError(e.message ?? 'Upload failed')
       setUploading(false)
       setUploadStatus(null)
     }

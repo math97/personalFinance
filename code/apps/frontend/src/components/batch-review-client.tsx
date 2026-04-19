@@ -48,20 +48,25 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
   }
 
   async function deleteItem(id: string) {
+    if (!window.confirm('Remove this transaction from the batch?')) return
     await api.import.deleteTransaction(id)
     setItems(prev => prev.filter(i => i.id !== id))
   }
 
-  function toggleIncome(id: string) {
+  async function toggleIncome(id: string) {
     const item = items.find(i => i.id === id)!
     const newAmount = Number(item.rawAmount) > 0
       ? -Math.abs(Number(item.rawAmount))
       : Math.abs(Number(item.rawAmount))
-    api.import.updateTransaction(id, { rawAmount: newAmount, aiCategoryId: newAmount > 0 ? null : item.aiCategory?.id ?? null })
-    setItems(prev => prev.map(i => i.id === id
-      ? { ...i, rawAmount: newAmount, aiCategory: newAmount > 0 ? null : i.aiCategory, aiCategorized: newAmount > 0 ? true : i.aiCategorized }
-      : i
-    ))
+    try {
+      await api.import.updateTransaction(id, { rawAmount: newAmount, aiCategoryId: newAmount > 0 ? null : item.aiCategory?.id ?? null })
+      setItems(prev => prev.map(i => i.id === id
+        ? { ...i, rawAmount: newAmount, aiCategory: newAmount > 0 ? null : i.aiCategory, aiCategorized: newAmount > 0 ? true : i.aiCategorized }
+        : i
+      ))
+    } catch {
+      // revert on failure — no UI change made
+    }
   }
 
   async function saveEdit(id: string) {
@@ -70,8 +75,8 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
     const updated = await api.import.updateTransaction(id, {
       rawDate: d.rawDate,
       rawDescription: d.rawDescription,
-      rawAmount: -Math.abs(Number(d.rawAmount)),
-      aiCategoryId: d.catId || null,
+      rawAmount: d.isIncome ? Math.abs(Number(d.rawAmount)) : -Math.abs(Number(d.rawAmount)),
+      aiCategoryId: d.isIncome ? null : (d.catId || null),
     })
     const cat = categories.find(c => c.id === d.catId) ?? null
     setItems(prev => prev.map(i => i.id === id ? { ...i, ...updated, aiCategory: cat, aiCategorized: !!cat } : i))
@@ -97,14 +102,22 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
 
   async function handleConfirm() {
     setLoading(true)
-    await api.import.confirm(batch.id)
-    router.push('/import/inbox')
+    try {
+      await api.import.confirm(batch.id)
+      router.push('/import/inbox')
+    } catch {
+      setLoading(false)
+    }
   }
 
   async function handleDiscard() {
     setLoading(true)
-    await api.import.discard(batch.id)
-    router.push('/import/inbox')
+    try {
+      await api.import.discard(batch.id)
+      router.push('/import/inbox')
+    } catch {
+      setLoading(false)
+    }
   }
 
   return (
