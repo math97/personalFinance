@@ -22,7 +22,7 @@ export class SettingsService {
     await this.prisma.appSettings.upsert({
       where:  { id: 'singleton' },
       create: { id: 'singleton', aiProvider: dto.aiProvider, aiApiKey: dto.aiApiKey, aiModel: dto.aiModel },
-      update: { aiProvider: dto.aiProvider, aiApiKey: dto.aiApiKey, aiModel: dto.aiModel },
+      update: { aiProvider: dto.aiProvider, aiModel: dto.aiModel, ...(dto.aiApiKey ? { aiApiKey: dto.aiApiKey } : {}) },
     })
     return this.getSettings()
   }
