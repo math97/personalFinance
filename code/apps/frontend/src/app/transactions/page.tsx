@@ -71,6 +71,12 @@ function TransactionsContent() {
 
   useEffect(() => { api.categories.list().then(setCategories).catch(() => {}) }, [])
 
+  const refresh = useCallback(() => {
+    api.transactions.list({ year, month, perPage: 1000 })
+      .then(r => setAllItems(r.items))
+      .catch(() => {})
+  }, [year, month])
+
   useEffect(() => {
     window.addEventListener('transaction-saved', refresh)
     return () => window.removeEventListener('transaction-saved', refresh)
@@ -101,12 +107,6 @@ function TransactionsContent() {
   const total = filteredItems.length
   const totalPages = Math.ceil(total / perPage) || 1
   const pageItems = filteredItems.slice((page - 1) * perPage, page * perPage)
-
-  const refresh = useCallback(() => {
-    api.transactions.list({ year, month, perPage: 1000 })
-      .then(r => setAllItems(r.items))
-      .catch(() => {})
-  }, [year, month])
 
   function startEdit(tx: any) {
     setEditData(prev => ({
