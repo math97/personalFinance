@@ -4,8 +4,7 @@ import { ImportService } from '../modules/import/import.service'
 import { ImportBatchRepository } from '../domain/repositories/import-batch.repository'
 import { CategoryRepository } from '../domain/repositories/category.repository'
 import { TransactionRepository } from '../domain/repositories/transaction.repository'
-import { CategorizationDomainService } from '../domain/services/categorization.domain-service'
-import { AIPort } from '../domain/ports/ai.port'
+import { SettingsService } from '../modules/settings/settings.service'
 import { InMemoryImportBatchRepository } from '../infrastructure/repositories/in-memory/in-memory-import-batch.repository'
 import { InMemoryCategoryRepository } from '../infrastructure/repositories/in-memory/in-memory-category.repository'
 import { InMemoryTransactionRepository } from '../infrastructure/repositories/in-memory/in-memory-transaction.repository'
@@ -27,8 +26,7 @@ describe('ImportService', () => {
     txRepo = new InMemoryTransactionRepository()
     aiMock = { extractTransactions: vi.fn(), suggestCategory: vi.fn().mockResolvedValue(null) }
 
-    const aiPort = aiMock as unknown as AIPort
-    const categorization = new CategorizationDomainService(aiPort)
+    const settingsMock = { createAIPort: vi.fn().mockResolvedValue(aiMock) }
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -36,8 +34,7 @@ describe('ImportService', () => {
         { provide: ImportBatchRepository, useValue: batchRepo },
         { provide: CategoryRepository,    useValue: categoryRepo },
         { provide: TransactionRepository, useValue: txRepo },
-        { provide: CategorizationDomainService, useValue: categorization },
-        { provide: AIPort, useValue: aiMock },
+        { provide: SettingsService, useValue: settingsMock },
       ],
     }).compile()
 
