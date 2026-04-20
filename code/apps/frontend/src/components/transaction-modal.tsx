@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { X, Sparkles, CloudUpload, PenLine, FileText, Trash2 } from 'lucide-react'
 import { api } from '@/lib/api'
+import { useCurrency } from '@/hooks/useCurrency'
 
 type Step = 'picker' | 'manual' | 'batch'
 
@@ -98,6 +99,7 @@ function PickerStep({ onSelect, onClose }: { onSelect: (s: Step) => void; onClos
 }
 
 function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => void }) {
+  const [currency] = useCurrency()
   const [type, setType] = useState<'expense' | 'income'>('expense')
   const [amountFocused, setAmountFocused] = useState(false)
   const [categories, setCategories] = useState<any[]>([])
@@ -167,7 +169,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
               border: `1.5px solid ${amountFocused ? accentColor : 'var(--border-2)'}`,
             }}
           >
-            <span className="text-sm mr-1" style={{ color: 'var(--text-2)' }}>£</span>
+            <span className="text-sm mr-1" style={{ color: 'var(--text-2)' }}>{currency}</span>
             <input
               type="number"
               step="0.01"

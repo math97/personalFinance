@@ -5,7 +5,7 @@ import { CategoryRepository } from '../../domain/repositories/category.repositor
 import { TransactionRepository } from '../../domain/repositories/transaction.repository'
 import { CategorizationDomainService } from '../../domain/services/categorization.domain-service'
 import { TransactionEntity } from '../../domain/entities/transaction.entity'
-import { AIPort } from '../../domain/ports/ai.port'
+import { SettingsService } from '../settings/settings.service'
 import { UpdateImportedTransactionDto, SaveRuleDto } from './dto/import.dto'
 
 @Injectable()
@@ -14,8 +14,7 @@ export class ImportService {
     private readonly batchRepo: ImportBatchRepository,
     private readonly categoryRepo: CategoryRepository,
     private readonly txRepo: TransactionRepository,
-    private readonly categorization: CategorizationDomainService,
-    private readonly ai: AIPort,
+    private readonly settings: SettingsService,
   ) {}
 
   findAllBatches() {
@@ -40,7 +39,9 @@ export class ImportService {
     const batch = await this.batchRepo.createBatch(file.originalname)
 
     try {
-      const extracted = await this.ai.extractTransactions(file.buffer, file.mimetype)
+      const ai = await this.settings.createAIPort()
+      const categorization = new CategorizationDomainService(ai)
+      const extracted = await ai.extractTransactions(file.buffer, file.mimetype)
       const [rules, categories] = await Promise.all([
         this.categoryRepo.findAllRules(),
         this.categoryRepo.findAll(),
@@ -49,7 +50,7 @@ export class ImportService {
 
       const importedData = await Promise.all(
         extracted.map(async t => {
-          const result = await this.categorization.categorize(t.description, rules, catList)
+          const result = await categorization.categorize(t.description, rules, catList)
           return {
             batchId: batch.id,
             rawDate: t.date,

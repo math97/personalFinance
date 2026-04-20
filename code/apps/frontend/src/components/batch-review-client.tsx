@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, Pencil, TriangleAlert, Check, Sparkles, X, Trash2, ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import { api } from '@/lib/api'
+import { useCurrency } from '@/hooks/useCurrency'
 
 function CategoryPill({ name, color }: { name: string; color: string }) {
   return (
@@ -23,6 +24,7 @@ interface SaveRulePrompt {
 
 export function BatchReviewClient({ batch, categories }: { batch: any; categories: any[] }) {
   const router = useRouter()
+  const [currency] = useCurrency()
   const [items, setItems] = useState<any[]>(batch.imported)
   const [editing, setEditing] = useState<string | null>(null)
   const [editData, setEditData] = useState<Record<string, any>>({})
@@ -255,7 +257,7 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
               ) : (
                 <span className="text-sm font-medium tabular-nums text-right"
                   style={{ color: isIncome ? '#4ade80' : 'var(--text)' }}>
-                  {isIncome ? '+' : ''}£{Math.abs(Number(item.rawAmount)).toFixed(2)}
+                  {isIncome ? '+' : ''}{currency}{Math.abs(Number(item.rawAmount)).toFixed(2)}
                 </span>
               )}
 

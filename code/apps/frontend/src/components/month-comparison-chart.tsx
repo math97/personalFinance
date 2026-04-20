@@ -4,6 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ResponsiveContainer,
 } from 'recharts'
 import { tokens } from '@/lib/design-tokens'
+import { useCurrency } from '@/hooks/useCurrency'
 
 type MonthData = { label: string; year: number; month: number; total: number }
 
@@ -22,6 +23,7 @@ export function MonthComparisonChart({
   prevMonthTotal = 0,
   biggestCategoryName,
 }: Props) {
+  const [currency] = useCurrency()
   const currentTotal = data.find(m => m.year === currentYear && m.month === currentMonth)?.total ?? 0
   const delta = currentTotal - prevMonthTotal
   const hasDelta = prevMonthTotal > 0 && delta !== 0
@@ -45,14 +47,14 @@ export function MonthComparisonChart({
             tickLine={false}
           />
           <YAxis
-            tickFormatter={v => `£${v}`}
+            tickFormatter={v => `${currency}${v}`}
             tick={{ fill: tokens.text2, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={48}
           />
           <Tooltip
-            formatter={(v) => [`£${Number(v).toFixed(2)}`, 'Spent']}
+            formatter={(v) => [`${currency}${Number(v).toFixed(2)}`, 'Spent']}
             cursor={{ fill: '#ffffff08' }}
             contentStyle={{
               background: tokens.surface2,
@@ -80,7 +82,7 @@ export function MonthComparisonChart({
       {hasDelta && (
         <p className="text-xs mt-2" style={{ color: tokens.text2 }}>
           <span style={{ color: delta > 0 ? tokens.red : tokens.green, fontWeight: 600 }}>
-            {delta > 0 ? '▲' : '▼'} £{Math.abs(delta).toFixed(0)}
+            {delta > 0 ? '▲' : '▼'} {currency}{Math.abs(delta).toFixed(0)}
           </span>
           {' '}vs last month
           {biggestCategoryName && (

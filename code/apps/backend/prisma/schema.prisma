@@ -59,6 +59,13 @@ model CategoryRule {
   keyword    String
 }
 
+model AppSettings {
+  id        String @id @default("singleton")
+  aiProvider String @default("openrouter")
+  aiApiKey  String @default("")
+  aiModel   String @default("")
+}
+
 enum TransactionSource {
   manual
   pdf
