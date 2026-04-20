@@ -84,4 +84,12 @@ export const api = {
     saveRule: (id: string, keyword: string, categoryId: string) =>
       post<any>(`/import/transactions/${id}/save-rule`, { keyword, categoryId }),
   },
+
+  settings: {
+    get: () => get<{ aiProvider: string; aiModel: string; aiApiKeyConfigured: boolean }>('/settings'),
+    update: (data: { aiProvider: string; aiApiKey?: string; aiModel: string }) =>
+      patch<{ aiProvider: string; aiModel: string; aiApiKeyConfigured: boolean }>('/settings', data),
+    test: (data: { aiProvider: string; aiApiKey: string; aiModel: string }) =>
+      post<{ ok: boolean; error?: string }>('/settings/test', data),
+  },
 }
