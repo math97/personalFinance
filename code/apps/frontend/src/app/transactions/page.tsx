@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
 import { api } from '@/lib/api'
 import { ChevronLeft, ChevronRight, Search, Pencil, ChevronDown, Check, X, Trash2 } from 'lucide-react'
+import { useCurrency } from '@/hooks/useCurrency'
 const PER_PAGE_OPTIONS = [10, 20, 50]
 
 function SourcePill({ source }: { source: 'manual' | 'pdf' | 'photo' }) {
@@ -45,6 +46,7 @@ export default function TransactionsPage() {
 }
 
 function TransactionsContent() {
+  const [currency] = useCurrency()
   const searchParams = useSearchParams()
   const now = new Date()
   const [year, setYear] = useState(() => Number(searchParams.get('year') ?? now.getFullYear()))
@@ -212,7 +214,7 @@ function TransactionsContent() {
             className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm"
             style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}
           >
-            <span style={{ color: 'var(--text-2)' }}>£</span>
+            <span style={{ color: 'var(--text-2)' }}>{currency}</span>
             <input
               type="number"
               min="0"
@@ -354,7 +356,7 @@ function TransactionsContent() {
               {/* Amount */}
               {isEditing ? (
                 <div className="flex items-center justify-end gap-0.5">
-                  <span className="text-xs" style={{ color: 'var(--text-2)' }}>£</span>
+                  <span className="text-xs" style={{ color: 'var(--text-2)' }}>{currency}</span>
                   <input type="number" step="0.01" value={ed.amount}
                     onChange={e => updateField(tx.id, { amount: e.target.value })}
                     className="text-sm text-right rounded-md px-2 py-1 outline-none w-20"
@@ -362,7 +364,7 @@ function TransactionsContent() {
                 </div>
               ) : (
                 <span className="text-sm font-medium tabular-nums text-right" style={{ color: Number(tx.amount) > 0 ? 'var(--green)' : 'var(--text)' }}>
-                  {Number(tx.amount) > 0 ? '+' : ''}£{Math.abs(Number(tx.amount)).toFixed(2)}
+                  {Number(tx.amount) > 0 ? '+' : ''}{currency}{Math.abs(Number(tx.amount)).toFixed(2)}
                 </span>
               )}
 

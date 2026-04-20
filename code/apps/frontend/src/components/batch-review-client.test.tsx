@@ -28,6 +28,10 @@ vi.mock('next/link', () => ({
 
 vi.mock('@/lib/api', () => ({ api: mockApi }))
 
+vi.mock('@/hooks/useCurrency', () => ({
+  useCurrency: () => ['£', vi.fn()],
+}))
+
 // ── Fixtures ───────────────────────────────────────────────────────────────
 
 const CAT_ENTERTAINMENT = { id: 'cat-1', name: 'Entertainment', color: '#6366f1' }

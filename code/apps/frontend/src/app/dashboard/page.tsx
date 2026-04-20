@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { MonthComparisonChart } from '@/components/month-comparison-chart'
 import { SpendingSection } from '@/components/spending-section'
+import { CurrencyAmount } from '@/components/currency-amount'
 import { api } from '@/lib/api'
 import { format } from 'date-fns'
 import { ChevronLeft, ChevronRight, PlusCircle, Upload } from 'lucide-react'
@@ -117,11 +118,11 @@ export default async function DashboardPage({
             <Card>
               <p className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--text-2)' }}>Spent this month</p>
               <p className="text-3xl font-bold" style={{ color: 'var(--text)' }}>
-                £{Number(summary.totalSpent).toFixed(2)}
+                <CurrencyAmount amount={Number(summary.totalSpent)} />
               </p>
               {prevTotal > 0 && (
                 <p className="text-xs mt-1" style={{ color: delta > 0 ? 'var(--red)' : 'var(--green)' }}>
-                  {delta > 0 ? '▲' : '▼'} £{Math.abs(delta).toFixed(0)} vs last month
+                  {delta > 0 ? '▲' : '▼'} <CurrencyAmount amount={Math.abs(delta)} fractionDigits={0} /> vs last month
                 </p>
               )}
             </Card>
@@ -131,7 +132,7 @@ export default async function DashboardPage({
                 <>
                   <p className="text-xl font-bold mb-0.5" style={{ color: 'var(--text)' }}>{biggestCat.name}</p>
                   <p className="text-sm" style={{ color: 'var(--text-2)' }}>
-                    £{Number(biggestCat.total).toFixed(2)} · {summary.totalSpent > 0
+                    <CurrencyAmount amount={Number(biggestCat.total)} /> · {summary.totalSpent > 0
                       ? Math.round((biggestCat.total / summary.totalSpent) * 100) : 0}% of total
                   </p>
                 </>
@@ -167,12 +168,12 @@ export default async function DashboardPage({
               {prevTotal > 0 && delta !== 0 && (
                 <p className="text-xs mb-3" style={{ color: 'var(--text-2)' }}>
                   <span style={{ color: delta > 0 ? 'var(--red)' : 'var(--green)', fontWeight: 600 }}>
-                    {delta > 0 ? '▲' : '▼'} £{Math.abs(delta).toFixed(0)}
+                    {delta > 0 ? '▲' : '▼'} <CurrencyAmount amount={Math.abs(delta)} fractionDigits={0} />
                   </span>
                   {' '}vs last month
                   {biggestDriver && (
                     <> · <span style={{ color: 'var(--text)' }}>{biggestDriver.name}</span>
-                    {' '}{biggestDriver.delta > 0 ? 'up' : 'down'} £{Math.abs(biggestDriver.delta).toFixed(0)}</>
+                    {' '}{biggestDriver.delta > 0 ? 'up' : 'down'} <CurrencyAmount amount={Math.abs(biggestDriver.delta)} fractionDigits={0} /></>
                   )}
                 </p>
               )}
@@ -212,7 +213,7 @@ export default async function DashboardPage({
                         : <span style={{ color: 'var(--text-3)' }}>—</span>}
                     </td>
                     <td className="py-3 text-right font-medium tabular-nums" style={{ color: 'var(--text)' }}>
-                      £{Math.abs(Number(tx.amount)).toFixed(2)}
+                      <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
                     </td>
                   </tr>
                 ))}

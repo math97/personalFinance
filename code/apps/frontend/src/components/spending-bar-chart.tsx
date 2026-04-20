@@ -1,6 +1,7 @@
 'use client'
 
 import { Banknote, Pencil, Check, X, ArrowDownToLine } from 'lucide-react'
+import { useCurrency } from '@/hooks/useCurrency'
 
 type Row = { name: string; total: number; color: string }
 
@@ -46,6 +47,7 @@ export function SpendingBarChart({
   onSaveLeftover,
   onCancelLeftover,
 }: Props) {
+  const [currency] = useCurrency()
   const maxTotal = data[0]?.total ?? 1
   const effectiveBudget = budget ?? salary
   const pctSpent = effectiveBudget > 0 ? Math.round((grandTotal / effectiveBudget) * 100) : 0
@@ -92,7 +94,7 @@ export function SpendingBarChart({
                 </div>
                 <div className="text-right shrink-0" style={{ minWidth: 72 }}>
                   <p className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text)' }}>
-                    £{row.total.toFixed(0)}
+                    {currency}{row.total.toFixed(0)}
                   </p>
                   <p className="text-xs font-medium tabular-nums" style={{ color: row.color }}>
                     {pct.toFixed(1)}%
@@ -112,7 +114,7 @@ export function SpendingBarChart({
             <Banknote size={12} style={{ color: 'var(--text-2)', flexShrink: 0 }} />
             {editingSalary ? (
               <div className="flex items-center gap-1">
-                <span className="text-xs" style={{ color: 'var(--text-2)' }}>£</span>
+                <span className="text-xs" style={{ color: 'var(--text-2)' }}>{currency}</span>
                 <input
                   type="number"
                   value={salaryInput}
@@ -135,7 +137,7 @@ export function SpendingBarChart({
             ) : (
               <>
                 <span className="text-xs" style={{ color: 'var(--text-2)' }}>
-                  Salary: £{salary.toLocaleString()}/mo
+                  Salary: {currency}{salary.toLocaleString()}/mo
                 </span>
                 <button onClick={onEditSalary}
                   className="flex items-center gap-1 px-2 py-0.5 rounded"
@@ -172,7 +174,7 @@ export function SpendingBarChart({
           <ArrowDownToLine size={12} style={{ color: 'var(--text-2)', flexShrink: 0 }} />
           {editingLeftover ? (
             <div className="flex items-center gap-1">
-              <span className="text-xs" style={{ color: 'var(--text-2)' }}>£</span>
+              <span className="text-xs" style={{ color: 'var(--text-2)' }}>{currency}</span>
               <input
                 type="number"
                 value={leftoverInput}
@@ -195,7 +197,7 @@ export function SpendingBarChart({
           ) : (
             <>
               <span className="text-xs" style={{ color: 'var(--text-2)' }}>
-                Leftover: £{leftover.toLocaleString()}
+                Leftover: {currency}{leftover.toLocaleString()}
               </span>
               <button onClick={onEditLeftover}
                 className="flex items-center gap-1 px-2 py-0.5 rounded"
