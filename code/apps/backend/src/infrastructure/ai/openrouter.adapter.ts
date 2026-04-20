@@ -32,6 +32,7 @@ export class OpenRouterAdapter extends AIPort {
           { type: 'file', file: { filename: 'statement.pdf', file_data: dataUri } },
         ]
       : [{ type: 'image_url', image_url: { url: dataUri } }]
+    // OpenRouter's "file" content type and "plugins" field are outside the OpenAI SDK types
     const response = await (this.client.chat.completions.create as any)({
       model: this.model,
       max_tokens: 8192,
