@@ -1,10 +1,10 @@
 # Personal Finance
 
-A self-hosted personal finance tracker that uses AI to automatically categorise your bank transactions. Upload a CSV or PDF statement, review the AI-extracted entries, confirm them, and get a live dashboard of your spending.
+A self-hosted personal finance tracker that uses AI to automatically categorise your bank transactions. Upload a PDF statement, review the AI-extracted entries, confirm them, and get a live dashboard of your spending.
 
 ## Features
 
-- Upload bank statements (CSV / PDF) — Claude extracts transactions automatically
+- Upload bank statements (PDF) — AI extracts transactions automatically
 - Rule-based + AI categorisation pipeline
 - Monthly dashboard with charts
 - Full transaction history with search and filters
@@ -69,7 +69,7 @@ npm install
 cp code/apps/backend/.env.example code/apps/backend/.env
 ```
 
-Open `code/apps/backend/.env` and fill in your AI provider details (see above). The database credentials are pre-filled for the Docker setup and don't need changing.
+Open `code/apps/backend/.env` and fill in your AI provider details (see above) or just go on settings when running and configured in the app itself. The database credentials are pre-filled for the Docker setup and don't need changing.
 
 ### 4. Start the database
 
