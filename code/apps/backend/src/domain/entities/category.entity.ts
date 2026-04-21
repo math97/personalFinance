@@ -7,6 +7,7 @@ export class CategoryEntity {
     public readonly color: string,
     public readonly rules: CategoryRuleEntity[],
     public readonly transactionCount: number,
+    public readonly monthlyBudget: number | null = null,
   ) {}
 
   static create(data: { id: string; name: string; color: string }): CategoryEntity {
@@ -18,6 +19,7 @@ export class CategoryEntity {
       this.id, this.name, this.color,
       [...this.rules, rule],
       this.transactionCount,
+      this.monthlyBudget,
     )
   }
 
@@ -26,6 +28,7 @@ export class CategoryEntity {
       this.id, this.name, this.color,
       this.rules.filter(r => r.id !== ruleId),
       this.transactionCount,
+      this.monthlyBudget,
     )
   }
 }
