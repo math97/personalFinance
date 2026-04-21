@@ -25,16 +25,19 @@ export class InMemoryCategoryRepository extends CategoryRepository {
     return persisted
   }
 
-  async update(id: string, data: Partial<{ name: string; color: string }>): Promise<CategoryEntity> {
+  async update(
+    id: string,
+    data: Partial<{ name: string; color: string; monthlyBudget: number | null }>,
+  ): Promise<CategoryEntity> {
     const existing = this.store.get(id)
     if (!existing) throw new Error(`Category ${id} not found`)
     const updated = new CategoryEntity(
       existing.id,
-      data.name ?? existing.name,
+      data.name  ?? existing.name,
       data.color ?? existing.color,
       existing.rules,
       existing.transactionCount,
-      existing.monthlyBudget,
+      data.monthlyBudget !== undefined ? data.monthlyBudget : existing.monthlyBudget,
     )
     this.store.set(id, updated)
     return updated
