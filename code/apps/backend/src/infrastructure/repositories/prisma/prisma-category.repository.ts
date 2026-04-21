@@ -34,7 +34,7 @@ export class PrismaCategoryRepository extends CategoryRepository {
 
   async save(entity: CategoryEntity): Promise<CategoryEntity> {
     const p = await this.prisma.category.create({
-      data: { name: entity.name, color: entity.color },
+      data: { name: entity.name, color: entity.color, monthlyBudget: entity.monthlyBudget ?? null },
       include: { rules: true, _count: { select: { transactions: true } } },
     })
     return CategoryMapper.toDomain(p)
