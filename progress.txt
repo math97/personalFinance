@@ -1,6 +1,6 @@
 ═══════════════════════════════════════════════════════════
 PERSONAL FINANCE APP — PROGRESS LOG
-Last updated: 2026-04-20
+Last updated: 2026-04-21
 ═══════════════════════════════════════════════════════════
 
 ── DONE ────────────────────────────────────────────────────
@@ -108,17 +108,17 @@ Last updated: 2026-04-20
 ✓ Backend e2e tests   — 21 passing (Supertest + isolated per-run PostgreSQL)
 ✓ Frontend unit tests — 26 passing (Vitest + RTL; api.ts + BatchReviewClient)
 
-── NEXT UP ─────────────────────────────────────────────────
+── DONE (continued) ────────────────────────────────────────
 
-[P0 — Settings Page]  ← spec: docs/superpowers/specs/2026-04-20-settings-page-design.md
-  ✗ Currency symbol selector (€ / $ / R$) — localStorage, applied globally
-  ✗ AI provider settings UI
-      - Provider toggle: Anthropic / OpenRouter
-      - API key input (masked, stored in DB)
-      - Model free-text input + "Test connection" button
-  ✗ Backend: AppSettings singleton table (Prisma)
-  ✗ Backend: GET /api/settings, PATCH /api/settings, POST /api/settings/test
-  ✗ Backend: AIModule reads config from DB at request time (fallback to .env)
+[Settings Page]  ← spec: docs/superpowers/specs/2026-04-20-settings-page-design.md
+✓ Currency symbol selector (€ / $ / R$) — localStorage, applied globally via useCurrency hook
+✓ AI provider settings UI
+    - Provider toggle: Anthropic / OpenRouter
+    - API key input (masked, stored in DB)
+    - Model free-text input + "Test connection" button
+✓ Backend: AppSettings singleton table (Prisma)
+✓ Backend: GET /api/settings, PATCH /api/settings, POST /api/settings/test
+✓ Backend: AIModule reads config from DB at request time (fallback to .env)
 
 ── PHASE 2 — FEATURES (priority order) ────────────────────
 
