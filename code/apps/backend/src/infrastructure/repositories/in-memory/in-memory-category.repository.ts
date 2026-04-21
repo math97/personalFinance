@@ -33,7 +33,7 @@ export class InMemoryCategoryRepository extends CategoryRepository {
     if (!existing) throw new Error(`Category ${id} not found`)
     const updated = new CategoryEntity(
       existing.id,
-      data.name  ?? existing.name,
+      data.name ?? existing.name,
       data.color ?? existing.color,
       existing.rules,
       existing.transactionCount,
