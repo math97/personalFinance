@@ -1,36 +1,135 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Personal Finance
 
-## Getting Started
+A self-hosted personal finance tracker that uses AI to automatically categorise your bank transactions. Upload a CSV or PDF statement, review the AI-extracted entries, confirm them, and get a live dashboard of your spending.
 
-First, run the development server:
+## Features
+
+- Upload bank statements (CSV / PDF) — Claude extracts transactions automatically
+- Rule-based + AI categorisation pipeline
+- Monthly dashboard with charts
+- Full transaction history with search and filters
+- Configurable categories and keyword rules
+- Works with any AI provider supported by OpenRouter (or Anthropic direct)
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) 20+
+- [Docker](https://www.docker.com/) (for the PostgreSQL database)
+- An AI API key — see [Getting an API key](#getting-an-api-key)
+
+## Getting an API key
+
+The app supports two AI providers. **OpenRouter is the easiest starting point** because one key gives you access to many models (Claude, GPT-4o, Gemini, etc.) and has a free tier.
+
+### Option A — OpenRouter (recommended)
+
+1. Go to [openrouter.ai](https://openrouter.ai) and sign up.
+2. Navigate to **Keys** → **Create key**.
+3. Copy the key (starts with `sk-or-`).
+4. In your `.env` file set:
+   ```
+   AI_PROVIDER=openrouter
+   AI_API_KEY=sk-or-...
+   AI_MODEL=anthropic/claude-haiku-4-5
+   ```
+
+Other models you can try on OpenRouter: `openai/gpt-4o-mini`, `google/gemini-flash-1.5`, `meta-llama/llama-3-8b-instruct`.
+
+### Option B — Anthropic direct
+
+1. Go to [console.anthropic.com](https://console.anthropic.com) and sign up.
+2. Navigate to **API Keys** → **Create key**.
+3. Copy the key (starts with `sk-ant-`).
+4. In your `.env` file set:
+   ```
+   AI_PROVIDER=anthropic
+   AI_API_KEY=sk-ant-...
+   AI_MODEL=claude-haiku-4-5-20251001
+   ```
+
+## Setup
+
+### 1. Clone the repository
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/math97/personalFinance.git
+cd personalFinance
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install dependencies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd code
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Configure the backend environment
 
-## Learn More
+```bash
+cp code/apps/backend/.env.example code/apps/backend/.env
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open `code/apps/backend/.env` and fill in your AI provider details (see above). The database credentials are pre-filled for the Docker setup and don't need changing.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 4. Start the database
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+cd code
+docker compose up -d
+```
 
-## Deploy on Vercel
+### 5. Run database migrations and seed categories
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+cd code/apps/backend
+npx prisma migrate deploy
+npx ts-node prisma/seed.ts
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 6. Start the apps
+
+In two separate terminals:
+
+```bash
+# Terminal 1 — backend (port 3001)
+cd code/apps/backend
+npm run start:dev
+```
+
+```bash
+# Terminal 2 — frontend (port 3000)
+cd code/apps/frontend
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Project structure
+
+```
+personalFinance/
+  code/
+    apps/
+      frontend/     Next.js 14 (App Router), port 3000
+      backend/      NestJS REST API, port 3001
+    docker-compose.yml
+  docs/
+  progress.txt
+```
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 14, TypeScript, Tailwind CSS, Recharts |
+| Backend | NestJS, TypeScript, Prisma ORM v5 |
+| Database | PostgreSQL (Docker) |
+| AI | Anthropic SDK — Anthropic direct or OpenRouter |
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+MIT — see [LICENSE](LICENSE).
