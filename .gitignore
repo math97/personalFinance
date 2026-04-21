@@ -60,3 +60,6 @@ code/apps/backend/uploads/
 playwright-report/
 test-results/
 demo/
+
+# Git worktrees
+.worktrees/
