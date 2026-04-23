@@ -77,7 +77,7 @@ export default function CategoriesPage() {
     } else {
       amount = Number(raw)
     }
-    if (isNaN(amount) || amount < 0) return
+    if (isNaN(amount) || amount <= 0) return
 
     setBudgetSaving(prev => ({ ...prev, [catId]: true }))
     try {
