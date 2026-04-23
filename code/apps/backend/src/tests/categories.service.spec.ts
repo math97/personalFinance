@@ -137,4 +137,33 @@ describe('CategoriesService', () => {
       await expect(service.removeRule('nonexistent-rule')).resolves.not.toThrow()
     })
   })
+
+  // ── budget ───────────────────────────────────────────────────────
+  describe('update — monthlyBudget', () => {
+    it('sets a monthly budget on a category', async () => {
+      const cat = await mkCat()
+      const updated = await service.update(cat.id, { monthlyBudget: 300 })
+      expect(updated.monthlyBudget).toBe(300)
+    })
+
+    it('clears the monthly budget when set to null', async () => {
+      const cat = await mkCat()
+      await service.update(cat.id, { monthlyBudget: 300 })
+      const cleared = await service.update(cat.id, { monthlyBudget: null })
+      expect(cleared.monthlyBudget).toBeNull()
+    })
+
+    it('does not affect other fields when only updating budget', async () => {
+      const cat = await mkCat('Rent', '#818cf8')
+      await service.update(cat.id, { monthlyBudget: 1000 })
+      const found = await service.findOne(cat.id)
+      expect(found.name).toBe('Rent')
+      expect(found.color).toBe('#818cf8')
+      expect(found.monthlyBudget).toBe(1000)
+    })
+
+    it('throws NotFoundException when setting budget on nonexistent category', async () => {
+      await expect(service.update('nonexistent', { monthlyBudget: 100 })).rejects.toThrow(NotFoundException)
+    })
+  })
 })
