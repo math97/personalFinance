@@ -67,6 +67,8 @@ export const api = {
     remove: (id: string) => del<any>(`/categories/${id}`),
     addRule: (categoryId: string, keyword: string) => post<any>(`/categories/${categoryId}/rules`, { keyword }),
     removeRule: (ruleId: string) => del<any>(`/categories/rules/${ruleId}`),
+    setBudget: (id: string, monthlyBudget: number | null) =>
+      patch<any>(`/categories/${id}`, { monthlyBudget }),
   },
 
   import: {
