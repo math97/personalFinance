@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { MonthComparisonChart } from '@/components/month-comparison-chart'
 import { SpendingSection } from '@/components/spending-section'
 import { CurrencyAmount } from '@/components/currency-amount'
+import { BudgetProgressPanel } from '@/components/budget-progress-panel'
 import { api } from '@/lib/api'
 import { format } from 'date-fns'
 import { ChevronLeft, ChevronRight, PlusCircle, Upload } from 'lucide-react'
@@ -186,6 +187,13 @@ export default async function DashboardPage({
               />
             </Card>
           </div>
+
+          {/* Budget progress */}
+          {byCategory.some((r: any) => r.monthlyBudget != null) && (
+            <div className="mb-4">
+              <BudgetProgressPanel rows={byCategory} />
+            </div>
+          )}
 
           {/* Recent transactions */}
           <Card>

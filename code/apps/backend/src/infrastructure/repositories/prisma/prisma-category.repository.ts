@@ -34,16 +34,23 @@ export class PrismaCategoryRepository extends CategoryRepository {
 
   async save(entity: CategoryEntity): Promise<CategoryEntity> {
     const p = await this.prisma.category.create({
-      data: { name: entity.name, color: entity.color },
+      data: { name: entity.name, color: entity.color, monthlyBudget: entity.monthlyBudget ?? null },
       include: { rules: true, _count: { select: { transactions: true } } },
     })
     return CategoryMapper.toDomain(p)
   }
 
-  async update(id: string, data: Partial<{ name: string; color: string }>): Promise<CategoryEntity> {
+  async update(
+    id: string,
+    data: Partial<{ name: string; color: string; monthlyBudget: number | null }>,
+  ): Promise<CategoryEntity> {
     const p = await this.prisma.category.update({
       where: { id },
-      data,
+      data: {
+        ...(data.name          !== undefined && { name:          data.name }),
+        ...(data.color         !== undefined && { color:         data.color }),
+        ...(data.monthlyBudget !== undefined && { monthlyBudget: data.monthlyBudget }),
+      },
       include: { rules: true, _count: { select: { transactions: true } } },
     })
     return CategoryMapper.toDomain(p)

@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { ChevronDown, ChevronUp, X, Plus, Tag } from 'lucide-react'
 import { api } from '@/lib/api'
+import { BudgetBar } from '@/components/budget-bar'
+import { CurrencyAmount } from '@/components/currency-amount'
+import { useCurrency } from '@/hooks/useCurrency'
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<any[]>([])
@@ -14,9 +17,28 @@ export default function CategoriesPage() {
   const [newCatName, setNewCatName] = useState('')
   const [newCatColor, setNewCatColor] = useState('#6b7280')
 
+  const [currency] = useCurrency()
+  const [budgetMode, setBudgetMode] = useState<Record<string, 'amount' | 'pct'>>({})
+  const [budgetInputs, setBudgetInputs] = useState<Record<string, string>>({})
+  const [budgetSaving, setBudgetSaving] = useState<Record<string, boolean>>({})
+
+  const now = new Date()
+
   useEffect(() => {
-    api.categories.list()
-      .then(setCategories)
+    Promise.all([
+      api.categories.list(),
+      api.dashboard.summary(now.getFullYear(), now.getMonth() + 1),
+    ])
+      .then(([cats, dash]) => {
+        const spendMap: Record<string, number> = {}
+        for (const row of dash.byCategory) {
+          if (row.categoryId) spendMap[row.categoryId] = Number(row.total)
+        }
+        setCategories(cats.map((c: any) => ({
+          ...c,
+          currentMonthSpent: spendMap[c.id] ?? 0,
+        })))
+      })
       .catch(() => setError('Failed to load categories'))
       .finally(() => setIsLoading(false))
   }, [])
@@ -41,6 +63,39 @@ export default function CategoriesPage() {
     setNewCatName('')
     setNewCatColor('#6b7280')
     setShowAddCat(false)
+  }
+
+  async function saveBudget(catId: string) {
+    const mode = budgetMode[catId] ?? 'amount'
+    const raw  = budgetInputs[catId] ?? ''
+    if (raw === '') return
+
+    let amount: number
+    if (mode === 'pct') {
+      const salary = Number(localStorage.getItem('finance_salary') ?? 3500)
+      amount = Math.round((Number(raw) / 100) * salary * 100) / 100
+    } else {
+      amount = Number(raw)
+    }
+    if (isNaN(amount) || amount <= 0) return
+
+    setBudgetSaving(prev => ({ ...prev, [catId]: true }))
+    try {
+      await api.categories.setBudget(catId, amount)
+      setCategories(prev =>
+        prev.map(c => c.id === catId ? { ...c, monthlyBudget: amount } : c),
+      )
+      setBudgetInputs(prev => ({ ...prev, [catId]: '' }))
+    } finally {
+      setBudgetSaving(prev => ({ ...prev, [catId]: false }))
+    }
+  }
+
+  async function clearBudget(catId: string) {
+    await api.categories.setBudget(catId, null)
+    setCategories(prev =>
+      prev.map(c => c.id === catId ? { ...c, monthlyBudget: null } : c),
+    )
   }
 
   if (error) return (
@@ -96,6 +151,16 @@ export default function CategoriesPage() {
               <span className="flex-1 text-sm font-medium" style={{ color: 'var(--text)' }}>{cat.name}</span>
               <span className="text-xs mr-4" style={{ color: 'var(--text-2)' }}>{cat.rules?.length ?? 0} rules</span>
               <span className="text-xs mr-3" style={{ color: 'var(--text-2)' }}>{cat._count?.transactions ?? 0} transactions</span>
+              {cat.monthlyBudget != null ? (
+                <span
+                  className="text-xs px-2 py-0.5 rounded-md font-medium"
+                  style={{ background: 'var(--surface-2)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
+                >
+                  <CurrencyAmount amount={cat.monthlyBudget} />/mo
+                </span>
+              ) : (
+                <span className="text-xs" style={{ color: 'var(--text-3)' }}>no budget</span>
+              )}
               {expanded === cat.id ? <ChevronUp size={14} style={{ color: 'var(--text-2)' }} /> : <ChevronDown size={14} style={{ color: 'var(--text-2)' }} />}
             </button>
 
@@ -125,6 +190,103 @@ export default function CategoriesPage() {
                     style={{ background: 'var(--surface)', color: 'var(--text-2)', border: '1px solid var(--border-2)' }}>
                     + Add rule
                   </button>
+                </div>
+
+                {/* Monthly Budget section */}
+                <div
+                  className="mt-4 pt-4"
+                  style={{ borderTop: '1px solid var(--border)' }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>
+                      Monthly Budget
+                    </p>
+                    {cat.monthlyBudget != null && (
+                      <button
+                        onClick={() => clearBudget(cat.id)}
+                        className="text-xs"
+                        style={{ color: 'var(--text-3)' }}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+
+                  {/* £ / % toggle */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs" style={{ color: 'var(--text-3)' }}>Set by</span>
+                    {(['amount', 'pct'] as const).map(m => (
+                      <button
+                        key={m}
+                        onClick={() => setBudgetMode(prev => ({ ...prev, [cat.id]: m }))}
+                        className="px-3 py-1 rounded-md text-xs font-medium"
+                        style={{
+                          background: (budgetMode[cat.id] ?? 'amount') === m ? 'var(--accent)' : 'var(--surface-2)',
+                          color:      (budgetMode[cat.id] ?? 'amount') === m ? '#0c0c0e'       : 'var(--text-2)',
+                          border:     (budgetMode[cat.id] ?? 'amount') === m ? 'none'           : '1px solid var(--border)',
+                        }}
+                      >
+                        {m === 'amount' ? `${currency} Amount` : '% of salary'}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Input row */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <div
+                      className="flex items-center gap-1 px-3 h-9 rounded-lg text-sm"
+                      style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', width: 160 }}
+                    >
+                      <span style={{ color: 'var(--text-3)' }}>
+                        {(budgetMode[cat.id] ?? 'amount') === 'amount' ? currency : '%'}
+                      </span>
+                      <input
+                        type="number"
+                        min={0}
+                        step={(budgetMode[cat.id] ?? 'amount') === 'pct' ? 1 : 10}
+                        value={budgetInputs[cat.id] ?? ''}
+                        onChange={e => setBudgetInputs(prev => ({ ...prev, [cat.id]: e.target.value }))}
+                        placeholder={(budgetMode[cat.id] ?? 'amount') === 'pct' ? '0' : '0.00'}
+                        className="bg-transparent outline-none w-full text-sm"
+                        style={{ color: 'var(--text)' }}
+                      />
+                    </div>
+                    <button
+                      onClick={() => saveBudget(cat.id)}
+                      disabled={budgetSaving[cat.id] || !budgetInputs[cat.id]}
+                      className="px-4 h-9 rounded-lg text-sm font-semibold disabled:opacity-40"
+                      style={{ background: 'var(--accent)', color: '#0c0c0e' }}
+                    >
+                      {budgetSaving[cat.id] ? 'Saving…' : 'Save'}
+                    </button>
+                    {(budgetMode[cat.id] ?? 'amount') === 'pct' && budgetInputs[cat.id] && (
+                      <span className="text-xs px-3 py-1 rounded-lg" style={{ background: '#f59e0b10', color: 'var(--accent)' }}>
+                        = <CurrencyAmount
+                          amount={Math.round((Number(budgetInputs[cat.id]) / 100) * Number(localStorage.getItem('finance_salary') ?? 3500) * 100) / 100}
+                        />/mo
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Progress bar — current month spend vs budget */}
+                  {cat.monthlyBudget != null && cat.currentMonthSpent != null && (
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs" style={{ color: 'var(--text-2)' }}>
+                        <span>
+                          <CurrencyAmount amount={cat.currentMonthSpent} /> spent
+                        </span>
+                        <span style={{ color: cat.currentMonthSpent > cat.monthlyBudget ? 'var(--red)' : 'var(--text-2)' }}>
+                          <CurrencyAmount amount={Math.abs(cat.monthlyBudget - cat.currentMonthSpent)} />
+                          {cat.currentMonthSpent > cat.monthlyBudget ? ' over' : ' remaining'}
+                        </span>
+                      </div>
+                      <BudgetBar
+                        spent={cat.currentMonthSpent}
+                        budget={cat.monthlyBudget}
+                        color={cat.color}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             )}

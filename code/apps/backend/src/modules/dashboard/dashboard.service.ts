@@ -22,10 +22,11 @@ export class DashboardService {
 
     return grouped
       .map(row => ({
-        categoryId: row.categoryId,
-        name:  row.categoryId ? (catMap[row.categoryId]?.name  ?? 'Uncategorized') : 'Uncategorized',
-        color: row.categoryId ? (catMap[row.categoryId]?.color ?? '#6b7280')       : '#6b7280',
-        total: row.total,
+        categoryId:    row.categoryId,
+        name:          row.categoryId ? (catMap[row.categoryId]?.name          ?? 'Uncategorized') : 'Uncategorized',
+        color:         row.categoryId ? (catMap[row.categoryId]?.color         ?? '#6b7280')       : '#6b7280',
+        total:         row.total,
+        monthlyBudget: row.categoryId ? (catMap[row.categoryId]?.monthlyBudget ?? null)            : null,
       }))
       .sort((a, b) => b.total - a.total)
   }

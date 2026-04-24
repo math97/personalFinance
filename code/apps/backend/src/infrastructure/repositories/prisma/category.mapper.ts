@@ -9,6 +9,7 @@ export class CategoryMapper {
       p.color,
       (p.rules ?? []).map((r: any) => new CategoryRuleEntity(r.id, r.categoryId, r.keyword)),
       p._count?.transactions ?? 0,
+      p.monthlyBudget != null ? Number(p.monthlyBudget) : null,
     )
   }
 
