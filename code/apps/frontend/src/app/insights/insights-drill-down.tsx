@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { CurrencyAmount } from '@/components/currency-amount'
 
@@ -19,7 +20,7 @@ type Props = {
   onBack: () => void
 }
 
-function StatCard({ label, value, sub }: { label: string; value: React.ReactNode; sub?: React.ReactNode }) {
+function StatCard({ label, value, sub }: { label: string; value: ReactNode; sub?: ReactNode }) {
   return (
     <div
       className="rounded-xl px-5 py-4 flex flex-col gap-1"
@@ -37,7 +38,7 @@ function StatCard({ label, value, sub }: { label: string; value: React.ReactNode
 export function InsightsDrillDown({ row, onBack }: Props) {
   const totals    = row.months.map(m => m.total)
   const sum       = totals.reduce((a, b) => a + b, 0)
-  const avg       = sum / 3
+  const avg       = row.months.length > 0 ? sum / row.months.length : 0
   const maxTotal  = Math.max(...totals)
   const bigMonth  = row.months.find(m => m.total === maxTotal)!
   const curr      = row.months[2]
