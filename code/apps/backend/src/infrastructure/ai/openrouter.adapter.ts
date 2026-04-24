@@ -58,4 +58,16 @@ export class OpenRouterAdapter extends AIPort {
     const text = (response.choices[0]?.message?.content ?? '').trim()
     return categoryNames.includes(text) ? text : null
   }
+
+  async chat(systemPrompt: string, userMessage: string): Promise<string> {
+    const response = await this.client.chat.completions.create({
+      model: this.model,
+      max_tokens: 1024,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userMessage },
+      ],
+    })
+    return (response.choices[0]?.message?.content ?? '').trim()
+  }
 }

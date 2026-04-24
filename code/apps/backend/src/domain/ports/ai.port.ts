@@ -7,6 +7,7 @@ export interface ExtractedTransaction {
 export abstract class AIPort {
   abstract extractTransactions(buffer: Buffer, mediaType: string): Promise<ExtractedTransaction[]>
   abstract suggestCategory(description: string, categoryNames: string[]): Promise<string | null>
+  abstract chat(systemPrompt: string, userMessage: string): Promise<string>
 
   protected parseResponse(text: string): ExtractedTransaction[] {
     if (!text.trim()) return []

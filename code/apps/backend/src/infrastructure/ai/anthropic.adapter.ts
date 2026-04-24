@@ -48,4 +48,14 @@ export class AnthropicAdapter extends AIPort {
     const text = message.content[0].type === 'text' ? message.content[0].text.trim() : 'none'
     return categoryNames.includes(text) ? text : null
   }
+
+  async chat(systemPrompt: string, userMessage: string): Promise<string> {
+    const message = await this.client.messages.create({
+      model: this.model,
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+    })
+    return message.content[0].type === 'text' ? message.content[0].text : ''
+  }
 }
