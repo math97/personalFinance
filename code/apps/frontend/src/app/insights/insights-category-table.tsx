@@ -147,7 +147,7 @@ export function InsightsCategoryTable({ categories, currentMonthLabel, onRowClic
             ))}
 
             {/* Budget */}
-            <BudgetCell total={row.months[2].total} budget={row.monthlyBudget} color={row.color} />
+            <BudgetCell total={row.months[2]?.total ?? 0} budget={row.monthlyBudget} color={row.color} />
 
             {/* Spacer */}
             <span />
@@ -159,13 +159,15 @@ export function InsightsCategoryTable({ categories, currentMonthLabel, onRowClic
               ) : (
                 <>
                   <SparklineBar months={row.months} color={row.color} />
-                  {row.delta !== null && (
+                  {row.delta !== null ? (
                     <span
                       className="text-xs font-semibold tabular-nums"
                       style={{ color: row.delta > 0 ? 'var(--red)' : '#22c55e', minWidth: 40, textAlign: 'right' }}
                     >
                       {row.delta > 0 ? '+' : ''}{row.delta}%
                     </span>
+                  ) : (
+                    <span className="text-xs" style={{ color: 'var(--text-3)', minWidth: 40, textAlign: 'right' }}>—</span>
                   )}
                 </>
               )}
