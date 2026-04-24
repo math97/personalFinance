@@ -56,6 +56,10 @@ export class AnthropicAdapter extends AIPort {
       system: systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
     })
-    return message.content[0].type === 'text' ? message.content[0].text : ''
+    const block = message.content[0]
+    if (!block || block.type !== 'text') {
+      throw new Error(`Unexpected AI response content type: ${block?.type ?? 'none'}`)
+    }
+    return block.text.trim()
   }
 }
