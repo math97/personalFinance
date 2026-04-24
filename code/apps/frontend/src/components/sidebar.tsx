@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import {
   LayoutDashboard,
+  BarChart3,
   CreditCard,
   Upload,
   Inbox,
@@ -37,6 +38,7 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
       label: 'OVERVIEW',
       items: [
         { href: '/dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
+        { href: '/insights',     label: 'Insights',     icon: BarChart3       },
         { href: '/transactions', label: 'Transactions', icon: CreditCard      },
       ],
     },

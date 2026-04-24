@@ -94,4 +94,29 @@ export const api = {
     test: (data: { aiProvider: string; aiApiKey: string; aiModel: string }) =>
       post<{ ok: boolean; error?: string }>('/settings/test', data),
   },
+
+  insights: {
+    categories: (year: number, month: number) =>
+      get<{
+        categories: Array<{
+          categoryId: string
+          name: string
+          color: string
+          monthlyBudget: number | null
+          months: Array<{ year: number; month: number; label: string; total: number }>
+          delta: number | null
+        }>
+      }>('/insights/categories', { year, month }),
+
+    chat: (message: string, context: {
+      year: number
+      month: number
+      categories: Array<{
+        name: string
+        months: { label: string; total: number }[]
+        monthlyBudget: number | null
+        delta: number | null
+      }>
+    }) => post<{ reply: string }>('/insights/chat', { message, context }),
+  },
 }
