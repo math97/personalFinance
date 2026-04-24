@@ -9,24 +9,26 @@ import { CategoryEntity } from '../domain/entities/category.entity'
 import { SettingsService } from '../modules/settings/settings.service'
 import { AIPort } from '../domain/ports/ai.port'
 
-const mockAI: AIPort = {
-  extractTransactions: vi.fn(),
-  suggestCategory: vi.fn(),
-  chat: vi.fn().mockResolvedValue('Groceries went up this month.'),
-} as any
-
-const mockSettings = {
-  createAIPort: vi.fn().mockResolvedValue(mockAI),
-} as any
-
 describe('InsightsService', () => {
   let service: InsightsService
   let txRepo: InMemoryTransactionRepository
   let catRepo: InMemoryCategoryRepository
+  let mockAI: AIPort
+  let mockSettings: any
 
   beforeEach(async () => {
     txRepo = new InMemoryTransactionRepository()
     catRepo = new InMemoryCategoryRepository()
+
+    mockAI = {
+      extractTransactions: vi.fn(),
+      suggestCategory: vi.fn(),
+      chat: vi.fn().mockResolvedValue('Groceries went up this month.'),
+    } as any
+
+    mockSettings = {
+      createAIPort: vi.fn().mockResolvedValue(mockAI),
+    }
 
     const module = await Test.createTestingModule({
       providers: [
@@ -62,9 +64,9 @@ describe('InsightsService', () => {
 
       const row = result.categories.find(c => c.name === 'Groceries')!
       expect(row.months).toHaveLength(3)
-      expect(row.months[0]).toMatchObject({ label: 'Feb', total: 100 })
-      expect(row.months[1]).toMatchObject({ label: 'Mar', total: 200 })
-      expect(row.months[2]).toMatchObject({ label: 'Apr', total: 150 })
+      expect(row.months[0]).toMatchObject({ year: 2026, month: 2, label: 'Feb', total: 100 })
+      expect(row.months[1]).toMatchObject({ year: 2026, month: 3, label: 'Mar', total: 200 })
+      expect(row.months[2]).toMatchObject({ year: 2026, month: 4, label: 'Apr', total: 150 })
     })
 
     it('returns 0 for months with no transactions', async () => {
@@ -130,7 +132,6 @@ describe('InsightsService', () => {
     })
 
     it('calls AI with a system prompt that contains the month name', async () => {
-      ;(mockAI.chat as any).mockClear()
       const context = {
         year: 2026, month: 4,
         categories: [{ name: 'Transport', months: [{ label: 'Apr', total: 50 }], monthlyBudget: 100, delta: -20 }],
