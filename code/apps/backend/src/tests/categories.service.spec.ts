@@ -86,6 +86,19 @@ describe('CategoriesService', () => {
     it('throws NotFoundException when updating nonexistent category', async () => {
       await expect(service.update('nonexistent', { name: 'x' })).rejects.toThrow(NotFoundException)
     })
+
+    it('sets monthlyBudget on a category', async () => {
+      const cat = await mkCat()
+      const updated = await service.update(cat.id, { monthlyBudget: 500 })
+      expect(updated.monthlyBudget).toBe(500)
+    })
+
+    it('clears monthlyBudget when set to null', async () => {
+      const cat = await mkCat()
+      await service.update(cat.id, { monthlyBudget: 500 })
+      const cleared = await service.update(cat.id, { monthlyBudget: null })
+      expect(cleared.monthlyBudget).toBeNull()
+    })
   })
 
   // ── remove ───────────────────────────────────────────────────────
