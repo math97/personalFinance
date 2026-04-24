@@ -80,7 +80,7 @@ export function InsightsCategoryTable({ categories, currentMonthLabel, onRowClic
         style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
       >
         <p className="text-sm" style={{ color: 'var(--text-2)' }}>
-          No categories yet — import or add transactions to see insights.
+          No transactions yet — import or add some to see insights.
         </p>
       </div>
     )

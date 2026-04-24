@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts'
 import { CurrencyAmount } from '@/components/currency-amount'
 
 type InsightMonth = { year: number; month: number; label: string; total: number }
@@ -148,6 +148,12 @@ export function InsightsDrillDown({ row, onBack }: Props) {
               }}
             />
             <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+              <LabelList
+                dataKey="total"
+                position="top"
+                formatter={(v: number) => `£${v.toFixed(0)}`}
+                style={{ fontSize: 11, fill: 'var(--text-2)' }}
+              />
               {row.months.map((_, i) => (
                 <Cell key={i} fill={row.color} fillOpacity={opacities[i]} />
               ))}
