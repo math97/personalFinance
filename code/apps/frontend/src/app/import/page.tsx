@@ -4,7 +4,7 @@ import { useCallback, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useDropzone } from 'react-dropzone'
 import { useRouter } from 'next/navigation'
-import { CloudUpload, FileText, ChevronRight, Loader2 } from 'lucide-react'
+import { CloudUpload, FileText, ChevronRight, Loader2, Info } from 'lucide-react'
 import { format } from 'date-fns'
 import { api } from '@/lib/api'
 
@@ -14,6 +14,7 @@ export default function ImportPage() {
   const [uploading, setUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState<{ current: number; total: number; filename: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showTooltip, setShowTooltip] = useState(false)
 
   useEffect(() => {
     api.import.batches().then(setBatches).catch(() => {})
@@ -49,6 +50,8 @@ export default function ImportPage() {
       'image/jpeg': ['.jpg', '.jpeg'],
       'image/png': ['.png'],
       'image/heic': ['.heic'],
+      'text/csv': ['.csv'],
+      'application/vnd.ms-excel': ['.csv'],
     },
     multiple: true,
     disabled: uploading,
@@ -85,11 +88,48 @@ export default function ImportPage() {
             <CloudUpload size={32} className="mx-auto mb-3"
               style={{ color: isDragActive ? 'var(--accent)' : 'var(--text-2)' }} />
             <p className="text-base font-medium mb-1.5" style={{ color: 'var(--text)' }}>
-              Drop PDFs or photos here
+              Drop files here
             </p>
-            <p className="text-sm mb-4" style={{ color: 'var(--text-2)' }}>
-              Bank statements, receipts — PDF, JPG, PNG, HEIC
-            </p>
+            <div className="flex items-center justify-center gap-1.5 mb-4">
+              <p className="text-sm" style={{ color: 'var(--text-2)' }}>
+                Bank statements — PDF, JPG, PNG, HEIC, CSV
+              </p>
+              <div className="relative">
+                <button
+                  type="button"
+                  onMouseEnter={() => setShowTooltip(true)}
+                  onMouseLeave={() => setShowTooltip(false)}
+                  onClick={e => { e.stopPropagation(); setShowTooltip(v => !v) }}
+                  style={{ color: 'var(--text-3)', lineHeight: 1 }}
+                >
+                  <Info size={14} />
+                </button>
+                {showTooltip && (
+                  <div
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-lg px-3 py-2.5 text-left z-10"
+                    style={{
+                      background: 'var(--surface-2)',
+                      border: '1px solid var(--border-2)',
+                      boxShadow: '0 4px 12px #0006',
+                    }}
+                  >
+                    <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--text)' }}>
+                      Expected CSV format
+                    </p>
+                    <code
+                      className="text-xs block mb-1.5 px-2 py-1 rounded"
+                      style={{ background: 'var(--surface)', color: 'var(--accent)', fontFamily: 'monospace' }}
+                    >
+                      date,description,amount
+                    </code>
+                    <ul className="text-xs space-y-0.5" style={{ color: 'var(--text-2)' }}>
+                      <li>• date: YYYY-MM-DD or DD/MM/YYYY</li>
+                      <li>• amount: negative for expenses</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
             <button className="inline-flex px-4 py-2 rounded-lg text-sm font-medium"
               style={{ background: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border-2)' }}>
               Browse files
