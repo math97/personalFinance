@@ -16,7 +16,7 @@ No changes to the existing Dashboard.
 ## Routes & Navigation
 
 - **Route:** `/insights`
-- **Sidebar:** Add "Insights" nav item between "Transactions" and "Upload Files"
+- **Sidebar:** Add "Insights" nav item between "Dashboard" and "Transactions"
 - The drill-down is a client-side state change (no URL change needed — the overview and detail are in the same page component)
 
 ---
