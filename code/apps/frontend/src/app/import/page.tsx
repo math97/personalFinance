@@ -94,11 +94,14 @@ export default function ImportPage() {
               <p className="text-sm" style={{ color: 'var(--text-2)' }}>
                 Bank statements — PDF, JPG, PNG, HEIC, CSV
               </p>
-              <div className="relative">
+              <div
+                className="relative"
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+              >
                 <button
                   type="button"
-                  onMouseEnter={() => setShowTooltip(true)}
-                  onMouseLeave={() => setShowTooltip(false)}
+                  aria-label="CSV format info"
                   onClick={e => { e.stopPropagation(); setShowTooltip(v => !v) }}
                   style={{ color: 'var(--text-3)', lineHeight: 1 }}
                 >
@@ -106,6 +109,7 @@ export default function ImportPage() {
                 </button>
                 {showTooltip && (
                   <div
+                    role="tooltip"
                     className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-lg px-3 py-2.5 text-left z-10"
                     style={{
                       background: 'var(--surface-2)',
