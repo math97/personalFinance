@@ -10,16 +10,15 @@ export class InMemoryTransactionRepository extends TransactionRepository {
   }
 
   async findAll(filters: TransactionFilters): Promise<PaginatedResult<TransactionEntity>> {
-    const now = new Date()
-    const year = filters.year ?? now.getFullYear()
-    const month = filters.month ?? now.getMonth() + 1
-    const page = filters.page ?? 1
+    const page    = filters.page    ?? 1
     const perPage = filters.perPage ?? 10
-    const start = startOfMonth(new Date(year, month - 1))
-    const end = endOfMonth(new Date(year, month - 1))
 
     let items = [...this.store.values()].filter(tx => {
-      if (tx.date < start || tx.date > end) return false
+      if (filters.year !== undefined && filters.month !== undefined) {
+        const start = startOfMonth(new Date(filters.year, filters.month - 1))
+        const end   = endOfMonth(new Date(filters.year, filters.month - 1))
+        if (tx.date < start || tx.date > end) return false
+      }
       if (filters.search && !tx.description.toLowerCase().includes(filters.search.toLowerCase())) return false
       if (filters.categoryId && tx.categoryId !== filters.categoryId) return false
       return true
@@ -27,9 +26,8 @@ export class InMemoryTransactionRepository extends TransactionRepository {
 
     items.sort((a, b) => b.date.getTime() - a.date.getTime())
 
-    const total = items.length
+    const total     = items.length
     const paginated = items.slice((page - 1) * perPage, page * perPage)
-
     return { items: paginated, total, page, perPage, totalPages: Math.ceil(total / perPage) }
   }
 

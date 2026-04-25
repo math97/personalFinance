@@ -25,17 +25,16 @@ export class PrismaTransactionRepository extends TransactionRepository {
   }
 
   async findAll(filters: TransactionFilters): Promise<PaginatedResult<TransactionEntity>> {
-    const now = new Date()
-    const year = filters.year ?? now.getFullYear()
-    const month = filters.month ?? now.getMonth() + 1
-    const page = filters.page ?? 1
+    const page    = filters.page    ?? 1
     const perPage = filters.perPage ?? 10
 
-    const where: any = {
-      date: {
-        gte: startOfMonth(new Date(year, month - 1)),
-        lte: endOfMonth(new Date(year, month - 1)),
-      },
+    const where: any = {}
+
+    if (filters.year !== undefined && filters.month !== undefined) {
+      where.date = {
+        gte: startOfMonth(new Date(filters.year, filters.month - 1)),
+        lte: endOfMonth(new Date(filters.year, filters.month - 1)),
+      }
     }
 
     if (filters.search) {
@@ -49,8 +48,8 @@ export class PrismaTransactionRepository extends TransactionRepository {
       this.prisma.transaction.findMany({
         where,
         orderBy: { date: 'desc' },
-        skip: (page - 1) * perPage,
-        take: perPage,
+        skip:  (page - 1) * perPage,
+        take:  perPage,
         include: { category: true },
       }),
       this.prisma.transaction.count({ where }),

@@ -36,6 +36,31 @@ export class TransactionsService {
     })
   }
 
+  async exportCsv(query: TransactionQueryDto, scope: 'filtered' | 'month'): Promise<string> {
+    const filters: any = { perPage: 999999, page: 1 }
+
+    if (query.year)  filters.year  = Number(query.year)
+    if (query.month) filters.month = Number(query.month)
+
+    if (scope === 'filtered') {
+      if (query.search)     filters.search     = query.search
+      if (query.categoryId) filters.categoryId = query.categoryId
+    }
+
+    const { items } = await this.repo.findAll(filters)
+    const sorted = [...items].sort((a, b) => a.date.getTime() - b.date.getTime())
+
+    const header = 'date,description,category,amount'
+    const rows = sorted.map(tx => {
+      const date        = tx.date.toISOString().slice(0, 10)
+      const description = `"${tx.description.replace(/"/g, '""')}"`
+      const category    = tx.category?.name ? `"${tx.category.name.replace(/"/g, '""')}"` : ''
+      return `${date},${description},${category},${tx.amount}`
+    })
+
+    return [header, ...rows].join('\n')
+  }
+
   async findOne(id: string) {
     const tx = await this.repo.findById(id)
     if (!tx) throw new NotFoundException(`Transaction ${id} not found`)

@@ -150,4 +150,80 @@ describe('TransactionsService', () => {
       expect(dates[0]).toBeGreaterThanOrEqual(dates[1])
     })
   })
+
+  // ── findAll all-time ─────────────────────────────────────────────
+  describe('findAll — all-time mode', () => {
+    beforeEach(async () => {
+      await tx({ date: '2026-04-01', description: 'April tx', amount: -10 })
+      await tx({ date: '2026-03-01', description: 'March tx', amount: -20 })
+      await tx({ date: '2025-12-15', description: 'Dec tx',   amount: -30 })
+    })
+
+    it('returns all transactions when year and month are omitted', async () => {
+      const result = await service.findAll({} as any)
+      expect(result.total).toBe(3)
+    })
+
+    it('still filters by month when year+month are provided', async () => {
+      const result = await service.findAll({ year: '2026', month: '4' } as any)
+      expect(result.total).toBe(1)
+      expect(result.items[0].description).toBe('April tx')
+    })
+
+    it('applies search filter across all months', async () => {
+      const result = await service.findAll({ search: 'march' } as any)
+      expect(result.total).toBe(1)
+      expect(result.items[0].description).toBe('March tx')
+    })
+  })
+
+  // ── exportCsv ────────────────────────────────────────────────────
+  describe('exportCsv', () => {
+    beforeEach(async () => {
+      await tx({ date: '2026-04-01', description: 'Netflix',  amount: -17.99 })
+      await tx({ date: '2026-04-03', description: 'Salary',   amount: 2500 })
+      await tx({ date: '2026-03-15', description: 'Gym',      amount: -49 })
+    })
+
+    it('returns CSV string with header row', async () => {
+      const csv = await service.exportCsv({ year: '2026', month: '4' } as any, 'filtered')
+      expect(csv).toMatch(/^date,description,category,amount/)
+    })
+
+    it('includes one row per transaction sorted by date ascending', async () => {
+      const csv = await service.exportCsv({ year: '2026', month: '4' } as any, 'filtered')
+      const lines = csv.trim().split('\n')
+      expect(lines).toHaveLength(3) // header + 2 rows
+      expect(lines[1]).toContain('Netflix')
+      expect(lines[2]).toContain('Salary')
+    })
+
+    it('amount is raw number (negative for expenses)', async () => {
+      const csv = await service.exportCsv({ year: '2026', month: '4' } as any, 'filtered')
+      expect(csv).toContain('-17.99')
+      expect(csv).toContain('2500')
+    })
+
+    it('scope=month ignores search filter and returns all month transactions', async () => {
+      const csv = await service.exportCsv(
+        { year: '2026', month: '4', search: 'Netflix' } as any,
+        'month',
+      )
+      const lines = csv.trim().split('\n')
+      expect(lines).toHaveLength(3) // header + 2 rows (Netflix + Salary)
+    })
+
+    it('returns header-only CSV when no transactions match', async () => {
+      const csv = await service.exportCsv({ year: '2020', month: '1' } as any, 'filtered')
+      const lines = csv.trim().split('\n')
+      expect(lines).toHaveLength(1)
+      expect(lines[0]).toBe('date,description,category,amount')
+    })
+
+    it('all-time export returns all transactions', async () => {
+      const csv = await service.exportCsv({} as any, 'filtered')
+      const lines = csv.trim().split('\n')
+      expect(lines).toHaveLength(4) // header + 3 rows
+    })
+  })
 })
