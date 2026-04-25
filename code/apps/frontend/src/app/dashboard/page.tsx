@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import { MonthComparisonChart } from '@/components/month-comparison-chart'
 import { SpendingSection } from '@/components/spending-section'
 import { CurrencyAmount } from '@/components/currency-amount'
 import { BudgetProgressPanel } from '@/components/budget-progress-panel'
 import { UpcomingPanel } from '@/components/upcoming-panel'
+import { ChartsToggleCard } from '@/components/charts-toggle-card'
 import { api } from '@/lib/api'
 import { format } from 'date-fns'
 import { ChevronLeft, ChevronRight, PlusCircle, Upload } from 'lucide-react'
@@ -185,26 +185,14 @@ export default async function DashboardPage({
               />
             </Card>
             <Card>
-              <h2 className="text-sm font-semibold mb-1" style={{ color: 'var(--text)' }}>Last 4 months</h2>
-              {/* Delta callout */}
-              {prevTotal > 0 && delta !== 0 && (
-                <p className="text-xs mb-3" style={{ color: 'var(--text-2)' }}>
-                  <span style={{ color: delta > 0 ? 'var(--red)' : 'var(--green)', fontWeight: 600 }}>
-                    {delta > 0 ? '▲' : '▼'} <CurrencyAmount amount={Math.abs(delta)} fractionDigits={0} />
-                  </span>
-                  {' '}vs last month
-                  {biggestDriver && (
-                    <> · <span style={{ color: 'var(--text)' }}>{biggestDriver.name}</span>
-                    {' '}{biggestDriver.delta > 0 ? 'up' : 'down'} <CurrencyAmount amount={Math.abs(biggestDriver.delta)} fractionDigits={0} /></>
-                  )}
-                </p>
-              )}
-              <MonthComparisonChart
-                data={monthlyTotals}
+              <ChartsToggleCard
+                monthlyTotals={monthlyTotals}
+                dailyTotals={dailyTotals ?? []}
                 currentYear={year}
                 currentMonth={month}
                 prevMonthTotal={prevTotal}
                 biggestCategoryName={biggestDriver?.name}
+                delta={delta}
               />
             </Card>
           </div>
