@@ -146,4 +146,28 @@ export class PrismaTransactionRepository extends TransactionRepository {
       where: { date: { gte: start, lte: end } },
     })
   }
+
+  async dailyTotals(year: number, month: number): Promise<{ day: number; total: number }[]> {
+    const start = startOfMonth(new Date(year, month - 1))
+    const end = endOfMonth(new Date(year, month - 1))
+    const rows = await this.prisma.transaction.findMany({
+      where: { date: { gte: start, lte: end }, amount: { lt: 0 } },
+      select: { date: true, amount: true },
+    })
+    const map = new Map<number, number>()
+    for (const row of rows) {
+      const day = new Date(row.date).getDate()
+      map.set(day, (map.get(day) ?? 0) + Math.abs(Number(row.amount)))
+    }
+    return [...map.entries()].map(([day, total]) => ({ day, total })).sort((a, b) => a.day - b.day)
+  }
+
+  async findAllExpensesByDateRange(start: Date, end: Date): Promise<TransactionEntity[]> {
+    const rows = await this.prisma.transaction.findMany({
+      where: { date: { gte: start, lte: end }, amount: { lt: 0 } },
+      include: { category: true },
+      orderBy: { date: 'asc' },
+    })
+    return rows.map(TransactionMapper.toDomain)
+  }
 }

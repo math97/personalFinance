@@ -102,4 +102,22 @@ export class InMemoryTransactionRepository extends TransactionRepository {
     const end = endOfMonth(new Date(year, month - 1))
     return [...this.store.values()].filter(tx => tx.date >= start && tx.date <= end).length
   }
+
+  async dailyTotals(year: number, month: number): Promise<{ day: number; total: number }[]> {
+    const start = startOfMonth(new Date(year, month - 1))
+    const end = endOfMonth(new Date(year, month - 1))
+    const map = new Map<number, number>()
+    for (const tx of this.store.values()) {
+      if (tx.date < start || tx.date > end || tx.amount >= 0) continue
+      const day = tx.date.getDate()
+      map.set(day, (map.get(day) ?? 0) + Math.abs(tx.amount))
+    }
+    return [...map.entries()].map(([day, total]) => ({ day, total })).sort((a, b) => a.day - b.day)
+  }
+
+  async findAllExpensesByDateRange(start: Date, end: Date): Promise<TransactionEntity[]> {
+    return [...this.store.values()]
+      .filter(tx => tx.date >= start && tx.date <= end && tx.amount < 0)
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+  }
 }

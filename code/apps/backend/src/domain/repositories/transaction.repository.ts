@@ -35,4 +35,6 @@ export abstract class TransactionRepository {
   abstract monthlyTotal(year: number, month: number): Promise<number>
   abstract monthlyIncome(year: number, month: number): Promise<number>
   abstract countByMonth(year: number, month: number): Promise<number>
+  abstract dailyTotals(year: number, month: number): Promise<{ day: number; total: number }[]>
+  abstract findAllExpensesByDateRange(start: Date, end: Date): Promise<TransactionEntity[]>
 }
