@@ -7,6 +7,7 @@ import { format } from 'date-fns'
 import { api } from '@/lib/api'
 import { ChevronLeft, ChevronRight, Search, Pencil, ChevronDown, Check, X, Trash2 } from 'lucide-react'
 import { useCurrency } from '@/hooks/useCurrency'
+import { CurrencyAmount } from '@/components/currency-amount'
 const PER_PAGE_OPTIONS = [10, 20, 50]
 
 function SourcePill({ source }: { source: 'manual' | 'pdf' | 'photo' }) {
@@ -91,6 +92,17 @@ function TransactionsContent() {
       .finally(() => setIsLoading(false))
   }, [year, month])
 
+  useEffect(() => {
+    api.recurring.upcoming(year, month).then(setPredicted).catch(() => {})
+  }, [year, month])
+
+  const [showPredicted, setShowPredicted] = useState(true)
+  const [predicted, setPredicted] = useState<any[]>([])
+  const [confirmItem, setConfirmItem] = useState<any | null>(null)
+  const [confirmDate, setConfirmDate] = useState('')
+  const [confirmAmount, setConfirmAmount] = useState('')
+  const [confirmSaving, setConfirmSaving] = useState(false)
+
   const [editing, setEditing] = useState<string | null>(null)
   const [editData, setEditData] = useState<Record<string, any>>({})
 
@@ -104,9 +116,31 @@ function TransactionsContent() {
     return true
   })
 
-  const total = filteredItems.length
+  const predictedRows = showPredicted
+    ? predicted
+        .filter(p => {
+          if (search && !p.description.toLowerCase().includes(search.toLowerCase())) return false
+          if (catFilter && catFilter !== 'uncategorized' && p.categoryId !== catFilter) return false
+          return true
+        })
+        .map(p => ({
+          ...p,
+          id: `predicted_${p.patternId}`,
+          _predicted: true,
+          date: new Date(year, month - 1, p.expectedDay).toISOString(),
+          amount: p.typicalAmount,
+          category: p.categoryId ? { id: p.categoryId, name: p.categoryName, color: p.categoryColor } : null,
+          source: 'predicted' as const,
+        }))
+    : []
+
+  const mergedItems = [...filteredItems, ...predictedRows].sort((a, b) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  )
+
+  const total = mergedItems.length
   const totalPages = Math.ceil(total / perPage) || 1
-  const pageItems = filteredItems.slice((page - 1) * perPage, page * perPage)
+  const pageItems = mergedItems.slice((page - 1) * perPage, page * perPage)
 
   function startEdit(tx: any) {
     setEditData(prev => ({
@@ -238,6 +272,24 @@ function TransactionsContent() {
             />
           </div>
 
+          {predicted.length > 0 && (
+            <button
+              onClick={() => setShowPredicted(p => !p)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+              style={{
+                background: showPredicted ? '#818cf818' : 'var(--surface)',
+                border: `1px solid ${showPredicted ? '#818cf844' : 'var(--border)'}`,
+                color: showPredicted ? '#818cf8' : 'var(--text-2)',
+              }}
+            >
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{ background: showPredicted ? '#818cf8' : 'var(--text-3)' }}
+              />
+              Show predicted
+            </button>
+          )}
+
           <span
             className="text-sm font-semibold px-3 py-1.5 rounded-lg"
             style={{ background: 'var(--surface-2)', color: 'var(--accent)' }}
@@ -284,6 +336,67 @@ function TransactionsContent() {
           </p>
         ) : (
           pageItems.map(tx => {
+            if (tx._predicted) {
+              return (
+                <div
+                  key={tx.id}
+                  className="grid items-center px-5 py-3"
+                  style={{
+                    gridTemplateColumns: '110px 1fr 180px 90px 130px 48px',
+                    background: '#818cf80a',
+                    borderBottom: '1px solid #818cf820',
+                  }}
+                >
+                  <span className="text-xs" style={{ color: '#818cf8', opacity: 0.8 }}>
+                    ~{format(new Date(year, month - 1, tx.expectedDay), 'd MMM')}
+                  </span>
+                  <div className="pr-4">
+                    <span className="text-sm" style={{ color: 'var(--text-2)' }}>{tx.description}</span>
+                    <span
+                      className="ml-2 text-xs px-1.5 py-0.5 rounded font-bold uppercase tracking-wide"
+                      style={{ background: '#818cf818', color: '#818cf8', letterSpacing: '0.05em' }}
+                    >
+                      predicted
+                    </span>
+                  </div>
+                  <div className="pr-4">
+                    {tx.category
+                      ? <CategoryPill name={tx.category.name} color={tx.category.color} />
+                      : <span style={{ color: 'var(--text-3)' }}>—</span>}
+                  </div>
+                  <span className="text-xs" style={{ color: 'var(--text-3)' }}>—</span>
+                  <span className="text-sm font-medium tabular-nums text-right" style={{ color: '#818cf8', opacity: 0.8 }}>
+                    <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
+                  </span>
+                  <div className="flex justify-end gap-1">
+                    <button
+                      onClick={() => {
+                        setConfirmItem(tx)
+                        setConfirmDate(`${year}-${String(month).padStart(2, '0')}-${String(tx.expectedDay).padStart(2, '0')}`)
+                        setConfirmAmount(Math.abs(tx.typicalAmount).toFixed(2))
+                      }}
+                      className="w-7 h-7 rounded-md flex items-center justify-center text-sm font-bold"
+                      style={{ background: '#22c55e20', color: '#22c55e' }}
+                      title="Confirm transaction"
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await api.recurring.dismissPattern(tx.patternId)
+                        setPredicted(prev => prev.filter(p => p.patternId !== tx.patternId))
+                      }}
+                      className="w-7 h-7 rounded-md flex items-center justify-center text-sm ml-1"
+                      style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}
+                      title="Remove recurring"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              )
+            }
+
             const isEditing = editing === tx.id
             const ed = editData[tx.id] ?? {}
             return (
@@ -477,6 +590,109 @@ function TransactionsContent() {
           )}
         </div>
       </div>
+
+      {/* Confirm predicted transaction popover */}
+      {confirmItem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: '#00000060' }}
+          onClick={(e) => e.target === e.currentTarget && setConfirmItem(null)}
+        >
+          <div
+            className="rounded-xl w-80 overflow-hidden"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}
+          >
+            <div
+              className="flex items-center justify-between px-4 py-3"
+              style={{ borderBottom: '1px solid var(--border)' }}
+            >
+              <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Confirm transaction</span>
+              <button onClick={() => setConfirmItem(null)} style={{ color: 'var(--text-2)' }}>✕</button>
+            </div>
+
+            <div className="px-4 pt-3 pb-0">
+              <div
+                className="rounded-lg px-3 py-2.5 mb-3"
+                style={{ background: '#818cf810', border: '1px solid #818cf820' }}
+              >
+                <p className="text-sm font-medium" style={{ color: 'var(--text-2)' }}>{confirmItem.description}</p>
+                <p className="text-xs mt-0.5" style={{ color: '#818cf8' }}>
+                  Predicted ~{format(new Date(year, month - 1, confirmItem.expectedDay), 'd MMM')} · −<CurrencyAmount amount={Math.abs(confirmItem.typicalAmount)} />
+                </p>
+              </div>
+            </div>
+
+            <div className="px-4 pb-3 space-y-3">
+              <div>
+                <label className="text-xs font-medium block mb-1" style={{ color: 'var(--text-2)' }}>Actual date</label>
+                <input
+                  type="date"
+                  value={confirmDate}
+                  onChange={e => setConfirmDate(e.target.value)}
+                  className="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', colorScheme: 'dark' }}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium block mb-1" style={{ color: 'var(--text-2)' }}>Actual amount</label>
+                <div
+                  className="flex items-center rounded-lg px-3"
+                  style={{ background: 'var(--surface-2)', border: '1px solid var(--accent)', height: 36 }}
+                >
+                  <span className="text-sm mr-1" style={{ color: 'var(--text-3)' }}>{currency}</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={confirmAmount}
+                    onChange={e => setConfirmAmount(e.target.value)}
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    style={{ color: 'var(--text)' }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="flex items-center justify-end gap-2 px-4 py-3"
+              style={{ borderTop: '1px solid var(--border)' }}
+            >
+              <button
+                onClick={() => setConfirmItem(null)}
+                className="px-3 py-1.5 rounded-lg text-sm"
+                style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}
+              >
+                Cancel
+              </button>
+              <button
+                disabled={confirmSaving || !confirmDate || !confirmAmount}
+                onClick={async () => {
+                  if (!confirmDate || !confirmAmount) return
+                  setConfirmSaving(true)
+                  try {
+                    await api.transactions.create({
+                      description: confirmItem.description,
+                      date: confirmDate,
+                      amount: -Math.abs(Number(confirmAmount)),
+                      categoryId: confirmItem.categoryId ?? undefined,
+                      source: 'manual',
+                    })
+                    setPredicted(prev => prev.filter(p => p.patternId !== confirmItem.patternId))
+                    setConfirmItem(null)
+                    refresh()
+                  } finally {
+                    setConfirmSaving(false)
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-40"
+                style={{ background: 'var(--accent)', color: '#0c0c0e' }}
+              >
+                {confirmSaving ? 'Saving…' : 'Save as transaction'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
