@@ -120,22 +120,18 @@ Last updated: 2026-04-21
 ✓ Backend: GET /api/settings, PATCH /api/settings, POST /api/settings/test
 ✓ Backend: AIModule reads config from DB at request time (fallback to .env)
 
-── PHASE 2 — FEATURES (priority order) ────────────────────
+── PHASE 2 — FEATURES (done) ───────────────────────────────
 
-[P1 — Budget Goals per Category]
-  Set a monthly spending limit per category (e.g. Restaurants £150).
-  Show % used on dashboard and warn when exceeded.
-  Requires: 2+ months of clean data → build after user has been using app.
+✓ P1 — Budget Goals per Category
+  Monthly spending limit per category, % progress bar, dashboard panel,
+  amount or % of salary input modes. (categories page + budget-progress-panel)
 
-[P2 — Month-over-Month Category Trends]
-  Sparkline or mini 3-month trend chart per category.
-  Shown in the Categories screen alongside existing rule management.
-  Complements the dashboard delta callout already built.
+✓ P2 — Month-over-Month Category Trends
+  3-month category breakdown covered by the Insights page.
 
-[P3 — Recurring Transaction Detection]
-  Detect "Netflix £10.99" appearing every month → flag as recurring.
-  Warn when a recurring transaction is missing in the current month.
-  AI-assisted: backend scans last 3 months for patterns on confirm.
+✓ P3 — Recurring Transaction Detection
+  Detect recurring expenses, predicted rows on Transactions page,
+  upcoming panel + Net Available card on Dashboard, daily spending chart.
 
 [P4 — CSV / OFX Import]
   Alternative to PDF for banks that export CSV statements.
