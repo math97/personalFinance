@@ -7,6 +7,7 @@ import { CategorizationDomainService } from '../../domain/services/categorizatio
 import { TransactionEntity } from '../../domain/entities/transaction.entity'
 import { SettingsService } from '../settings/settings.service'
 import { RecurringService } from '../recurring/recurring.service'
+import { CsvParser } from '../../lib/csv-parser'
 import { UpdateImportedTransactionDto, SaveRuleDto } from './dto/import.dto'
 
 @Injectable()
@@ -17,6 +18,7 @@ export class ImportService {
     private readonly txRepo: TransactionRepository,
     private readonly settings: SettingsService,
     private readonly recurring: RecurringService,
+    private readonly csvParser: CsvParser,
   ) {}
 
   findAllBatches() {
@@ -30,36 +32,62 @@ export class ImportService {
   }
 
   async uploadAndExtract(file: Express.Multer.File) {
-    const ALLOWED_MIMES = new Set(['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic'])
-    const detected = await fileTypeFromBuffer(file.buffer)
-    // Fall back to client-supplied mime for formats file-type can't detect (e.g. HEIC)
-    const effectiveMime = detected?.mime ?? file.mimetype
-    if (!ALLOWED_MIMES.has(effectiveMime)) {
-      throw new BadRequestException(`Unsupported file type: ${effectiveMime}`)
+    const isCsv = file.originalname.toLowerCase().endsWith('.csv')
+
+    if (!isCsv) {
+      const ALLOWED_MIMES = new Set(['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic'])
+      const detected = await fileTypeFromBuffer(file.buffer)
+      const effectiveMime = detected?.mime ?? file.mimetype
+      if (!ALLOWED_MIMES.has(effectiveMime)) {
+        throw new BadRequestException(`Unsupported file type: ${effectiveMime}`)
+      }
     }
 
     const batch = await this.batchRepo.createBatch(file.originalname)
 
     try {
-      const ai = await this.settings.createAIPort()
-      const categorization = new CategorizationDomainService(ai)
-      const extracted = await ai.extractTransactions(file.buffer, file.mimetype)
       const [rules, categories] = await Promise.all([
         this.categoryRepo.findAllRules(),
         this.categoryRepo.findAll(),
       ])
       const catList = categories.map(c => ({ id: c.id, name: c.name }))
 
+      let extracted: { date: string; description: string; amount: number }[]
+
+      if (isCsv) {
+        extracted = this.csvParser.parse(file.buffer)
+      } else {
+        const ai = await this.settings.createAIPort()
+        extracted = await ai.extractTransactions(file.buffer, file.mimetype)
+      }
+
+      const categorization = isCsv
+        ? null
+        : new CategorizationDomainService(await this.settings.createAIPort())
+
       const importedData = await Promise.all(
         extracted.map(async t => {
-          const result = await categorization.categorize(t.description, rules, catList)
+          let categoryId: string | null = null
+          let aiCategorized = false
+
+          if (isCsv) {
+            const ruleMatch = rules.find(r =>
+              t.description.toLowerCase().includes(r.keyword.toLowerCase())
+            )
+            categoryId = ruleMatch?.categoryId ?? null
+          } else {
+            const result = await categorization!.categorize(t.description, rules, catList)
+            categoryId = result.categoryId
+            aiCategorized = result.aiCategorized
+          }
+
           return {
             batchId: batch.id,
             rawDate: t.date,
             rawDescription: t.description,
             rawAmount: t.amount,
-            aiCategoryId: result.categoryId,
-            aiCategorized: result.aiCategorized,
+            aiCategoryId: categoryId,
+            aiCategorized,
           }
         }),
       )
@@ -89,13 +117,16 @@ export class ImportService {
       throw new BadRequestException('Batch is not in reviewing state')
     }
 
-    // Atomic status claim — only one concurrent request wins the race
     const claimed = await this.batchRepo.tryClaimConfirm(batchId)
     if (!claimed) {
       throw new ConflictException('Batch was already confirmed')
     }
 
-    const source = batch.isPdf() ? 'pdf' : 'photo'
+    const filename = batch.filename.toLowerCase()
+    const source = filename.endsWith('.csv') ? 'csv'
+                 : batch.isPdf()             ? 'pdf'
+                 :                             'photo'
+
     for (const imp of batch.imported.filter(i => !i.transactionId)) {
       const tx = await this.txRepo.save(
         new TransactionEntity(
@@ -123,11 +154,6 @@ export class ImportService {
   }
 
   async saveRule(importedTxId: string, dto: SaveRuleDto) {
-    // Verify the imported transaction exists before writing the rule (avoid partial writes)
-    const batch = await this.batchRepo.findById(
-      (await this.batchRepo.findById(importedTxId).catch(() => null))?.id ?? importedTxId,
-    ).catch(() => null)
-    // Simpler: just attempt the update first, let it throw if not found, then add the rule
     const updated = await this.batchRepo.updateImportedTransaction(importedTxId, {
       aiCategoryId: dto.categoryId,
     })

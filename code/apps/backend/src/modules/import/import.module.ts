@@ -11,6 +11,7 @@ import { TransactionRepository } from '../../domain/repositories/transaction.rep
 import { PrismaImportBatchRepository } from '../../infrastructure/repositories/prisma/prisma-import-batch.repository'
 import { PrismaCategoryRepository } from '../../infrastructure/repositories/prisma/prisma-category.repository'
 import { PrismaTransactionRepository } from '../../infrastructure/repositories/prisma/prisma-transaction.repository'
+import { CsvParser } from '../../lib/csv-parser'
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PrismaTransactionRepository } from '../../infrastructure/repositories/p
   controllers: [ImportController],
   providers: [
     ImportService,
+    CsvParser,
     { provide: ImportBatchRepository, useClass: PrismaImportBatchRepository },
     { provide: CategoryRepository,    useClass: PrismaCategoryRepository    },
     { provide: TransactionRepository, useClass: PrismaTransactionRepository },
