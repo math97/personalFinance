@@ -8,6 +8,7 @@ import { ImportModule } from './modules/import/import.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { SettingsModule } from './modules/settings/settings.module'
 import { InsightsModule } from './modules/insights/insights.module'
+import { RecurringModule } from './modules/recurring/recurring.module'
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { InsightsModule } from './modules/insights/insights.module'
     DashboardModule,
     SettingsModule,
     InsightsModule,
+    RecurringModule,
   ],
 })
 export class AppModule {}
