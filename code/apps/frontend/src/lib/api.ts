@@ -44,11 +44,34 @@ async function postForm<T>(path: string, body: FormData): Promise<T> {
   return res.json()
 }
 
+type UpcomingItem = {
+  patternId: string
+  description: string
+  typicalAmount: number
+  expectedDay: number
+  categoryId: string | null
+  categoryName: string | null
+  categoryColor: string | null
+}
+
+type DailySeries = {
+  year: number
+  month: number
+  label: string
+  days: Array<{ day: number; cumulative: number }>
+}
+
 // ── Dashboard ─────────────────────────────────────────────
 export const api = {
   dashboard: {
     summary: (year: number, month: number) =>
-      get<{ summary: any; byCategory: any[]; monthlyTotals: any[] }>('/dashboard/summary', { year, month }),
+      get<{
+        summary: any
+        byCategory: any[]
+        monthlyTotals: any[]
+        upcoming: { total: number; items: UpcomingItem[] }
+        dailyTotals: DailySeries[]
+      }>('/dashboard/summary', { year, month }),
   },
 
   transactions: {
@@ -93,6 +116,12 @@ export const api = {
       patch<{ aiProvider: string; aiModel: string; aiApiKeyConfigured: boolean }>('/settings', data),
     test: (data: { aiProvider: string; aiApiKey: string; aiModel: string }) =>
       post<{ ok: boolean; error?: string }>('/settings/test', data),
+  },
+
+  recurring: {
+    upcoming: (year: number, month: number) =>
+      get<UpcomingItem[]>('/recurring/upcoming', { year, month }),
+    dismissPattern: (id: string) => del<void>(`/recurring/patterns/${id}`),
   },
 
   insights: {

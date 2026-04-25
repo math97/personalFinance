@@ -3,6 +3,7 @@ import { MonthComparisonChart } from '@/components/month-comparison-chart'
 import { SpendingSection } from '@/components/spending-section'
 import { CurrencyAmount } from '@/components/currency-amount'
 import { BudgetProgressPanel } from '@/components/budget-progress-panel'
+import { UpcomingPanel } from '@/components/upcoming-panel'
 import { api } from '@/lib/api'
 import { format } from 'date-fns'
 import { ChevronLeft, ChevronRight, PlusCircle, Upload } from 'lucide-react'
@@ -68,7 +69,7 @@ export default async function DashboardPage({
   const nextMonth = month === 12 ? 1  : month + 1
   const nextYear  = month === 12 ? year + 1 : year
 
-  const [{ summary, byCategory, monthlyTotals }, { items: recentTxs }, prevSummary] = await Promise.all([
+  const [{ summary, byCategory, monthlyTotals, upcoming, dailyTotals }, { items: recentTxs }, prevSummary] = await Promise.all([
     api.dashboard.summary(year, month),
     api.transactions.list({ year, month, page: 1, perPage: 5 }),
     api.dashboard.summary(prevYear, prevMonth),
@@ -115,7 +116,7 @@ export default async function DashboardPage({
       ) : (
         <>
           {/* Summary cards */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-5 gap-4 mb-6">
             <Card>
               <p className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--text-2)' }}>Spent this month</p>
               <p className="text-3xl font-bold" style={{ color: 'var(--text)' }}>
@@ -149,6 +150,26 @@ export default async function DashboardPage({
                   {summary.inboxCount} in inbox →
                 </Link>
               )}
+            </Card>
+            <Card>
+              <p className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--text-2)' }}>Upcoming this month</p>
+              <p className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>
+                {upcoming.items.length > 0
+                  ? <CurrencyAmount amount={upcoming.total} />
+                  : <span style={{ color: 'var(--text-3)', fontSize: 14 }}>None detected</span>}
+              </p>
+              {upcoming.items.length > 0 && (
+                <p className="text-xs mt-1" style={{ color: 'var(--text-2)' }}>
+                  {upcoming.items.length} recurring expected
+                </p>
+              )}
+            </Card>
+            <Card>
+              <p className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--text-2)' }}>Net available today</p>
+              <p className="text-3xl font-bold" style={{ color: 'var(--green)' }}>
+                <CurrencyAmount amount={Math.max(0, Number(summary.totalIncome) - Number(summary.totalSpent) - upcoming.total)} />
+              </p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-2)' }}>income − spent − upcoming</p>
             </Card>
           </div>
 
@@ -187,6 +208,16 @@ export default async function DashboardPage({
               />
             </Card>
           </div>
+
+          {/* Upcoming panel */}
+          {upcoming.items.length > 0 && (
+            <div className="mb-4">
+              <UpcomingPanel
+                items={upcoming.items}
+                currentMonthLabel={format(new Date(year, month - 1), 'MMM')}
+              />
+            </div>
+          )}
 
           {/* Budget progress */}
           {byCategory.some((r: any) => r.monthlyBudget != null) && (
