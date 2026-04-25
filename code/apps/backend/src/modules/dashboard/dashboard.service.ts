@@ -3,6 +3,7 @@ import { subMonths, format } from 'date-fns'
 import { TransactionRepository } from '../../domain/repositories/transaction.repository'
 import { CategoryRepository } from '../../domain/repositories/category.repository'
 import { ImportBatchRepository } from '../../domain/repositories/import-batch.repository'
+import { RecurringService } from '../recurring/recurring.service'
 
 @Injectable()
 export class DashboardService {
@@ -10,6 +11,7 @@ export class DashboardService {
     private readonly txRepo: TransactionRepository,
     private readonly catRepo: CategoryRepository,
     private readonly batchRepo: ImportBatchRepository,
+    private readonly recurring: RecurringService,
   ) {}
 
   async getSpendingByCategory(year: number, month: number) {
@@ -61,11 +63,22 @@ export class DashboardService {
   }
 
   async getSummary(year: number, month: number) {
-    const [summary, byCategory, monthlyTotals] = await Promise.all([
+    const [summary, byCategory, monthlyTotals, upcomingItems, dailyTotals] = await Promise.all([
       this.getSummaryCards(year, month),
       this.getSpendingByCategory(year, month),
       this.getMonthlyTotals(year, month, 4),
+      this.recurring.getUpcoming(year, month),
+      this.recurring.getDailyTotals(year, month, 3),
     ])
-    return { summary, byCategory, monthlyTotals }
+
+    const upcomingTotal = upcomingItems.reduce((sum, i) => sum + Math.abs(i.typicalAmount), 0)
+
+    return {
+      summary,
+      byCategory,
+      monthlyTotals,
+      upcoming: { total: upcomingTotal, items: upcomingItems },
+      dailyTotals,
+    }
   }
 }

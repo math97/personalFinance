@@ -8,6 +8,7 @@ import { InMemoryCategoryRepository } from '../infrastructure/repositories/in-me
 import { InMemoryImportBatchRepository } from '../infrastructure/repositories/in-memory/in-memory-import-batch.repository'
 import { TransactionEntity } from '../domain/entities/transaction.entity'
 import { CategoryEntity } from '../domain/entities/category.entity'
+import { RecurringService } from '../modules/recurring/recurring.service'
 
 describe('DashboardService', () => {
   let service: DashboardService
@@ -26,6 +27,13 @@ describe('DashboardService', () => {
         { provide: TransactionRepository, useValue: txRepo },
         { provide: CategoryRepository,    useValue: catRepo },
         { provide: ImportBatchRepository, useValue: batchRepo },
+        {
+          provide: RecurringService,
+          useValue: {
+            getUpcoming: vi.fn().mockResolvedValue([]),
+            getDailyTotals: vi.fn().mockResolvedValue([]),
+          },
+        },
       ],
     }).compile()
 

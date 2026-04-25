@@ -4,6 +4,7 @@ import { memoryStorage } from 'multer'
 import { ImportController } from './import.controller'
 import { ImportService } from './import.service'
 import { SettingsModule } from '../settings/settings.module'
+import { RecurringModule } from '../recurring/recurring.module'
 import { ImportBatchRepository } from '../../domain/repositories/import-batch.repository'
 import { CategoryRepository } from '../../domain/repositories/category.repository'
 import { TransactionRepository } from '../../domain/repositories/transaction.repository'
@@ -15,6 +16,7 @@ import { PrismaTransactionRepository } from '../../infrastructure/repositories/p
   imports: [
     MulterModule.register({ storage: memoryStorage() }),
     SettingsModule,
+    RecurringModule,
   ],
   controllers: [ImportController],
   providers: [

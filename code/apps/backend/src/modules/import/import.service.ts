@@ -6,6 +6,7 @@ import { TransactionRepository } from '../../domain/repositories/transaction.rep
 import { CategorizationDomainService } from '../../domain/services/categorization.domain-service'
 import { TransactionEntity } from '../../domain/entities/transaction.entity'
 import { SettingsService } from '../settings/settings.service'
+import { RecurringService } from '../recurring/recurring.service'
 import { UpdateImportedTransactionDto, SaveRuleDto } from './dto/import.dto'
 
 @Injectable()
@@ -15,6 +16,7 @@ export class ImportService {
     private readonly categoryRepo: CategoryRepository,
     private readonly txRepo: TransactionRepository,
     private readonly settings: SettingsService,
+    private readonly recurring: RecurringService,
   ) {}
 
   findAllBatches() {
@@ -103,6 +105,8 @@ export class ImportService {
       )
       await this.batchRepo.promoteToTransaction(imp.id, tx.id)
     }
+
+    this.recurring.detect().catch(() => {})
 
     return { confirmed: true }
   }

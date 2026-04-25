@@ -8,6 +8,7 @@ import { SettingsService } from '../modules/settings/settings.service'
 import { InMemoryImportBatchRepository } from '../infrastructure/repositories/in-memory/in-memory-import-batch.repository'
 import { InMemoryCategoryRepository } from '../infrastructure/repositories/in-memory/in-memory-category.repository'
 import { InMemoryTransactionRepository } from '../infrastructure/repositories/in-memory/in-memory-transaction.repository'
+import { RecurringService } from '../modules/recurring/recurring.service'
 
 function makeFile(mimetype: string, buffer = Buffer.from('fake')): Express.Multer.File {
   return { originalname: mimetype === 'application/pdf' ? 'statement.pdf' : 'photo.jpg', mimetype, buffer } as Express.Multer.File
@@ -35,6 +36,7 @@ describe('ImportService', () => {
         { provide: CategoryRepository,    useValue: categoryRepo },
         { provide: TransactionRepository, useValue: txRepo },
         { provide: SettingsService, useValue: settingsMock },
+        { provide: RecurringService, useValue: { detect: vi.fn().mockResolvedValue(undefined) } },
       ],
     }).compile()
 
