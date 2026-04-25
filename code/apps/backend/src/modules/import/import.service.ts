@@ -53,17 +53,15 @@ export class ImportService {
       const catList = categories.map(c => ({ id: c.id, name: c.name }))
 
       let extracted: { date: string; description: string; amount: number }[]
+      let categorization: CategorizationDomainService | null = null
 
       if (isCsv) {
         extracted = this.csvParser.parse(file.buffer)
       } else {
         const ai = await this.settings.createAIPort()
         extracted = await ai.extractTransactions(file.buffer, file.mimetype)
+        categorization = new CategorizationDomainService(ai)
       }
-
-      const categorization = isCsv
-        ? null
-        : new CategorizationDomainService(await this.settings.createAIPort())
 
       const importedData = await Promise.all(
         extracted.map(async t => {

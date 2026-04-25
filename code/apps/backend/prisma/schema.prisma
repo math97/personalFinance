@@ -84,6 +84,7 @@ enum TransactionSource {
   manual
   pdf
   photo
+  csv
 }
 
 enum BatchStatus {

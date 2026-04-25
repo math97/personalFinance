@@ -1,4 +1,4 @@
-export type TransactionSource = 'manual' | 'pdf' | 'photo'
+export type TransactionSource = 'manual' | 'pdf' | 'photo' | 'csv'
 
 export interface CategoryRef {
   id: string
