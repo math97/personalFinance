@@ -12,7 +12,7 @@ export class CsvParser {
       throw new BadRequestException('CSV file is empty')
     }
 
-    const header = nonEmpty[0].toLowerCase().trim()
+    const header = nonEmpty[0].toLowerCase().replace(/\s*,\s*/g, ',').trim()
     if (header !== 'date,description,amount') {
       throw new BadRequestException(
         'Invalid CSV format. Expected header: date,description,amount',
@@ -51,19 +51,17 @@ export class CsvParser {
   }
 
   private parseDate(raw: string): string | null {
-    // YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-      const d = new Date(raw)
-      if (isNaN(d.getTime())) return null
+      const [y, m, d] = raw.split('-').map(Number)
+      const dt = new Date(Date.UTC(y, m - 1, d))
+      if (dt.getUTCFullYear() !== y || dt.getUTCMonth() + 1 !== m || dt.getUTCDate() !== d) return null
       return raw
     }
-    // DD/MM/YYYY
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) {
-      const [day, month, year] = raw.split('/')
-      const iso = `${year}-${month}-${day}`
-      const d = new Date(iso)
-      if (isNaN(d.getTime())) return null
-      return iso
+      const [day, month, year] = raw.split('/').map(Number)
+      const dt = new Date(Date.UTC(year, month - 1, day))
+      if (dt.getUTCFullYear() !== year || dt.getUTCMonth() + 1 !== month || dt.getUTCDate() !== day) return null
+      return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     }
     return null
   }

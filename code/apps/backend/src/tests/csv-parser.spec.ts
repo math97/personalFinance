@@ -71,4 +71,16 @@ describe('CsvParser', () => {
     const result = parser.parse(buf(csv))
     expect(result).toHaveLength(2)
   })
+
+  it('accepts header with spaces around commas', () => {
+    const csv = `date, description, amount\n2024-04-01,Netflix,-17.99`
+    expect(() => parser.parse(buf(csv))).not.toThrow()
+  })
+
+  it('skips row with out-of-range day (e.g. Feb 31)', () => {
+    const csv = `date,description,amount\n2024-02-31,Netflix,-17.99\n2024-04-01,Salary,2500.00`
+    const result = parser.parse(buf(csv))
+    expect(result).toHaveLength(1)
+    expect(result[0].description).toBe('Salary')
+  })
 })
