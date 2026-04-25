@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
 import { api } from '@/lib/api'
-import { ChevronLeft, ChevronRight, Search, Pencil, ChevronDown, Check, X, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, Pencil, ChevronDown, Check, X, Trash2, Eye, EyeOff } from 'lucide-react'
 import { useCurrency } from '@/hooks/useCurrency'
 import { CurrencyAmount } from '@/components/currency-amount'
 const PER_PAGE_OPTIONS = [10, 20, 50]
@@ -275,18 +275,27 @@ function TransactionsContent() {
           {predicted.length > 0 && (
             <button
               onClick={() => setShowPredicted(p => !p)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={{
-                background: showPredicted ? '#818cf818' : 'var(--surface)',
-                border: `1px solid ${showPredicted ? '#818cf844' : 'var(--border)'}`,
-                color: showPredicted ? '#818cf8' : 'var(--text-2)',
+                background: showPredicted ? '#818cf822' : 'transparent',
+                border: `1px solid ${showPredicted ? '#818cf860' : 'var(--border)'}`,
+                color: showPredicted ? '#818cf8' : 'var(--text-3)',
+                boxShadow: showPredicted ? '0 0 0 1px #818cf820 inset' : 'none',
               }}
             >
-              <div
-                className="w-2 h-2 rounded-full"
-                style={{ background: showPredicted ? '#818cf8' : 'var(--text-3)' }}
-              />
-              Show predicted
+              {showPredicted
+                ? <Eye size={12} />
+                : <EyeOff size={12} />}
+              Predicted
+              <span
+                className="ml-0.5 px-1.5 py-0.5 rounded text-xs font-bold"
+                style={{
+                  background: showPredicted ? '#818cf830' : 'var(--surface-2)',
+                  color: showPredicted ? '#818cf8' : 'var(--text-3)',
+                }}
+              >
+                {predicted.length}
+              </span>
             </button>
           )}
 
