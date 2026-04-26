@@ -85,4 +85,9 @@ export class TransactionsService {
     await this.findOne(id)
     return this.repo.delete(id)
   }
+
+  async bulkCategorize(ids: string[], categoryId: string | null): Promise<{ updated: number }> {
+    const updated = await this.repo.bulkUpdateCategory(ids, categoryId)
+    return { updated }
+  }
 }

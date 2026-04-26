@@ -4,6 +4,7 @@ import { TransactionsService } from './transactions.service'
 import { CreateTransactionDto } from './dto/create-transaction.dto'
 import { UpdateTransactionDto } from './dto/update-transaction.dto'
 import { TransactionQueryDto } from './dto/transaction-query.dto'
+import { BulkCategorizeDto } from './dto/bulk-categorize.dto'
 
 @Controller('transactions')
 export class TransactionsController {
@@ -36,6 +37,11 @@ export class TransactionsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id)
+  }
+
+  @Patch('bulk-categorize')
+  bulkCategorize(@Body() dto: BulkCategorizeDto) {
+    return this.service.bulkCategorize(dto.ids, dto.categoryId ?? null)
   }
 
   @Patch(':id')

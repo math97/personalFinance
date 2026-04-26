@@ -118,4 +118,20 @@ export class InMemoryTransactionRepository extends TransactionRepository {
       .filter(tx => tx.date >= start && tx.date <= end && tx.amount < 0)
       .sort((a, b) => a.date.getTime() - b.date.getTime())
   }
+
+  async bulkUpdateCategory(ids: string[], categoryId: string | null): Promise<number> {
+    if (ids.length === 0) return 0
+    let count = 0
+    for (const id of ids) {
+      const existing = this.store.get(id)
+      if (!existing) continue
+      this.store.set(id, new TransactionEntity(
+        existing.id, existing.amount, existing.date, existing.description,
+        existing.source, categoryId, existing.category,
+        existing.merchant, existing.account, existing.createdAt,
+      ))
+      count++
+    }
+    return count
+  }
 }

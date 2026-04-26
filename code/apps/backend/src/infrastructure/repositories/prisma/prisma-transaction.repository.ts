@@ -169,4 +169,13 @@ export class PrismaTransactionRepository extends TransactionRepository {
     })
     return rows.map(TransactionMapper.toDomain)
   }
+
+  async bulkUpdateCategory(ids: string[], categoryId: string | null): Promise<number> {
+    if (ids.length === 0) return 0
+    const result = await this.prisma.transaction.updateMany({
+      where: { id: { in: ids } },
+      data:  { categoryId },
+    })
+    return result.count
+  }
 }

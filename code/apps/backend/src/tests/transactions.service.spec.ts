@@ -226,4 +226,36 @@ describe('TransactionsService', () => {
       expect(lines).toHaveLength(4) // header + 3 rows
     })
   })
+
+  // ── bulkCategorize ───────────────────────────────────────────────
+  describe('bulkCategorize', () => {
+    it('assigns categoryId to all specified transactions', async () => {
+      const t1 = await tx({ date: '2026-04-01', description: 'Netflix', amount: -17.99 })
+      const t2 = await tx({ date: '2026-04-02', description: 'Gym',     amount: -49 })
+      await tx({ date: '2026-04-03', description: 'Other', amount: -10 })
+
+      const result = await service.bulkCategorize([t1.id, t2.id], 'cat-subs')
+
+      expect(result).toEqual({ updated: 2 })
+      expect((await service.findOne(t1.id)).categoryId).toBe('cat-subs')
+      expect((await service.findOne(t2.id)).categoryId).toBe('cat-subs')
+    })
+
+    it('removes category when categoryId is null', async () => {
+      const t1 = await tx({ date: '2026-04-01', description: 'Netflix', amount: -17.99, categoryId: 'cat-subs' })
+
+      await service.bulkCategorize([t1.id], null)
+
+      expect((await service.findOne(t1.id)).categoryId).toBeNull()
+    })
+
+    it('returns { updated: 0 } and makes no changes when ids is empty', async () => {
+      await tx({ date: '2026-04-01', description: 'Netflix', amount: -17.99 })
+
+      const result = await service.bulkCategorize([], 'cat-subs')
+
+      expect(result).toEqual({ updated: 0 })
+      expect(repo.store.size).toBe(1)
+    })
+  })
 })
