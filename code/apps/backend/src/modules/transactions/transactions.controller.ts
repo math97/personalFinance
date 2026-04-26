@@ -15,7 +15,7 @@ export class TransactionsController {
   }
 
   @Get('export')
-  async export(@Query() query: TransactionQueryDto, @Res() res: Response) {
+  async export(@Query() query: TransactionQueryDto, @Res({ passthrough: true }) res: Response) {
     const scope = (query.scope === 'month' ? 'month' : 'filtered') as 'filtered' | 'month'
     const csv   = await this.service.exportCsv(query, scope)
 
