@@ -75,6 +75,7 @@ export class PrismaTransactionRepository extends TransactionRepository {
         categoryId: entity.categoryId,
         merchant: entity.merchant,
         account: entity.account,
+        notes: entity.notes,
       },
       include: { category: true },
     })
@@ -83,7 +84,7 @@ export class PrismaTransactionRepository extends TransactionRepository {
 
   async update(
     id: string,
-    data: Partial<Pick<TransactionEntity, 'amount' | 'date' | 'description' | 'categoryId'>>,
+    data: Partial<Pick<TransactionEntity, 'amount' | 'date' | 'description' | 'categoryId' | 'notes'>>,
   ): Promise<TransactionEntity> {
     const p = await this.prisma.transaction.update({
       where: { id },
@@ -92,6 +93,7 @@ export class PrismaTransactionRepository extends TransactionRepository {
         ...(data.date && { date: data.date }),
         ...(data.description && { description: data.description }),
         ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
+        ...('notes' in data && { notes: data.notes }),
       },
       include: { category: true },
     })

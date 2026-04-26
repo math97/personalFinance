@@ -17,4 +17,9 @@ export class UpdateTransactionDto {
   @IsOptional()
   @IsString()
   categoryId?: string
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  notes?: string | null
 }

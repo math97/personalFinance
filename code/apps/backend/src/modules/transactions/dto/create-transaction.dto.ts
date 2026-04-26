@@ -29,4 +29,9 @@ export class CreateTransactionDto {
   @IsOptional()
   @IsIn(SOURCES)
   source?: TransactionSource
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  notes?: string | null
 }

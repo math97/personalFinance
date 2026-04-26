@@ -48,7 +48,7 @@ describe('InsightsService', () => {
 
   async function saveTx(date: string, categoryId: string | null, amount = -100) {
     return txRepo.save(new TransactionEntity(
-      '', amount, new Date(date), 'Test', 'manual', categoryId, null, null, null, new Date(),
+      '', amount, new Date(date), 'Test', 'manual', categoryId, null, null, null, new Date(), null,
     ))
   }
 
