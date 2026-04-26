@@ -145,6 +145,7 @@ function TransactionsContent() {
         amount: Math.abs(Number(tx.amount)).toFixed(2),
         categoryId: tx.category?.id ?? '',
         isIncome: Number(tx.amount) > 0,
+        notes: tx.notes ?? '',
       },
     }))
     setEditing(tx.id)
@@ -157,6 +158,7 @@ function TransactionsContent() {
       date: d.date,
       amount: d.isIncome ? Math.abs(Number(d.amount)) : -Math.abs(Number(d.amount)),
       categoryId: d.isIncome ? undefined : (d.categoryId || undefined),
+      notes: d.notes?.trim() === '' ? null : (d.notes?.trim() ?? null),
     })
     setEditing(null)
     refresh()
@@ -505,11 +507,26 @@ function TransactionsContent() {
 
               {/* Description */}
               {isEditing ? (
-                <input value={ed.description}
-                  onChange={e => updateField(tx.id, { description: e.target.value })}
-                  className="text-sm rounded-md px-2 py-1 outline-none mr-4 bg-surface border border-border-2 text-text" />
+                <div className="mr-4">
+                  <input value={ed.description}
+                    onChange={e => updateField(tx.id, { description: e.target.value })}
+                    className="w-full text-sm rounded-md px-2 py-1 outline-none bg-surface border border-border-2 text-text" />
+                  <input
+                    type="text"
+                    value={ed.notes ?? ''}
+                    onChange={e => updateField(tx.id, { notes: e.target.value })}
+                    maxLength={500}
+                    placeholder="Add a note…"
+                    className="mt-1 w-full rounded px-2 py-1 text-xs outline-none bg-surface border border-border text-text-2 placeholder:text-text-3"
+                  />
+                </div>
               ) : (
-                <span className="text-sm truncate pr-4 text-text">{tx.description}</span>
+                <div className="pr-4">
+                  <span className="text-sm text-text">{tx.description}</span>
+                  {tx.notes && (
+                    <p className="text-xs text-text-3 mt-0.5">{tx.notes}</p>
+                  )}
+                </div>
               )}
 
               {/* Category */}
