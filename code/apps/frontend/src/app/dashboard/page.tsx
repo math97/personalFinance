@@ -5,6 +5,7 @@ import { BudgetProgressPanel } from '@/components/budget-progress-panel'
 import { UpcomingPanel } from '@/components/upcoming-panel'
 import { ChartsToggleCard } from '@/components/charts-toggle-card'
 import { api } from '@/lib/api'
+import { cn } from '@/lib/cn'
 import { format } from 'date-fns'
 import { ChevronLeft, ChevronRight, PlusCircle, Upload } from 'lucide-react'
 
@@ -18,7 +19,7 @@ function CategoryPill({ name, color }: { name: string; color: string }) {
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+    <div className="rounded-xl p-5 bg-surface border border-border">
       {children}
     </div>
   )
@@ -27,23 +28,19 @@ function Card({ children }: { children: React.ReactNode }) {
 function EmptyDashboard({ monthLabel, year, month }: { monthLabel: string; year: number; month: number }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center max-w-sm mx-auto">
-      <div
-        className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-      >
-        <PlusCircle size={24} style={{ color: 'var(--text-3)' }} />
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-surface border border-border">
+        <PlusCircle size={24} className="text-text-3" />
       </div>
-      <h2 className="text-base font-semibold mb-2" style={{ color: 'var(--text)' }}>
+      <h2 className="text-base font-semibold mb-2 text-text">
         No transactions in {monthLabel}
       </h2>
-      <p className="text-sm mb-6 leading-relaxed" style={{ color: 'var(--text-2)' }}>
+      <p className="text-sm mb-6 leading-relaxed text-text-2">
         Add transactions manually or upload a bank statement to get started.
       </p>
       <div className="flex gap-3">
         <Link
           href="/import"
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
-          style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' }}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-surface text-text border border-border"
         >
           <Upload size={14} /> Upload statement
         </Link>
@@ -98,16 +95,14 @@ export default async function DashboardPage({
     <div className="px-8 py-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <h1 className="text-xl font-semibold flex-1" style={{ color: 'var(--text)' }}>{monthLabel}</h1>
+        <h1 className="text-xl font-semibold flex-1 text-text">{monthLabel}</h1>
         <Link href={`/dashboard?year=${prevYear}&month=${prevMonth}`}
-          className="flex items-center justify-center w-8 h-8 rounded-lg"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <ChevronLeft size={16} style={{ color: 'var(--text-2)' }} />
+          className="flex items-center justify-center w-8 h-8 rounded-lg bg-surface border border-border">
+          <ChevronLeft size={16} className="text-text-2" />
         </Link>
         <Link href={`/dashboard?year=${nextYear}&month=${nextMonth}`}
-          className="flex items-center justify-center w-8 h-8 rounded-lg"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <ChevronRight size={16} style={{ color: 'var(--text-2)' }} />
+          className="flex items-center justify-center w-8 h-8 rounded-lg bg-surface border border-border">
+          <ChevronRight size={16} className="text-text-2" />
         </Link>
       </div>
 
@@ -118,58 +113,58 @@ export default async function DashboardPage({
           {/* Summary cards */}
           <div className="grid grid-cols-5 gap-4 mb-6">
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--text-2)' }}>Spent this month</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--text)' }}>
+              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">Spent this month</p>
+              <p className="text-3xl font-bold text-text">
                 <CurrencyAmount amount={Number(summary.totalSpent)} />
               </p>
               {prevTotal > 0 && (
-                <p className="text-xs mt-1" style={{ color: delta > 0 ? 'var(--red)' : 'var(--green)' }}>
+                <p className={cn('text-xs mt-1', delta > 0 ? 'text-red' : 'text-green')}>
                   {delta > 0 ? '▲' : '▼'} <CurrencyAmount amount={Math.abs(delta)} fractionDigits={0} /> vs last month
                 </p>
               )}
             </Card>
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--text-2)' }}>Biggest category</p>
+              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">Biggest category</p>
               {biggestCat ? (
                 <>
-                  <p className="text-xl font-bold mb-0.5" style={{ color: 'var(--text)' }}>{biggestCat.name}</p>
-                  <p className="text-sm" style={{ color: 'var(--text-2)' }}>
+                  <p className="text-xl font-bold mb-0.5 text-text">{biggestCat.name}</p>
+                  <p className="text-sm text-text-2">
                     <CurrencyAmount amount={Number(biggestCat.total)} /> · {summary.totalSpent > 0
                       ? Math.round((biggestCat.total / summary.totalSpent) * 100) : 0}% of total
                   </p>
                 </>
               ) : (
-                <p style={{ color: 'var(--text-3)' }} className="text-sm">No data</p>
+                <p className="text-sm text-text-3">No data</p>
               )}
             </Card>
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--text-2)' }}>Transactions</p>
-              <p className="text-3xl font-bold mb-1" style={{ color: 'var(--text)' }}>{summary.transactionCount}</p>
+              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">Transactions</p>
+              <p className="text-3xl font-bold mb-1 text-text">{summary.transactionCount}</p>
               {summary.inboxCount > 0 && (
-                <Link href="/import/inbox" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>
+                <Link href="/import/inbox" className="text-xs font-medium text-accent">
                   {summary.inboxCount} in inbox →
                 </Link>
               )}
             </Card>
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--text-2)' }}>Upcoming this month</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>
+              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">Upcoming this month</p>
+              <p className="text-3xl font-bold text-accent">
                 {upcoming.items.length > 0
                   ? <CurrencyAmount amount={upcoming.total} />
-                  : <span style={{ color: 'var(--text-3)', fontSize: 14 }}>None detected</span>}
+                  : <span className="text-sm text-text-3">None detected</span>}
               </p>
               {upcoming.items.length > 0 && (
-                <p className="text-xs mt-1" style={{ color: 'var(--text-2)' }}>
+                <p className="text-xs mt-1 text-text-2">
                   {upcoming.items.length} recurring expected
                 </p>
               )}
             </Card>
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--text-2)' }}>Net available today</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--green)' }}>
+              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">Net available today</p>
+              <p className="text-3xl font-bold text-green">
                 <CurrencyAmount amount={Math.max(0, Number(summary.totalIncome) - Number(summary.totalSpent) - upcoming.total)} />
               </p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-2)' }}>income − spent − upcoming</p>
+              <p className="text-xs mt-1 text-text-2">income − spent − upcoming</p>
             </Card>
           </div>
 
@@ -217,11 +212,10 @@ export default async function DashboardPage({
           {/* Recent transactions */}
           <Card>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Recent transactions</h2>
+              <h2 className="text-sm font-semibold text-text">Recent transactions</h2>
               <Link
                 href={`/transactions?year=${year}&month=${month}`}
-                className="text-xs font-medium"
-                style={{ color: 'var(--accent)' }}
+                className="text-xs font-medium text-accent"
               >
                 View all →
               </Link>
@@ -229,17 +223,17 @@ export default async function DashboardPage({
             <table className="w-full text-sm">
               <tbody>
                 {recentTxs.map((tx: any) => (
-                  <tr key={tx.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td className="py-3 pr-4 text-xs whitespace-nowrap" style={{ color: 'var(--text-2)', width: 80 }}>
+                  <tr key={tx.id} className="border-b border-border">
+                    <td className="py-3 pr-4 text-xs whitespace-nowrap text-text-2 w-20">
                       {format(new Date(tx.date), 'd MMM')}
                     </td>
-                    <td className="py-3 pr-4" style={{ color: 'var(--text)' }}>{tx.description}</td>
+                    <td className="py-3 pr-4 text-text">{tx.description}</td>
                     <td className="py-3 pr-4">
                       {tx.category
                         ? <CategoryPill name={tx.category.name} color={tx.category.color} />
-                        : <span style={{ color: 'var(--text-3)' }}>—</span>}
+                        : <span className="text-text-3">—</span>}
                     </td>
-                    <td className="py-3 text-right font-medium tabular-nums" style={{ color: 'var(--text)' }}>
+                    <td className="py-3 text-right font-medium tabular-nums text-text">
                       <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
                     </td>
                   </tr>

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronLeft, Pencil, TriangleAlert, Check, Sparkles, X, Trash2, ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useCurrency } from '@/hooks/useCurrency'
+import { cn } from '@/lib/cn'
 
 function CategoryPill({ name, color }: { name: string; color: string }) {
   return (
@@ -14,6 +15,7 @@ function CategoryPill({ name, color }: { name: string; color: string }) {
     </span>
   )
 }
+
 
 interface SaveRulePrompt {
   itemId: string
@@ -126,61 +128,54 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
     <div className="px-8 py-6 max-w-5xl mx-auto">
       {/* TopBar */}
       <div className="flex items-center gap-4 mb-6">
-        <Link href="/import/inbox" className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--text-2)' }}>
+        <Link href="/import/inbox" className="flex items-center gap-1.5 text-sm text-text-2">
           <ChevronLeft size={14} /> Inbox
         </Link>
-        <span style={{ color: 'var(--text-3)' }}>/</span>
-        <span className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{batch.filename}</span>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
-          style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}>
+        <span className="text-text-3">/</span>
+        <span className="text-sm font-medium truncate text-text">{batch.filename}</span>
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent-dim text-accent">
           Reviewing
         </span>
         <div className="flex-1" />
         <button onClick={handleDiscard} disabled={loading}
-          className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-40"
-          style={{ background: 'var(--surface)', color: 'var(--red)', border: '1px solid var(--border)' }}>
+          className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-40 bg-surface text-red border border-border">
           Discard
         </button>
         <button onClick={handleConfirm} disabled={loading}
-          className="px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-40"
-          style={{ background: 'var(--accent)', color: '#0c0c0e' }}>
+          className="px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-40 bg-accent text-bg">
           Confirm all {items.length}
         </button>
       </div>
 
       {/* Save-as-rule prompt */}
       {saveRulePrompt && (
-        <div
-          className="flex items-center gap-3 rounded-xl px-4 py-3 mb-4"
-          style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent)33' }}
-        >
-          <Sparkles size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-          <p className="text-sm flex-1" style={{ color: 'var(--accent)' }}>
+        <div className="flex items-center gap-3 rounded-xl px-4 py-3 mb-4 bg-accent-dim border border-accent/20">
+          <Sparkles size={14} className="text-accent shrink-0" />
+          <p className="text-sm flex-1 text-accent">
             Always categorize <strong>"{saveRulePrompt.keyword}"</strong> as <strong>{saveRulePrompt.categoryName}</strong>?
           </p>
           <button
             onClick={handleSaveRule}
-            className="px-3 py-1 rounded-lg text-xs font-semibold"
-            style={{ background: 'var(--accent)', color: '#0c0c0e' }}
+            className="px-3 py-1 rounded-lg text-xs font-semibold bg-accent text-bg"
           >
             Save rule
           </button>
-          <button onClick={() => setSaveRulePrompt(null)} style={{ color: 'var(--accent)' }}>
+          <button onClick={() => setSaveRulePrompt(null)} className="text-accent">
             <X size={14} />
           </button>
         </div>
       )}
 
-      <p className="text-sm mb-4" style={{ color: 'var(--text-2)' }}>
+      <p className="text-sm mb-4 text-text-2">
         {items.length} transactions extracted ·{' '}
         {uncategorized > 0
-          ? <span style={{ color: 'var(--accent)' }}>{uncategorized} need categorization</span>
-          : <span style={{ color: 'var(--green)' }}>all categorized ✓</span>}
+          ? <span className="text-accent">{uncategorized} need categorization</span>
+          : <span className="text-green">all categorized ✓</span>}
       </p>
 
-      <div className="rounded-xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-        <div className="grid text-xs font-medium uppercase tracking-wider px-5 py-3"
-          style={{ gridTemplateColumns: '110px 1fr 180px 48px 130px 72px', borderBottom: '1px solid var(--border)', color: 'var(--text-2)' }}>
+      <div className="rounded-xl overflow-hidden bg-surface border border-border">
+        <div className="grid text-xs font-medium uppercase tracking-wider px-5 py-3 text-text-2 border-b border-border"
+          style={{ gridTemplateColumns: '110px 1fr 180px 48px 130px 72px' }}>
           <span>Date</span><span>Description</span><span>Category</span>
           <span>Type</span><span className="text-right">Amount</span><span />
         </div>
@@ -190,46 +185,43 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
           const ed = editData[item.id] ?? {}
           const isIncome = Number(item.rawAmount) > 0
           return (
-            <div key={item.id} className="grid items-center px-5 py-3"
+            <div key={item.id} className="grid items-center px-5 py-3 border-b border-border"
               style={{
                 gridTemplateColumns: '110px 1fr 180px 48px 130px 72px',
-                borderBottom: '1px solid var(--border)',
                 background: isIncome ? '#4ade8010' : !item.aiCategorized ? 'var(--amber-bg)' : 'transparent',
               }}>
               {isEditing ? (
                 <input type="date" value={ed.rawDate ?? item.rawDate}
                   onChange={e => update(item.id, { rawDate: e.target.value })}
-                  className="text-xs rounded-md px-2 py-1 outline-none w-28"
-                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', colorScheme: 'dark' }} />
+                  className="text-xs rounded-md px-2 py-1 outline-none w-28 bg-surface-2 border border-border-2 text-text"
+                  style={{ colorScheme: 'dark' }} />
               ) : (
-                <span className="text-xs" style={{ color: 'var(--text-2)' }}>{item.rawDate}</span>
+                <span className="text-xs text-text-2">{item.rawDate}</span>
               )}
 
               {isEditing ? (
                 <input value={ed.rawDescription ?? item.rawDescription}
                   onChange={e => update(item.id, { rawDescription: e.target.value })}
-                  className="text-sm rounded-md px-2 py-1 outline-none mr-4"
-                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)' }} />
+                  className="text-sm rounded-md px-2 py-1 outline-none mr-4 bg-surface-2 border border-border-2 text-text" />
               ) : (
-                <span className="text-sm pr-4" style={{ color: 'var(--text)' }}>{item.rawDescription}</span>
+                <span className="text-sm pr-4 text-text">{item.rawDescription}</span>
               )}
 
               {/* Category */}
               {isEditing ? (
                 <select value={ed.catId ?? item.aiCategory?.id ?? ''}
                   onChange={e => update(item.id, { catId: e.target.value })}
-                  className="text-xs rounded-md px-2 py-1 outline-none"
-                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)' }}>
+                  className="text-xs rounded-md px-2 py-1 outline-none bg-surface-2 border border-border-2 text-text">
                   <option value="">— none —</option>
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               ) : (
                 <div>
                   {isIncome
-                    ? <span className="flex items-center gap-1 text-xs font-medium" style={{ color: '#4ade80' }}>Income</span>
+                    ? <span className="flex items-center gap-1 text-xs font-medium text-green">Income</span>
                     : item.aiCategory
                       ? <CategoryPill name={item.aiCategory.name} color={item.aiCategory.color} />
-                      : <span className="flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--accent)' }}>
+                      : <span className="flex items-center gap-1 text-xs font-medium text-accent">
                           <TriangleAlert size={12} /> Uncategorized
                         </span>}
                 </div>
@@ -240,8 +232,8 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
                 <button
                   onClick={() => toggleIncome(item.id)}
                   title={isIncome ? 'Mark as expense' : 'Mark as income'}
-                  className="w-7 h-7 flex items-center justify-center rounded-md transition-colors"
-                  style={{ background: isIncome ? '#4ade8022' : 'var(--surface-2)', color: isIncome ? '#4ade80' : 'var(--text-3)', border: '1px solid var(--border)' }}>
+                  className="w-7 h-7 flex items-center justify-center rounded-md transition-colors border border-border"
+                  style={{ background: isIncome ? '#4ade8022' : 'var(--surface-2)', color: isIncome ? '#4ade80' : 'var(--text-3)' }}>
                   {isIncome ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}
                 </button>
               )}
@@ -252,11 +244,9 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
                 <input type="number" step="0.01"
                   value={ed.rawAmount ?? Math.abs(Number(item.rawAmount))}
                   onChange={e => update(item.id, { rawAmount: e.target.value })}
-                  className="text-sm text-right rounded-md px-2 py-1 outline-none w-24 ml-auto"
-                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)' }} />
+                  className="text-sm text-right rounded-md px-2 py-1 outline-none w-24 ml-auto bg-surface-2 border border-border-2 text-text" />
               ) : (
-                <span className="text-sm font-medium tabular-nums text-right"
-                  style={{ color: isIncome ? '#4ade80' : 'var(--text)' }}>
+                <span className={cn('text-sm font-medium tabular-nums text-right', isIncome ? 'text-green' : 'text-text')}>
                   {isIncome ? '+' : ''}{currency}{Math.abs(Number(item.rawAmount)).toFixed(2)}
                 </span>
               )}
@@ -265,20 +255,20 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
               <div className="flex justify-end gap-1">
                 {isEditing ? (
                   <button onClick={() => saveEdit(item.id)}
-                    className="w-7 h-7 flex items-center justify-center rounded-md"
-                    style={{ background: 'var(--accent)', color: '#0c0c0e' }}>
+                    className="w-7 h-7 flex items-center justify-center rounded-md bg-accent text-bg"
+                    aria-label="Save">
                     <Check size={12} />
                   </button>
                 ) : (
                   <>
                     <button onClick={() => startEdit(item.id)}
-                      className="w-7 h-7 flex items-center justify-center rounded-md"
-                      style={{ color: 'var(--text-2)' }}>
+                      className="w-7 h-7 flex items-center justify-center rounded-md text-text-2"
+                      aria-label="Edit transaction">
                       <Pencil size={13} />
                     </button>
                     <button onClick={() => deleteItem(item.id)}
-                      className="w-7 h-7 flex items-center justify-center rounded-md"
-                      style={{ color: 'var(--red)' }}>
+                      className="w-7 h-7 flex items-center justify-center rounded-md text-red"
+                      aria-label="Delete transaction">
                       <Trash2 size={13} />
                     </button>
                   </>

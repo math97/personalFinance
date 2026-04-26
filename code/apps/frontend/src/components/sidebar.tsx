@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { cn } from '@/lib/cn'
 import {
   LayoutDashboard,
   BarChart3,
@@ -66,24 +67,15 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
   }
 
   return (
-    <aside
-      className="flex flex-col w-64 shrink-0 h-screen"
-      style={{ background: 'var(--surface)', borderRight: '1px solid var(--border)' }}
-    >
+    <aside className="flex flex-col w-64 shrink-0 h-screen bg-surface border-r border-border">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5">
-        <div
-          className="flex items-center justify-center text-sm font-bold shrink-0"
-          style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: 'var(--accent)', color: '#0c0c0e',
-          }}
-        >
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold shrink-0 bg-accent text-bg">
           F
         </div>
         <div>
-          <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Finance</p>
-          <p className="text-xs" style={{ color: 'var(--text-2)' }}>Personal tracker</p>
+          <p className="text-sm font-semibold text-text">Finance</p>
+          <p className="text-xs text-text-2">Personal tracker</p>
         </div>
       </div>
 
@@ -92,8 +84,7 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
         <div className="px-3 mb-2">
           <button
             onClick={onAddClick}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-colors"
-            style={{ background: 'var(--accent)', color: '#0c0c0e' }}
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-colors bg-accent text-bg"
           >
             + Add transaction
           </button>
@@ -104,10 +95,7 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
       <nav className="flex-1 px-3 py-2 overflow-y-auto space-y-5">
         {sections.map(section => (
           <div key={section.label}>
-            <p
-              className="text-xs font-semibold tracking-wider px-2 mb-1"
-              style={{ color: 'var(--text-3)' }}
-            >
+            <p className="text-xs font-semibold tracking-wider px-2 mb-1 text-text-3">
               {section.label}
             </p>
             <div className="space-y-0.5">
@@ -117,26 +105,18 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
                   <Link
                     key={item.label}
                     href={item.disabled ? '#' : item.href}
-                    className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors"
-                    style={{
-                      background: active ? 'var(--surface-2)' : 'transparent',
-                      color: active ? 'var(--text)' : 'var(--text-2)',
-                      pointerEvents: item.disabled ? 'none' : undefined,
-                      opacity: item.disabled ? 0.4 : 1,
-                    }}
+                    className={cn(
+                      'flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors',
+                      active ? 'bg-surface-2 text-text' : 'text-text-2',
+                      item.disabled && 'pointer-events-none opacity-40',
+                    )}
                   >
-                    <span style={{ color: active ? 'var(--accent)' : 'var(--text-2)', display: 'flex' }}>
+                    <span className={cn('flex', active ? 'text-accent' : 'text-text-2')}>
                       <item.icon size={16} />
                     </span>
                     <span className="flex-1">{item.label}</span>
                     {item.badge && (
-                      <span
-                        className="flex items-center justify-center text-xs font-bold"
-                        style={{
-                          width: 18, height: 18, borderRadius: 9,
-                          background: 'var(--accent)', color: '#0c0c0e',
-                        }}
-                      >
+                      <span className="flex items-center justify-center w-[18px] h-[18px] rounded-full text-xs font-bold bg-accent text-bg">
                         {item.badge}
                       </span>
                     )}
@@ -149,22 +129,13 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
       </nav>
 
       {/* User footer */}
-      <div
-        className="flex items-center gap-3 px-4 py-4"
-        style={{ borderTop: '1px solid var(--border)' }}
-      >
-        <div
-          className="flex items-center justify-center text-sm font-semibold shrink-0"
-          style={{
-            width: 32, height: 32, borderRadius: 16,
-            background: 'var(--surface-2)', color: 'var(--text)',
-          }}
-        >
+      <div className="flex items-center gap-3 px-4 py-4 border-t border-border">
+        <div className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold shrink-0 bg-surface-2 text-text">
           M
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>Matheus</p>
-          <p className="text-xs truncate" style={{ color: 'var(--text-2)' }}>math.albuquerque97@gmail.com</p>
+          <p className="text-sm font-medium truncate text-text">Matheus</p>
+          <p className="text-xs truncate text-text-2">math.albuquerque97@gmail.com</p>
         </div>
       </div>
     </aside>

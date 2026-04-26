@@ -20,24 +20,15 @@ export function UpcomingPanel({ items, currentMonthLabel }: Props) {
   if (items.length === 0) return null
 
   return (
-    <div
-      className="rounded-xl overflow-hidden"
-      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-    >
-      <div
-        className="flex items-center justify-between px-5 py-3"
-        style={{ borderBottom: '1px solid var(--border)' }}
-      >
+    <div className="rounded-xl overflow-hidden bg-surface border border-border">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-border">
         <div className="flex items-center gap-2">
-          <Calendar size={14} style={{ color: 'var(--accent)' }} />
-          <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+          <Calendar size={14} className="text-accent" />
+          <span className="text-sm font-semibold text-text">
             Upcoming this month
           </span>
         </div>
-        <span
-          className="text-xs font-semibold px-2 py-0.5 rounded-md"
-          style={{ background: 'var(--accent)' + '18', color: 'var(--accent)' }}
-        >
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-accent-dim text-accent">
           {items.length} expected
         </span>
       </div>
@@ -53,15 +44,15 @@ export function UpcomingPanel({ items, currentMonthLabel }: Props) {
             style={{ background: item.categoryColor ?? 'var(--text-3)' }}
           />
           <div className="flex-1 min-w-0">
-            <span className="text-sm font-medium truncate block" style={{ color: 'var(--text)' }}>
+            <span className="text-sm font-medium truncate block text-text">
               {item.description}
             </span>
-            <span className="text-xs" style={{ color: 'var(--text-2)' }}>
+            <span className="text-xs text-text-2">
               Expected ~{currentMonthLabel} {item.expectedDay}
               {item.categoryName && ` · ${item.categoryName}`}
             </span>
           </div>
-          <span className="text-sm font-semibold tabular-nums shrink-0" style={{ color: 'var(--accent)' }}>
+          <span className="text-sm font-semibold tabular-nums shrink-0 text-accent">
             −<CurrencyAmount amount={Math.abs(item.typicalAmount)} />
           </span>
         </div>

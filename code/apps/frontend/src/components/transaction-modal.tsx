@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { X, Sparkles, CloudUpload, PenLine, FileText, Trash2 } from 'lucide-react'
 import { api } from '@/lib/api'
+import { cn } from '@/lib/cn'
 import { useCurrency } from '@/hooks/useCurrency'
 
 type Step = 'picker' | 'manual' | 'batch'
@@ -51,13 +52,10 @@ function PickerStep({ onSelect, onClose }: { onSelect: (s: Step) => void; onClos
   ]
 
   return (
-    <div
-      className="w-full max-w-sm rounded-2xl p-6 space-y-4"
-      style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}
-    >
+    <div className="w-full max-w-sm rounded-2xl p-6 space-y-4 bg-surface border border-border-2">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Add transaction</h2>
-        <button onClick={onClose} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
+        <h2 className="text-base font-semibold text-text">Add transaction</h2>
+        <button onClick={onClose} className="text-text-2"><X size={18} /></button>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -67,30 +65,24 @@ function PickerStep({ onSelect, onClose }: { onSelect: (s: Step) => void; onClos
             onClick={() => onSelect(card.id)}
             onMouseEnter={() => setHovered(card.id)}
             onMouseLeave={() => setHovered(null)}
-            className="flex flex-col items-start gap-2 p-4 rounded-xl text-left transition-all"
+            className="flex flex-col items-start gap-2 p-4 rounded-xl text-left transition-all bg-surface-2"
             style={{
-              background: 'var(--surface-2)',
               border: `1.5px solid ${hovered === card.id ? 'var(--accent)' : 'var(--border)'}`,
             }}
           >
             <card.icon
               size={20}
-              style={{ color: hovered === card.id ? 'var(--accent)' : 'var(--text-2)' }}
+              className={cn(hovered === card.id ? 'text-accent' : 'text-text-2')}
             />
-            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{card.title}</p>
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-2)' }}>{card.desc}</p>
+            <p className="text-sm font-medium text-text">{card.title}</p>
+            <p className="text-xs leading-relaxed text-text-2">{card.desc}</p>
           </button>
         ))}
       </div>
 
       <button
         onClick={onClose}
-        className="w-full py-2 rounded-lg text-sm transition-colors"
-        style={{
-          background: 'var(--surface-2)',
-          color: 'var(--text-2)',
-          border: '1px solid var(--border)',
-        }}
+        className="w-full py-2 rounded-lg text-sm transition-colors bg-surface-2 text-text-2 border border-border"
       >
         Cancel
       </button>
@@ -126,23 +118,17 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
   const accentColor = type === 'income' ? 'var(--green)' : 'var(--accent)'
 
   return (
-    <div
-      className="w-full max-w-md rounded-2xl"
-      style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}
-    >
+    <div className="w-full max-w-md rounded-2xl bg-surface border border-border-2">
       {/* Header */}
-      <div
-        className="flex items-center justify-between px-6 py-4"
-        style={{ borderBottom: '1px solid var(--border)' }}
-      >
-        <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Add transaction</h2>
-        <button onClick={onClose} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <h2 className="text-base font-semibold text-text">Add transaction</h2>
+        <button onClick={onClose} className="text-text-2"><X size={18} /></button>
       </div>
 
       {/* Body */}
       <div className="px-6 py-5 space-y-4">
         {/* Type toggle */}
-        <div className="flex gap-0.5 rounded-lg p-0.5" style={{ background: 'var(--surface-2)' }}>
+        <div className="flex gap-0.5 rounded-lg p-0.5 bg-surface-2">
           {(['expense', 'income'] as const).map(t => (
             <button
               key={t}
@@ -161,15 +147,14 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
 
         {/* Amount */}
         <div>
-          <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-2)' }}>Amount</label>
+          <label className="text-xs font-medium mb-1.5 block text-text-2">Amount</label>
           <div
-            className="flex items-center rounded-lg px-3 py-2.5 transition-all"
+            className="flex items-center rounded-lg px-3 py-2.5 transition-all bg-surface-2"
             style={{
-              background: 'var(--surface-2)',
               border: `1.5px solid ${amountFocused ? accentColor : 'var(--border-2)'}`,
             }}
           >
-            <span className="text-sm mr-1" style={{ color: 'var(--text-2)' }}>{currency}</span>
+            <span className="text-sm mr-1 text-text-2">{currency}</span>
             <input
               type="number"
               step="0.01"
@@ -179,34 +164,32 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
               onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
               onFocus={() => setAmountFocused(true)}
               onBlur={() => setAmountFocused(false)}
-              className="flex-1 bg-transparent text-sm outline-none"
-              style={{ color: 'var(--text)' }}
+              className="flex-1 bg-transparent text-sm outline-none text-text"
             />
           </div>
         </div>
 
         {/* Description */}
         <div>
-          <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-2)' }}>Description</label>
+          <label className="text-xs font-medium mb-1.5 block text-text-2">Description</label>
           <input
             type="text"
             placeholder={type === 'income' ? 'e.g. Rent contribution' : 'e.g. Tesco Metro'}
             value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-            className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition-all"
-            style={{ background: 'var(--surface-2)', border: '1.5px solid var(--border-2)', color: 'var(--text)' }}
+            className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition-all bg-surface-2 border border-border-2 text-text"
           />
         </div>
 
         {/* Date */}
         <div>
-          <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-2)' }}>Date</label>
+          <label className="text-xs font-medium mb-1.5 block text-text-2">Date</label>
           <input
             type="date"
             value={form.date}
             onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-            className="w-full rounded-lg px-3 py-2.5 text-sm outline-none"
-            style={{ background: 'var(--surface-2)', border: '1.5px solid var(--border-2)', color: 'var(--text)', colorScheme: 'dark' }}
+            className="w-full rounded-lg px-3 py-2.5 text-sm outline-none bg-surface-2 border border-border-2 text-text"
+            style={{ colorScheme: 'dark' }}
           />
         </div>
 
@@ -214,12 +197,11 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
         {type === 'expense' && (
           <>
             <div>
-              <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-2)' }}>Category</label>
+              <label className="text-xs font-medium mb-1.5 block text-text-2">Category</label>
               <select
                 value={form.categoryId}
                 onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
-                className="w-full rounded-lg px-3 py-2.5 text-sm outline-none"
-                style={{ background: 'var(--surface-2)', border: '1.5px solid var(--border-2)', color: 'var(--text)' }}
+                className="w-full rounded-lg px-3 py-2.5 text-sm outline-none bg-surface-2 border border-border-2 text-text"
               >
                 <option value="">— none —</option>
                 {categories.map((c: any) => (
@@ -227,12 +209,9 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
                 ))}
               </select>
             </div>
-            <div
-              className="flex items-start gap-2.5 rounded-lg px-3 py-2.5"
-              style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent)20' }}
-            >
-              <Sparkles size={14} style={{ color: 'var(--accent)', marginTop: 2, flexShrink: 0 }} />
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--accent)' }}>
+            <div className="flex items-start gap-2.5 rounded-lg px-3 py-2.5 bg-accent-dim border border-accent/10">
+              <Sparkles size={14} className="text-accent mt-0.5 shrink-0" />
+              <p className="text-xs leading-relaxed text-accent">
                 Keyword rules will auto-categorize matching transactions going forward
               </p>
             </div>
@@ -241,11 +220,10 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
       </div>
 
       {/* Footer */}
-      <div className="flex gap-3 px-6 py-4" style={{ borderTop: '1px solid var(--border)' }}>
+      <div className="flex gap-3 px-6 py-4 border-t border-border">
         <button
           onClick={onBack}
-          className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors"
-          style={{ background: 'var(--surface-2)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
+          className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors bg-surface-2 text-text-2 border border-border"
         >
           Back
         </button>
@@ -304,17 +282,11 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
   const removeFile = (id: string) => setFiles(prev => prev.filter(f => f.id !== id))
 
   return (
-    <div
-      className="w-full max-w-lg rounded-2xl"
-      style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}
-    >
+    <div className="w-full max-w-lg rounded-2xl bg-surface border border-border-2">
       {/* Header */}
-      <div
-        className="flex items-center justify-between px-6 py-4"
-        style={{ borderBottom: '1px solid var(--border)' }}
-      >
-        <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Upload documents</h2>
-        <button onClick={onClose} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <h2 className="text-base font-semibold text-text">Upload documents</h2>
+        <button onClick={onClose} className="text-text-2"><X size={18} /></button>
       </div>
 
       {/* Body */}
@@ -329,11 +301,11 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
           }}
         >
           <input {...getInputProps()} />
-          <CloudUpload size={24} className="mx-auto mb-2" style={{ color: 'var(--text-2)' }} />
-          <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>
+          <CloudUpload size={24} className="mx-auto mb-2 text-text-2" />
+          <p className="text-sm font-medium mb-1 text-text">
             Drop files here or click to browse
           </p>
-          <p className="text-xs" style={{ color: 'var(--text-2)' }}>
+          <p className="text-xs text-text-2">
             PDF, JPG, PNG, HEIC
           </p>
         </div>
@@ -344,20 +316,16 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
             {files.map(({ file, id }) => (
               <div
                 key={id}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg"
-                style={{
-                  background: 'var(--surface-2)',
-                  border: '1px solid var(--border)',
-                }}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-2 border border-border"
               >
-                <FileText size={16} style={{ color: 'var(--text-2)', flexShrink: 0 }} />
+                <FileText size={16} className="text-text-2 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate" style={{ color: 'var(--text)' }}>{file.name}</p>
-                  <p className="text-xs" style={{ color: 'var(--text-2)' }}>
+                  <p className="text-sm truncate text-text">{file.name}</p>
+                  <p className="text-xs text-text-2">
                     {(file.size / 1024).toFixed(0)} KB
                   </p>
                 </div>
-                <button onClick={() => removeFile(id)} style={{ color: 'var(--red)' }}>
+                <button onClick={() => removeFile(id)} className="text-red">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -366,25 +334,19 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
         )}
 
         {/* AI hint */}
-        <div
-          className="flex items-start gap-2.5 rounded-lg px-3 py-2.5"
-          style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent)20' }}
-        >
-          <Sparkles size={14} style={{ color: 'var(--accent)', marginTop: 2, flexShrink: 0 }} />
-          <p className="text-xs leading-relaxed" style={{ color: 'var(--accent)' }}>
+        <div className="flex items-start gap-2.5 rounded-lg px-3 py-2.5 bg-accent-dim border border-accent/10">
+          <Sparkles size={14} className="text-accent mt-0.5 shrink-0" />
+          <p className="text-xs leading-relaxed text-accent">
             Claude will extract and auto-categorize transactions from each file
           </p>
         </div>
       </div>
 
       {/* Footer */}
-      <div
-        className="flex items-center justify-between px-6 py-4"
-        style={{ borderTop: '1px solid var(--border)' }}
-      >
+      <div className="flex items-center justify-between px-6 py-4 border-t border-border">
         {error
-          ? <p className="text-xs" style={{ color: 'var(--red)' }}>{error}</p>
-          : <p className="text-xs" style={{ color: 'var(--text-2)' }}>
+          ? <p className="text-xs text-red">{error}</p>
+          : <p className="text-xs text-text-2">
               {files.length > 0
                 ? `${files.length} file${files.length > 1 ? 's' : ''} · ${files.length} batch${files.length > 1 ? 'es' : ''}`
                 : 'No files selected'}
@@ -393,20 +355,14 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
         <div className="flex gap-2">
           <button
             onClick={onBack}
-            className="px-4 py-2 rounded-lg text-sm transition-colors"
-            style={{
-              background: 'var(--surface-2)',
-              color: 'var(--text-2)',
-              border: '1px solid var(--border)',
-            }}
+            className="px-4 py-2 rounded-lg text-sm transition-colors bg-surface-2 text-text-2 border border-border"
           >
             Back
           </button>
           <button
             disabled={files.length === 0 || uploading}
             onClick={handleUpload}
-            className="px-4 py-2 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-40"
-            style={{ background: 'var(--accent)', color: '#0c0c0e' }}
+            className="px-4 py-2 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-40 bg-accent text-bg"
           >
             {uploading ? 'Uploading…' : 'Upload & extract'}
           </button>

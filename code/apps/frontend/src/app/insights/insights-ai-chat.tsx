@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { api } from '@/lib/api'
+import { cn } from '@/lib/cn'
 
 type Message = { role: 'user' | 'assistant'; text: string }
 
@@ -55,22 +56,13 @@ export function InsightsAIChat({ context, topMoverName }: Props) {
   }
 
   return (
-    <div
-      className="rounded-xl overflow-hidden"
-      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-    >
+    <div className="rounded-xl overflow-hidden bg-surface border border-border">
       {/* Header */}
-      <div
-        className="flex items-center gap-2.5 px-5 py-3.5"
-        style={{ borderBottom: '1px solid var(--border)' }}
-      >
-        <span
-          className="text-xs font-bold px-2 py-0.5 rounded"
-          style={{ background: '#f59e0b20', color: 'var(--accent)' }}
-        >
+      <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border">
+        <span className="text-xs font-bold px-2 py-0.5 rounded bg-accent-dim text-accent">
           AI
         </span>
-        <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+        <span className="text-sm font-semibold text-text">
           Ask about your spending
         </span>
       </div>
@@ -83,12 +75,7 @@ export function InsightsAIChat({ context, topMoverName }: Props) {
               key={chip}
               onClick={() => send(chip)}
               disabled={loading}
-              className="text-xs px-3 py-1.5 rounded-full transition-colors disabled:opacity-40"
-              style={{
-                background: 'var(--surface-2)',
-                border:     '1px solid var(--border)',
-                color:      'var(--text-2)',
-              }}
+              className="text-xs px-3 py-1.5 rounded-full transition-colors disabled:opacity-40 bg-surface-2 border border-border text-text-2"
             >
               {chip}
             </button>
@@ -100,14 +87,14 @@ export function InsightsAIChat({ context, topMoverName }: Props) {
       {messages.length > 0 && (
         <div className="px-5 py-4 space-y-3 max-h-64 overflow-y-auto">
           {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
               <div
-                className="max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm"
-                style={
+                className={cn(
+                  'max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm',
                   m.role === 'user'
-                    ? { background: 'var(--accent)', color: '#0c0c0e', borderBottomRightRadius: 4 }
-                    : { background: 'var(--surface-2)', color: 'var(--text)', borderBottomLeftRadius: 4 }
-                }
+                    ? 'bg-accent text-bg rounded-br-sm'
+                    : 'bg-surface-2 text-text rounded-bl-sm',
+                )}
               >
                 {m.text}
               </div>
@@ -115,10 +102,7 @@ export function InsightsAIChat({ context, topMoverName }: Props) {
           ))}
           {loading && (
             <div className="flex justify-start">
-              <div
-                className="px-3.5 py-2.5 rounded-2xl text-sm"
-                style={{ background: 'var(--surface-2)', color: 'var(--text-2)', borderBottomLeftRadius: 4 }}
-              >
+              <div className="px-3.5 py-2.5 rounded-2xl rounded-bl-sm text-sm bg-surface-2 text-text-2">
                 …
               </div>
             </div>
@@ -129,7 +113,7 @@ export function InsightsAIChat({ context, topMoverName }: Props) {
 
       {/* Error */}
       {error && (
-        <p className="px-5 pb-2 text-xs" style={{ color: 'var(--red)' }}>{error}</p>
+        <p className="px-5 pb-2 text-xs text-red">{error}</p>
       )}
 
       {/* Input row */}
@@ -141,18 +125,12 @@ export function InsightsAIChat({ context, topMoverName }: Props) {
           onKeyDown={e => e.key === 'Enter' && send(input)}
           placeholder="Ask anything about your finances…"
           disabled={loading}
-          className="flex-1 rounded-full px-4 py-2 text-sm outline-none disabled:opacity-50"
-          style={{
-            background: 'var(--surface-2)',
-            border:     '1px solid var(--border)',
-            color:      'var(--text)',
-          }}
+          className="flex-1 rounded-full px-4 py-2 text-sm outline-none disabled:opacity-50 bg-surface-2 border border-border text-text"
         />
         <button
           onClick={() => send(input)}
           disabled={!input.trim() || loading}
-          className="w-9 h-9 rounded-full flex items-center justify-center transition-opacity disabled:opacity-40"
-          style={{ background: 'var(--accent)', color: '#0c0c0e', flexShrink: 0 }}
+          className="w-9 h-9 rounded-full flex items-center justify-center transition-opacity disabled:opacity-40 shrink-0 bg-accent text-bg"
         >
           {loading ? (
             <span className="text-xs">…</span>

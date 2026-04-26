@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
 import { api } from '@/lib/api'
+import { cn } from '@/lib/cn'
 import { ChevronLeft, ChevronRight, Search, Pencil, ChevronDown, Check, X, Trash2, Eye, EyeOff } from 'lucide-react'
 import { useCurrency } from '@/hooks/useCurrency'
 import { CurrencyAmount } from '@/components/currency-amount'
@@ -206,29 +207,27 @@ function TransactionsContent() {
     <div className="px-8 py-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <h1 className="text-xl font-semibold flex-1" style={{ color: 'var(--text)' }}>
+        <h1 className="text-xl font-semibold flex-1 text-text">
           All Transactions
         </h1>
 
         {/* Month navigator — hidden in all-time mode */}
         {allTime ? (
-          <span className="text-sm font-medium w-28 text-center" style={{ color: 'var(--text)' }}>
+          <span className="text-sm font-medium w-28 text-center text-text">
             All time
           </span>
         ) : (
           <>
             <button onClick={() => nav(prevYear, prevMonth)}
-              className="flex items-center justify-center w-8 h-8 rounded-lg"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <ChevronLeft size={16} style={{ color: 'var(--text-2)' }} />
+              className="flex items-center justify-center w-8 h-8 rounded-lg bg-surface border border-border">
+              <ChevronLeft size={16} className="text-text-2" />
             </button>
-            <span className="text-sm font-medium w-28 text-center" style={{ color: 'var(--text)' }}>
+            <span className="text-sm font-medium w-28 text-center text-text">
               {monthLabel}
             </span>
             <button onClick={() => nav(nextYear, nextMonth)}
-              className="flex items-center justify-center w-8 h-8 rounded-lg"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <ChevronRight size={16} style={{ color: 'var(--text-2)' }} />
+              className="flex items-center justify-center w-8 h-8 rounded-lg bg-surface border border-border">
+              <ChevronRight size={16} className="text-text-2" />
             </button>
           </>
         )}
@@ -237,18 +236,14 @@ function TransactionsContent() {
         <div className="relative" onClick={e => e.stopPropagation()}>
           <button
             onClick={() => setShowExportMenu(v => !v)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
-            style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)' }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-surface-2 border border-border-2 text-text-2"
           >
             Export
             <ChevronDown size={10} />
           </button>
 
           {showExportMenu && (
-            <div
-              className="absolute right-0 top-full mt-1 w-48 rounded-lg overflow-hidden z-20"
-              style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', boxShadow: '0 4px 12px #0006' }}
-            >
+            <div className="absolute right-0 top-full mt-1 w-48 rounded-lg overflow-hidden z-20 bg-surface-2 border border-border-2 shadow-xl">
               <a
                 href={(() => {
                   const p = new URLSearchParams()
@@ -260,17 +255,13 @@ function TransactionsContent() {
                 })()}
                 download
                 onClick={() => setShowExportMenu(false)}
-                className="flex items-center px-3 py-2.5 text-xs hover:bg-white/5 transition-colors"
-                style={{ color: 'var(--text)' }}
+                className="flex items-center px-3 py-2.5 text-xs hover:bg-white/5 transition-colors text-text"
               >
                 Export current view
               </a>
 
               {allTime ? (
-                <span
-                  className="flex items-center px-3 py-2.5 text-xs cursor-not-allowed"
-                  style={{ color: 'var(--text-3)' }}
-                >
+                <span className="flex items-center px-3 py-2.5 text-xs cursor-not-allowed text-text-3">
                   Export entire month
                 </span>
               ) : (
@@ -278,8 +269,7 @@ function TransactionsContent() {
                   href={`${BASE_URL}/transactions/export?year=${year}&month=${month}&scope=month`}
                   download
                   onClick={() => setShowExportMenu(false)}
-                  className="flex items-center px-3 py-2.5 text-xs hover:bg-white/5 transition-colors"
-                  style={{ color: 'var(--text)' }}
+                  className="flex items-center px-3 py-2.5 text-xs hover:bg-white/5 transition-colors text-text"
                 >
                   Export entire month
                 </a>
@@ -290,35 +280,23 @@ function TransactionsContent() {
       </div>
 
       {/* Main card */}
-      <div className="rounded-xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+      <div className="rounded-xl overflow-hidden bg-surface border border-border">
         {/* Filters */}
-        <div
-          className="flex items-center gap-3 px-5 py-3"
-          style={{ borderBottom: '1px solid var(--border)' }}
-        >
-          <div
-            className="flex items-center gap-2 flex-1 rounded-lg px-3 py-2"
-            style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}
-          >
-            <Search size={14} style={{ color: 'var(--text-2)' }} />
+        <div className="flex items-center gap-3 px-5 py-3 border-b border-border">
+          <div className="flex items-center gap-2 flex-1 rounded-lg px-3 py-2 bg-surface-2 border border-border">
+            <Search size={14} className="text-text-2" />
             <input
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
               placeholder="Search transactions…"
-              className="flex-1 bg-transparent text-sm outline-none"
-              style={{ color: 'var(--text)' }}
+              className="flex-1 bg-transparent text-sm outline-none text-text"
             />
           </div>
 
           <select
             value={catFilter}
             onChange={e => { setCatFilter(e.target.value); setPage(1) }}
-            className="rounded-lg px-3 py-2 text-sm outline-none"
-            style={{
-              background: 'var(--surface-2)',
-              border: '1px solid var(--border)',
-              color: catFilter ? 'var(--text)' : 'var(--text-2)',
-            }}
+            className={cn('rounded-lg px-3 py-2 text-sm outline-none bg-surface-2 border border-border', catFilter ? 'text-text' : 'text-text-2')}
           >
             <option value="">All categories</option>
             <option value="uncategorized">No category</option>
@@ -328,11 +306,8 @@ function TransactionsContent() {
           </select>
 
           {/* Amount range */}
-          <div
-            className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm"
-            style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}
-          >
-            <span style={{ color: 'var(--text-2)' }}>{currency}</span>
+          <div className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm bg-surface-2 border border-border">
+            <span className="text-text-2">{currency}</span>
             <input
               type="number"
               min="0"
@@ -340,10 +315,9 @@ function TransactionsContent() {
               value={amountMin}
               onChange={e => { setAmountMin(e.target.value); setPage(1) }}
               placeholder="min"
-              className="w-14 bg-transparent outline-none text-sm"
-              style={{ color: 'var(--text)' }}
+              className="w-14 bg-transparent outline-none text-sm text-text"
             />
-            <span style={{ color: 'var(--text-3)' }}>–</span>
+            <span className="text-text-3">–</span>
             <input
               type="number"
               min="0"
@@ -351,8 +325,7 @@ function TransactionsContent() {
               value={amountMax}
               onChange={e => { setAmountMax(e.target.value); setPage(1) }}
               placeholder="max"
-              className="w-14 bg-transparent outline-none text-sm"
-              style={{ color: 'var(--text)' }}
+              className="w-14 bg-transparent outline-none text-sm text-text"
             />
           </div>
 
@@ -367,9 +340,7 @@ function TransactionsContent() {
                 boxShadow: showPredicted ? '0 0 0 1px #818cf820 inset' : 'none',
               }}
             >
-              {showPredicted
-                ? <Eye size={12} />
-                : <EyeOff size={12} />}
+              {showPredicted ? <Eye size={12} /> : <EyeOff size={12} />}
               Predicted
               <span
                 className="ml-0.5 px-1.5 py-0.5 rounded text-xs font-bold"
@@ -383,34 +354,27 @@ function TransactionsContent() {
             </button>
           )}
 
-            <button
-              onClick={() => { setAllTime(v => !v); setPage(1) }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-              style={{
-                background: allTime ? '#f59e0b18' : 'var(--surface)',
-                border:     `1px solid ${allTime ? '#f59e0b44' : 'var(--border)'}`,
-                color:      allTime ? 'var(--accent)' : 'var(--text-2)',
-              }}
-            >
-              {allTime ? 'All time' : 'This month'}
-            </button>
-
-          <span
-            className="text-sm font-semibold px-3 py-1.5 rounded-lg"
-            style={{ background: 'var(--surface-2)', color: 'var(--accent)' }}
+          <button
+            onClick={() => { setAllTime(v => !v); setPage(1) }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+            style={{
+              background: allTime ? '#f59e0b18' : 'var(--surface)',
+              border:     `1px solid ${allTime ? '#f59e0b44' : 'var(--border)'}`,
+              color:      allTime ? 'var(--accent)' : 'var(--text-2)',
+            }}
           >
+            {allTime ? 'All time' : 'This month'}
+          </button>
+
+          <span className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-surface-2 text-accent">
             {total} transactions
           </span>
         </div>
 
         {/* Table header */}
         <div
-          className="grid text-xs font-medium uppercase tracking-wider px-5 py-2.5"
-          style={{
-            gridTemplateColumns: '32px 110px 1fr 180px 90px 130px 48px',
-            borderBottom: '1px solid var(--border)',
-            color: 'var(--text-2)',
-          }}
+          className="grid text-xs font-medium uppercase tracking-wider px-5 py-2.5 border-b border-border text-text-2"
+          style={{ gridTemplateColumns: '32px 110px 1fr 180px 90px 130px 48px' }}
         >
           <div className="flex items-center">
             <input
@@ -449,21 +413,21 @@ function TransactionsContent() {
 
         {/* Rows */}
         {error ? (
-          <p className="text-sm py-12 text-center" style={{ color: 'var(--text-3)' }}>{error}</p>
+          <p className="text-sm py-12 text-center text-text-3">{error}</p>
         ) : isLoading ? (
           <div className="animate-pulse">
             {[0, 1, 2, 3, 4].map(i => (
-              <div key={i} className="flex items-center gap-4 px-5 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
-                <div className="h-3 w-20 rounded" style={{ background: 'var(--surface-2)' }} />
-                <div className="h-3 flex-1 rounded" style={{ background: 'var(--surface-2)' }} />
-                <div className="h-5 w-24 rounded-full" style={{ background: 'var(--surface-2)' }} />
-                <div className="h-5 w-14 rounded-full" style={{ background: 'var(--surface-2)' }} />
-                <div className="h-3 w-16 rounded ml-auto" style={{ background: 'var(--surface-2)' }} />
+              <div key={i} className="flex items-center gap-4 px-5 py-3 border-b border-border">
+                <div className="h-3 w-20 rounded bg-surface-2" />
+                <div className="h-3 flex-1 rounded bg-surface-2" />
+                <div className="h-5 w-24 rounded-full bg-surface-2" />
+                <div className="h-5 w-14 rounded-full bg-surface-2" />
+                <div className="h-3 w-16 rounded ml-auto bg-surface-2" />
               </div>
             ))}
           </div>
         ) : pageItems.length === 0 ? (
-          <p className="text-sm py-12 text-center" style={{ color: 'var(--text-3)' }}>
+          <p className="text-sm py-12 text-center text-text-3">
             No transactions found
           </p>
         ) : (
@@ -484,7 +448,7 @@ function TransactionsContent() {
                     ~{format(new Date(year, month - 1, tx.expectedDay), 'd MMM')}
                   </span>
                   <div className="pr-4">
-                    <span className="text-sm" style={{ color: 'var(--text-2)' }}>{tx.description}</span>
+                    <span className="text-sm text-text-2">{tx.description}</span>
                     <span
                       className="ml-2 text-xs px-1.5 py-0.5 rounded font-bold uppercase tracking-wide"
                       style={{ background: '#818cf818', color: '#818cf8', letterSpacing: '0.05em' }}
@@ -495,9 +459,9 @@ function TransactionsContent() {
                   <div className="pr-4">
                     {tx.category
                       ? <CategoryPill name={tx.category.name} color={tx.category.color} />
-                      : <span style={{ color: 'var(--text-3)' }}>—</span>}
+                      : <span className="text-text-3">—</span>}
                   </div>
-                  <span className="text-xs" style={{ color: 'var(--text-3)' }}>—</span>
+                  <span className="text-xs text-text-3">—</span>
                   <span className="text-sm font-medium tabular-nums text-right" style={{ color: '#818cf8', opacity: 0.8 }}>
                     <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
                   </span>
@@ -519,8 +483,7 @@ function TransactionsContent() {
                         await api.recurring.dismissPattern(tx.patternId)
                         setPredicted(prev => prev.filter(p => p.patternId !== tx.patternId))
                       }}
-                      className="w-7 h-7 rounded-md flex items-center justify-center text-sm ml-1"
-                      style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}
+                      className="w-7 h-7 rounded-md flex items-center justify-center text-sm ml-1 bg-surface-2 text-text-2"
                       title="Remove recurring"
                     >
                       ✕
@@ -535,12 +498,8 @@ function TransactionsContent() {
             return (
             <div
               key={tx.id}
-              className="grid items-center px-5 py-3"
-              style={{
-                gridTemplateColumns: '32px 110px 1fr 180px 90px 130px 48px',
-                borderBottom: '1px solid var(--border)',
-                background: isEditing ? 'var(--surface-2)' : 'transparent',
-              }}
+              className={cn('grid items-center px-5 py-3 border-b border-border', isEditing && 'bg-surface-2')}
+              style={{ gridTemplateColumns: '32px 110px 1fr 180px 90px 130px 48px' }}
             >
               {/* Checkbox */}
               <div className="flex items-center">
@@ -562,10 +521,10 @@ function TransactionsContent() {
               {isEditing ? (
                 <input type="date" value={ed.date}
                   onChange={e => updateField(tx.id, { date: e.target.value })}
-                  className="text-xs rounded-md px-2 py-1 outline-none w-28"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', color: 'var(--text)', colorScheme: 'dark' }} />
+                  className="text-xs rounded-md px-2 py-1 outline-none w-28 bg-surface border border-border-2 text-text"
+                  style={{ colorScheme: 'dark' }} />
               ) : (
-                <span className="text-xs" style={{ color: 'var(--text-2)' }}>
+                <span className="text-xs text-text-2">
                   {format(new Date(tx.date), 'd MMM yyyy')}
                 </span>
               )}
@@ -574,20 +533,18 @@ function TransactionsContent() {
               {isEditing ? (
                 <input value={ed.description}
                   onChange={e => updateField(tx.id, { description: e.target.value })}
-                  className="text-sm rounded-md px-2 py-1 outline-none mr-4"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', color: 'var(--text)' }} />
+                  className="text-sm rounded-md px-2 py-1 outline-none mr-4 bg-surface border border-border-2 text-text" />
               ) : (
-                <span className="text-sm truncate pr-4" style={{ color: 'var(--text)' }}>{tx.description}</span>
+                <span className="text-sm truncate pr-4 text-text">{tx.description}</span>
               )}
 
               {/* Category */}
               {isEditing ? (
                 ed.isIncome
-                  ? <span className="text-xs pr-4" style={{ color: '#4ade80' }}>Income</span>
+                  ? <span className="text-xs pr-4 text-green">Income</span>
                   : <select value={ed.categoryId}
                       onChange={e => updateField(tx.id, { categoryId: e.target.value })}
-                      className="text-xs rounded-md px-2 py-1 outline-none pr-4"
-                      style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', color: 'var(--text)' }}>
+                      className="text-xs rounded-md px-2 py-1 outline-none pr-4 bg-surface border border-border-2 text-text">
                       <option value="">— none —</option>
                       {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
@@ -595,7 +552,7 @@ function TransactionsContent() {
                 <div className="pr-4">
                   {tx.category
                     ? <CategoryPill name={tx.category.name} color={tx.category.color} />
-                    : <span style={{ color: 'var(--text-3)' }}>—</span>}
+                    : <span className="text-text-3">—</span>}
                 </div>
               )}
 
@@ -618,14 +575,13 @@ function TransactionsContent() {
               {/* Amount */}
               {isEditing ? (
                 <div className="flex items-center justify-end gap-0.5">
-                  <span className="text-xs" style={{ color: 'var(--text-2)' }}>{currency}</span>
+                  <span className="text-xs text-text-2">{currency}</span>
                   <input type="number" step="0.01" value={ed.amount}
                     onChange={e => updateField(tx.id, { amount: e.target.value })}
-                    className="text-sm text-right rounded-md px-2 py-1 outline-none w-20"
-                    style={{ background: 'var(--surface)', border: `1px solid ${ed.isIncome ? '#4ade8066' : 'var(--border-2)'}`, color: ed.isIncome ? '#4ade80' : 'var(--text)' }} />
+                    className={cn('text-sm text-right rounded-md px-2 py-1 outline-none w-20 bg-surface border', ed.isIncome ? 'border-green/40 text-green' : 'border-border-2 text-text')} />
                 </div>
               ) : (
-                <span className="text-sm font-medium tabular-nums text-right" style={{ color: Number(tx.amount) > 0 ? 'var(--green)' : 'var(--text)' }}>
+                <span className={cn('text-sm font-medium tabular-nums text-right', Number(tx.amount) > 0 ? 'text-green' : 'text-text')}>
                   {Number(tx.amount) > 0 ? '+' : ''}{currency}{Math.abs(Number(tx.amount)).toFixed(2)}
                 </span>
               )}
@@ -635,23 +591,21 @@ function TransactionsContent() {
                 {isEditing ? (
                   <>
                     <button onClick={() => saveEdit(tx.id)}
-                      className="w-7 h-7 flex items-center justify-center rounded-md"
-                      style={{ background: 'var(--accent)', color: '#0c0c0e' }}
-                      title="Save">
+                      className="w-7 h-7 flex items-center justify-center rounded-md bg-accent text-bg"
+                      aria-label="Save" title="Save">
                       <Check size={12} />
                     </button>
                     <button onClick={() => setEditing(null)}
-                      className="w-7 h-7 flex items-center justify-center rounded-md"
-                      style={{ color: 'var(--text-2)', border: '1px solid var(--border)' }}
-                      title="Cancel">
+                      className="w-7 h-7 flex items-center justify-center rounded-md text-text-2 border border-border"
+                      aria-label="Cancel" title="Cancel">
                       <X size={12} />
                     </button>
                   </>
                 ) : (
                   <>
                     <button onClick={() => startEdit(tx)}
-                      className="w-7 h-7 flex items-center justify-center rounded-md transition-colors"
-                      style={{ color: 'var(--text-2)' }} title="Edit">
+                      className="w-7 h-7 flex items-center justify-center rounded-md transition-colors text-text-2"
+                      aria-label="Edit transaction" title="Edit">
                       <Pencil size={13} />
                     </button>
                     <button onClick={async () => {
@@ -659,8 +613,8 @@ function TransactionsContent() {
                       await api.transactions.remove(tx.id)
                       setAllItems(prev => prev.filter(t => t.id !== tx.id))
                     }}
-                      className="w-7 h-7 flex items-center justify-center rounded-md transition-colors"
-                      style={{ color: 'var(--red)' }} title="Delete">
+                      className="w-7 h-7 flex items-center justify-center rounded-md transition-colors text-red"
+                      aria-label="Delete transaction" title="Delete">
                       <Trash2 size={13} />
                     </button>
                   </>
@@ -671,29 +625,22 @@ function TransactionsContent() {
         )}
 
         {/* Footer */}
-        <div
-          className="flex items-center justify-between px-5 py-3"
-          style={{ borderTop: '1px solid var(--border)' }}
-        >
+        <div className="flex items-center justify-between px-5 py-3 border-t border-border">
           {/* Left: count + per page */}
           <div className="flex items-center gap-3">
-            <span className="text-xs" style={{ color: 'var(--text-2)' }}>
+            <span className="text-xs text-text-2">
               Showing {total === 0 ? 0 : (page - 1) * perPage + 1}–{Math.min(page * perPage, total)} of {total}
             </span>
-            <div
-              className="flex items-center gap-1 rounded-md px-2.5 py-1 text-xs"
-              style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}
-            >
-              <span style={{ color: 'var(--text-2)' }}>Show</span>
+            <div className="flex items-center gap-1 rounded-md px-2.5 py-1 text-xs bg-surface-2 border border-border">
+              <span className="text-text-2">Show</span>
               <select
                 value={perPage}
                 onChange={e => { setPerPage(Number(e.target.value)); setPage(1) }}
-                className="bg-transparent text-xs outline-none ml-1 appearance-none"
-                style={{ color: 'var(--text)' }}
+                className="bg-transparent text-xs outline-none ml-1 appearance-none text-text"
               >
                 {PER_PAGE_OPTIONS.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
-              <ChevronDown size={10} style={{ color: 'var(--text-2)' }} />
+              <ChevronDown size={10} className="text-text-2" />
             </div>
           </div>
 
@@ -703,24 +650,19 @@ function TransactionsContent() {
               {page > 1 && (
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
-                  className="w-7 h-7 flex items-center justify-center rounded-md text-xs"
-                  style={{ color: 'var(--text-2)' }}
+                  className="w-7 h-7 flex items-center justify-center rounded-md text-xs text-text-2"
                 >
                   ‹
                 </button>
               )}
               {pageNums().map((n, i) =>
                 n === '...'
-                  ? <span key={`ellipsis-${i}`} className="w-7 text-center text-xs" style={{ color: 'var(--text-3)' }}>···</span>
+                  ? <span key={`ellipsis-${i}`} className="w-7 text-center text-xs text-text-3">···</span>
                   : (
                     <button
                       key={n}
                       onClick={() => setPage(n as number)}
-                      className="w-7 h-7 flex items-center justify-center rounded-md text-xs font-medium"
-                      style={{
-                        background: page === n ? 'var(--accent)' : 'transparent',
-                        color: page === n ? '#0c0c0e' : 'var(--text-2)',
-                      }}
+                      className={cn('w-7 h-7 flex items-center justify-center rounded-md text-xs font-medium', page === n ? 'bg-accent text-bg' : 'text-text-2')}
                     >
                       {n}
                     </button>
@@ -729,8 +671,7 @@ function TransactionsContent() {
               {page < totalPages && (
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  className="w-7 h-7 flex items-center justify-center rounded-md text-xs"
-                  style={{ color: 'var(--text-2)' }}
+                  className="w-7 h-7 flex items-center justify-center rounded-md text-xs text-text-2"
                 >
                   ›
                 </button>
@@ -747,16 +688,10 @@ function TransactionsContent() {
           style={{ background: '#00000060' }}
           onClick={(e) => e.target === e.currentTarget && setConfirmItem(null)}
         >
-          <div
-            className="rounded-xl w-80 overflow-hidden"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}
-          >
-            <div
-              className="flex items-center justify-between px-4 py-3"
-              style={{ borderBottom: '1px solid var(--border)' }}
-            >
-              <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Confirm transaction</span>
-              <button onClick={() => setConfirmItem(null)} style={{ color: 'var(--text-2)' }}>✕</button>
+          <div className="rounded-xl w-80 overflow-hidden bg-surface border border-border-2">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <span className="text-sm font-semibold text-text">Confirm transaction</span>
+              <button onClick={() => setConfirmItem(null)} className="text-text-2">✕</button>
             </div>
 
             <div className="px-4 pt-3 pb-0">
@@ -764,7 +699,7 @@ function TransactionsContent() {
                 className="rounded-lg px-3 py-2.5 mb-3"
                 style={{ background: '#818cf810', border: '1px solid #818cf820' }}
               >
-                <p className="text-sm font-medium" style={{ color: 'var(--text-2)' }}>{confirmItem.description}</p>
+                <p className="text-sm font-medium text-text-2">{confirmItem.description}</p>
                 <p className="text-xs mt-0.5" style={{ color: '#818cf8' }}>
                   Predicted ~{format(new Date(year, month - 1, confirmItem.expectedDay), 'd MMM')} · −<CurrencyAmount amount={Math.abs(confirmItem.typicalAmount)} />
                 </p>
@@ -773,43 +708,35 @@ function TransactionsContent() {
 
             <div className="px-4 pb-3 space-y-3">
               <div>
-                <label className="text-xs font-medium block mb-1" style={{ color: 'var(--text-2)' }}>Actual date</label>
+                <label className="text-xs font-medium block mb-1 text-text-2">Actual date</label>
                 <input
                   type="date"
                   value={confirmDate}
                   onChange={e => setConfirmDate(e.target.value)}
-                  className="w-full rounded-lg px-3 py-2 text-sm outline-none"
-                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', colorScheme: 'dark' }}
+                  className="w-full rounded-lg px-3 py-2 text-sm outline-none bg-surface-2 border border-border-2 text-text"
+                  style={{ colorScheme: 'dark' }}
                 />
               </div>
               <div>
-                <label className="text-xs font-medium block mb-1" style={{ color: 'var(--text-2)' }}>Actual amount</label>
-                <div
-                  className="flex items-center rounded-lg px-3"
-                  style={{ background: 'var(--surface-2)', border: '1px solid var(--accent)', height: 36 }}
-                >
-                  <span className="text-sm mr-1" style={{ color: 'var(--text-3)' }}>{currency}</span>
+                <label className="text-xs font-medium block mb-1 text-text-2">Actual amount</label>
+                <div className="flex items-center rounded-lg px-3 h-9 bg-surface-2 border border-accent">
+                  <span className="text-sm mr-1 text-text-3">{currency}</span>
                   <input
                     type="number"
                     min={0}
                     step={0.01}
                     value={confirmAmount}
                     onChange={e => setConfirmAmount(e.target.value)}
-                    className="flex-1 bg-transparent outline-none text-sm"
-                    style={{ color: 'var(--text)' }}
+                    className="flex-1 bg-transparent outline-none text-sm text-text"
                   />
                 </div>
               </div>
             </div>
 
-            <div
-              className="flex items-center justify-end gap-2 px-4 py-3"
-              style={{ borderTop: '1px solid var(--border)' }}
-            >
+            <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border">
               <button
                 onClick={() => setConfirmItem(null)}
-                className="px-3 py-1.5 rounded-lg text-sm"
-                style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}
+                className="px-3 py-1.5 rounded-lg text-sm bg-surface-2 text-text-2"
               >
                 Cancel
               </button>
@@ -833,8 +760,7 @@ function TransactionsContent() {
                     setConfirmSaving(false)
                   }
                 }}
-                className="px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-40"
-                style={{ background: 'var(--accent)', color: '#0c0c0e' }}
+                className="px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-40 bg-accent text-bg"
               >
                 {confirmSaving ? 'Saving…' : 'Save as transaction'}
               </button>
@@ -846,23 +772,17 @@ function TransactionsContent() {
       {/* Bulk categorize floating bar */}
       {selectedIds.size > 0 && (
         <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl"
-          style={{
-            background: 'var(--surface-2)',
-            border: '1px solid var(--border-2)',
-            boxShadow: '0 8px 32px #000a',
-            minWidth: 420,
-          }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-xl bg-surface-2 border border-border-2"
+          style={{ boxShadow: '0 8px 32px #000a', minWidth: 420 }}
         >
-          <span className="text-sm font-medium shrink-0" style={{ color: 'var(--text)' }}>
+          <span className="text-sm font-medium shrink-0 text-text">
             {selectedIds.size} selected
           </span>
 
           <select
             value={bulkCategoryId}
             onChange={e => { setBulkCategoryId(e.target.value); setBulkError(null) }}
-            className="flex-1 rounded-lg px-3 py-1.5 text-sm outline-none"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', color: 'var(--text)' }}
+            className="flex-1 rounded-lg px-3 py-1.5 text-sm outline-none bg-surface border border-border-2 text-text"
           >
             <option value="">Pick a category…</option>
             <option value="__none__">No category</option>
@@ -888,22 +808,20 @@ function TransactionsContent() {
                 setBulkSaving(false)
               }
             }}
-            className="px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-40 shrink-0"
-            style={{ background: 'var(--accent)', color: '#0c0c0e' }}
+            className="px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-40 shrink-0 bg-accent text-bg"
           >
             {bulkSaving ? 'Applying…' : 'Apply'}
           </button>
 
           <button
             onClick={() => { setSelectedIds(new Set()); setBulkCategoryId(''); setBulkError(null) }}
-            className="text-xs shrink-0"
-            style={{ color: 'var(--text-2)' }}
+            className="text-xs shrink-0 text-text-2"
           >
             Deselect all
           </button>
 
           {bulkError && (
-            <span className="text-xs" style={{ color: 'var(--red)' }}>{bulkError}</span>
+            <span className="text-xs text-red">{bulkError}</span>
           )}
         </div>
       )}
