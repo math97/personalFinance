@@ -1,36 +1,50 @@
-# Frontend — Agent Instructions
+# Frontend Agent Instructions
 
-Same rules as CLAUDE.md. This file exists so all AI agents (Codex, Gemini CLI, etc.) pick up the same conventions.
+This file applies to `code/apps/frontend/` and its descendants.
+Next.js in this repo has breaking changes relative to common defaults, so read the relevant guide in `node_modules/next/dist/docs/` before changing app behavior.
 
-## Quick reference
+## Scope
+
+- Next.js App Router frontend
+- TypeScript, Tailwind CSS v4, `tailwind-merge`, and `tailwind-variants`
+- Shared UI components in `src/components/` and `src/components/ui/`
+
+## Core Rules
 
 | Rule | Do | Don't |
 |---|---|---|
-| Font family | `font-sans` via `@theme { --font-sans: ... }` | Custom `.font-primary` utility |
-| Theme color classes | `text-accent`, `bg-surface`, `text-white` | `text-[--color-accent]`, `text-(--color-white)` |
-| Conditional classes | `twMerge('base', cond && 'extra')` | Template literals `` `base ${cond ? 'extra' : ''}` `` |
-| Variants | `tv({ base, variants })`, pass `className` into `tv` | Manual `twMerge` before/after `tv` |
-| Native props | `extends React.ComponentProps<'button'>` | Manually re-declare `onClick`, `disabled`, etc. |
-| Exports | `export function Foo` | `export default function Foo` |
-| Generic components | `src/components/ui/` | Inline in page files |
-| Static design tokens | Tailwind class (`text-accent`) | `style={{ color: 'var(--accent)' }}` |
-| Dynamic colors | `style={{ color: category.color }}` | Hard-coded hex in className |
+| Theme tokens | Use canonical Tailwind classes from `@theme` | Use arbitrary token syntax for existing theme values |
+| Class merging | Use `twMerge` or the local `cn` helper | Build conditional classes with template strings |
+| Variants | Use `tv()` and pass `className` into it | Merge classes manually before calling `tv()` |
+| Native props | Extend `React.ComponentProps<'button'>` and similar | Re-declare common DOM props by hand |
+| Exports | Use named exports | Use `export default` |
+| Shared UI | Put reusable primitives in `src/components/ui/` | Duplicate generic components inside pages |
+| Dynamic color | Use inline styles only for data-driven values | Hard-code hex values into class names |
 
-## Installed libraries
+## Styling Rules
 
-- `tailwindcss` v4 — utility classes, `@theme` config in `globals.css`
-- `tailwind-merge` — `twMerge()` for merging class strings
-- `tailwind-variants` — `tv()` for component variants
+- Use `font-sans` via the theme configuration, not a custom font utility.
+- Prefer Tailwind utilities for static tokens that already exist in `globals.css`.
+- Keep class composition consistent with the existing `cn` helper and component patterns.
 
-## `@theme` color tokens available as Tailwind classes
+## Component Rules
 
-All of these are usable directly as Tailwind utilities (`text-*`, `bg-*`, `border-*`):
+- Keep feature-specific components close to the feature.
+- Keep generic controls in `src/components/ui/`.
+- Prefer named exports for everything.
+- Make sure wrapper components pass through native HTML props.
 
+## Commands
+
+```bash
+cd code/apps/frontend
+npm run dev
+npm test
+npm run test:e2e
 ```
-accent       surface      surface-2
-text         text-2       text-3
-border       border-2     green
-red          amber-bg     accent-dim
-```
 
-Example: `text-text-2`, `bg-surface-2`, `border-border`, `text-accent`
+## Reference Files
+
+- App-level guidance: [`CLAUDE.md`](CLAUDE.md)
+- Theme tokens: `src/app/globals.css`
+- Reusable primitives: `src/components/ui/`
