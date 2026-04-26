@@ -127,7 +127,7 @@ export class InMemoryTransactionRepository extends TransactionRepository {
       if (!existing) continue
       this.store.set(id, new TransactionEntity(
         existing.id, existing.amount, existing.date, existing.description,
-        existing.source, categoryId, existing.category,
+        existing.source, categoryId, null,
         existing.merchant, existing.account, existing.createdAt,
       ))
       count++
