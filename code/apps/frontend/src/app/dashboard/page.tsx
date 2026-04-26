@@ -4,26 +4,12 @@ import { CurrencyAmount } from '@/components/currency-amount'
 import { BudgetProgressPanel } from '@/components/budget-progress-panel'
 import { UpcomingPanel } from '@/components/upcoming-panel'
 import { ChartsToggleCard } from '@/components/charts-toggle-card'
+import { CategoryPill } from '@/components/ui/category-pill'
+import { Card } from '@/components/ui/card'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { format } from 'date-fns'
 import { ChevronLeft, ChevronRight, PlusCircle, Upload } from 'lucide-react'
-
-function CategoryPill({ name, color }: { name: string; color: string }) {
-  return (
-    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: color + '22', color }}>
-      {name}
-    </span>
-  )
-}
-
-function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl p-5 bg-surface border border-border">
-      {children}
-    </div>
-  )
-}
 
 function EmptyDashboard({ monthLabel, year, month }: { monthLabel: string; year: number; month: number }) {
   return (

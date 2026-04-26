@@ -9,35 +9,9 @@ import { cn } from '@/lib/cn'
 import { ChevronLeft, ChevronRight, Search, Pencil, ChevronDown, Check, X, Trash2, Eye, EyeOff } from 'lucide-react'
 import { useCurrency } from '@/hooks/useCurrency'
 import { CurrencyAmount } from '@/components/currency-amount'
+import { CategoryPill } from '@/components/ui/category-pill'
+import { SourcePill } from '@/components/ui/source-pill'
 const PER_PAGE_OPTIONS = [10, 20, 50]
-
-function SourcePill({ source }: { source: 'manual' | 'pdf' | 'photo' }) {
-  const styles = {
-    manual: { bg: '#ffffff10', color: '#71717a', label: 'manual' },
-    pdf:    { bg: '#38bdf822', color: '#38bdf8', label: 'pdf'    },
-    photo:  { bg: '#c084fc22', color: '#c084fc', label: 'photo'  },
-  }
-  const s = styles[source]
-  return (
-    <span
-      className="text-xs px-2 py-0.5 rounded-full font-medium"
-      style={{ background: s.bg, color: s.color }}
-    >
-      {s.label}
-    </span>
-  )
-}
-
-function CategoryPill({ name, color }: { name: string; color: string }) {
-  return (
-    <span
-      className="text-xs px-2 py-0.5 rounded-full font-medium"
-      style={{ background: color + '22', color }}
-    >
-      {name}
-    </span>
-  )
-}
 
 export default function TransactionsPage() {
   return (
