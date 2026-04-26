@@ -82,6 +82,8 @@ export const api = {
     update: (id: string, data: Partial<{ amount: number; date: string; description: string; categoryId: string }>) =>
       patch<any>(`/transactions/${id}`, data),
     remove: (id: string) => del<any>(`/transactions/${id}`),
+    bulkCategorize: (ids: string[], categoryId: string | null) =>
+      patch<{ updated: number }>('/transactions/bulk-categorize', { ids, categoryId }),
   },
 
   categories: {

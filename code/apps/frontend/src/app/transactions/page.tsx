@@ -65,6 +65,11 @@ function TransactionsContent() {
   const [allTime, setAllTime] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkCategoryId, setBulkCategoryId] = useState<string>('')
+  const [bulkError, setBulkError] = useState<string | null>(null)
+  const [bulkSaving, setBulkSaving] = useState(false)
+
   const prevMonth = month === 1  ? 12 : month - 1
   const prevYear  = month === 1  ? year - 1 : year
   const nextMonth = month === 12 ? 1  : month + 1
@@ -89,6 +94,7 @@ function TransactionsContent() {
   useEffect(() => {
     setIsLoading(true)
     setError(null)
+    setSelectedIds(new Set())
     api.transactions.list(allTime ? { perPage: 1000 } : { year, month, perPage: 1000 })
       .then(r => setAllItems(r.items))
       .catch(() => setError('Failed to load transactions'))
@@ -399,11 +405,38 @@ function TransactionsContent() {
         <div
           className="grid text-xs font-medium uppercase tracking-wider px-5 py-2.5"
           style={{
-            gridTemplateColumns: '110px 1fr 180px 90px 130px 48px',
+            gridTemplateColumns: '32px 110px 1fr 180px 90px 130px 48px',
             borderBottom: '1px solid var(--border)',
             color: 'var(--text-2)',
           }}
         >
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              style={{ accentColor: 'var(--accent)', cursor: 'pointer' }}
+              checked={
+                pageItems.filter(i => !i._predicted).length > 0 &&
+                pageItems.filter(i => !i._predicted).every(i => selectedIds.has(i.id))
+              }
+              ref={el => {
+                if (el) el.indeterminate =
+                  pageItems.filter(i => !i._predicted).some(i => selectedIds.has(i.id)) &&
+                  !pageItems.filter(i => !i._predicted).every(i => selectedIds.has(i.id))
+              }}
+              onChange={e => {
+                const realIds = pageItems.filter(i => !i._predicted).map(i => i.id)
+                if (e.target.checked) {
+                  setSelectedIds(prev => new Set([...prev, ...realIds]))
+                } else {
+                  setSelectedIds(prev => {
+                    const next = new Set(prev)
+                    realIds.forEach(id => next.delete(id))
+                    return next
+                  })
+                }
+              }}
+            />
+          </div>
           <span>Date</span>
           <span>Description</span>
           <span>Category</span>
@@ -439,11 +472,12 @@ function TransactionsContent() {
                   key={tx.id}
                   className="grid items-center px-5 py-3"
                   style={{
-                    gridTemplateColumns: '110px 1fr 180px 90px 130px 48px',
+                    gridTemplateColumns: '32px 110px 1fr 180px 90px 130px 48px',
                     background: '#818cf80a',
                     borderBottom: '1px solid #818cf820',
                   }}
                 >
+                  <div />
                   <span className="text-xs" style={{ color: '#818cf8', opacity: 0.8 }}>
                     ~{format(new Date(year, month - 1, tx.expectedDay), 'd MMM')}
                   </span>
@@ -501,11 +535,27 @@ function TransactionsContent() {
               key={tx.id}
               className="grid items-center px-5 py-3"
               style={{
-                gridTemplateColumns: '110px 1fr 180px 90px 130px 48px',
+                gridTemplateColumns: '32px 110px 1fr 180px 90px 130px 48px',
                 borderBottom: '1px solid var(--border)',
                 background: isEditing ? 'var(--surface-2)' : 'transparent',
               }}
             >
+              {/* Checkbox */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  style={{ accentColor: 'var(--accent)', cursor: 'pointer' }}
+                  checked={selectedIds.has(tx.id)}
+                  onChange={e => {
+                    setSelectedIds(prev => {
+                      const next = new Set(prev)
+                      if (e.target.checked) next.add(tx.id)
+                      else next.delete(tx.id)
+                      return next
+                    })
+                  }}
+                />
+              </div>
               {/* Date */}
               {isEditing ? (
                 <input type="date" value={ed.date}
@@ -788,6 +838,71 @@ function TransactionsContent() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Bulk categorize floating bar */}
+      {selectedIds.size > 0 && (
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl"
+          style={{
+            background: 'var(--surface-2)',
+            border: '1px solid var(--border-2)',
+            boxShadow: '0 8px 32px #000a',
+            minWidth: 420,
+          }}
+        >
+          <span className="text-sm font-medium shrink-0" style={{ color: 'var(--text)' }}>
+            {selectedIds.size} selected
+          </span>
+
+          <select
+            value={bulkCategoryId}
+            onChange={e => { setBulkCategoryId(e.target.value); setBulkError(null) }}
+            className="flex-1 rounded-lg px-3 py-1.5 text-sm outline-none"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', color: 'var(--text)' }}
+          >
+            <option value="">Pick a category…</option>
+            <option value="__none__">No category</option>
+            {categories.map((c: any) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+
+          <button
+            disabled={bulkSaving || bulkCategoryId === ''}
+            onClick={async () => {
+              setBulkSaving(true)
+              setBulkError(null)
+              try {
+                const categoryId = bulkCategoryId === '__none__' ? null : bulkCategoryId
+                await api.transactions.bulkCategorize([...selectedIds], categoryId)
+                setSelectedIds(new Set())
+                setBulkCategoryId('')
+                refresh()
+              } catch {
+                setBulkError('Failed to apply — please retry')
+              } finally {
+                setBulkSaving(false)
+              }
+            }}
+            className="px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-40 shrink-0"
+            style={{ background: 'var(--accent)', color: '#0c0c0e' }}
+          >
+            {bulkSaving ? 'Applying…' : 'Apply'}
+          </button>
+
+          <button
+            onClick={() => { setSelectedIds(new Set()); setBulkCategoryId(''); setBulkError(null) }}
+            className="text-xs shrink-0"
+            style={{ color: 'var(--text-2)' }}
+          >
+            Deselect all
+          </button>
+
+          {bulkError && (
+            <span className="text-xs" style={{ color: 'var(--red)' }}>{bulkError}</span>
+          )}
         </div>
       )}
     </div>
