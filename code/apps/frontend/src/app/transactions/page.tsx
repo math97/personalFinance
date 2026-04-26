@@ -95,6 +95,8 @@ function TransactionsContent() {
     setIsLoading(true)
     setError(null)
     setSelectedIds(new Set())
+    setBulkCategoryId('')
+    setBulkError(null)
     api.transactions.list(allTime ? { perPage: 1000 } : { year, month, perPage: 1000 })
       .then(r => setAllItems(r.items))
       .catch(() => setError('Failed to load transactions'))
