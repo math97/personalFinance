@@ -33,5 +33,5 @@ export class CreateTransactionDto {
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  notes?: string | null
+  notes?: string
 }
