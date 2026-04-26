@@ -62,6 +62,8 @@ function TransactionsContent() {
   const [categories, setCategories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [allTime, setAllTime] = useState(false)
+  const [showExportMenu, setShowExportMenu] = useState(false)
 
   const prevMonth = month === 1  ? 12 : month - 1
   const prevYear  = month === 1  ? year - 1 : year
@@ -69,14 +71,15 @@ function TransactionsContent() {
   const nextYear  = month === 12 ? year + 1 : year
 
   const monthLabel = format(new Date(year, month - 1), 'MMMM yyyy')
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
 
   useEffect(() => { api.categories.list().then(setCategories).catch(() => {}) }, [])
 
   const refresh = useCallback(() => {
-    api.transactions.list({ year, month, perPage: 1000 })
+    api.transactions.list(allTime ? { perPage: 1000 } : { year, month, perPage: 1000 })
       .then(r => setAllItems(r.items))
       .catch(() => {})
-  }, [year, month])
+  }, [year, month, allTime])
 
   useEffect(() => {
     window.addEventListener('transaction-saved', refresh)
@@ -86,15 +89,16 @@ function TransactionsContent() {
   useEffect(() => {
     setIsLoading(true)
     setError(null)
-    api.transactions.list({ year, month, perPage: 1000 })
+    api.transactions.list(allTime ? { perPage: 1000 } : { year, month, perPage: 1000 })
       .then(r => setAllItems(r.items))
       .catch(() => setError('Failed to load transactions'))
       .finally(() => setIsLoading(false))
-  }, [year, month])
+  }, [year, month, allTime])
 
   useEffect(() => {
+    if (allTime) { setPredicted([]); return }
     api.recurring.upcoming(year, month).then(setPredicted).catch(() => {})
-  }, [year, month])
+  }, [year, month, allTime])
 
   const [showPredicted, setShowPredicted] = useState(true)
   const [predicted, setPredicted] = useState<any[]>([])
@@ -106,6 +110,13 @@ function TransactionsContent() {
   const [editing, setEditing] = useState<string | null>(null)
   const [editData, setEditData] = useState<Record<string, any>>({})
 
+  useEffect(() => {
+    if (!showExportMenu) return
+    const close = () => setShowExportMenu(false)
+    document.addEventListener('click', close)
+    return () => document.removeEventListener('click', close)
+  }, [showExportMenu])
+
   const filteredItems = allItems.filter(tx => {
     if (search && !tx.description.toLowerCase().includes(search.toLowerCase())) return false
     if (catFilter === 'uncategorized' && tx.category !== null) return false
@@ -116,7 +127,7 @@ function TransactionsContent() {
     return true
   })
 
-  const predictedRows = showPredicted
+  const predictedRows = showPredicted && !allTime
     ? predicted
         .filter(p => {
           if (search && !p.description.toLowerCase().includes(search.toLowerCase())) return false
@@ -190,19 +201,84 @@ function TransactionsContent() {
         <h1 className="text-xl font-semibold flex-1" style={{ color: 'var(--text)' }}>
           All Transactions
         </h1>
-        <button onClick={() => nav(prevYear, prevMonth)}
-          className="flex items-center justify-center w-8 h-8 rounded-lg"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <ChevronLeft size={16} style={{ color: 'var(--text-2)' }} />
-        </button>
-        <span className="text-sm font-medium w-28 text-center" style={{ color: 'var(--text)' }}>
-          {monthLabel}
-        </span>
-        <button onClick={() => nav(nextYear, nextMonth)}
-          className="flex items-center justify-center w-8 h-8 rounded-lg"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <ChevronRight size={16} style={{ color: 'var(--text-2)' }} />
-        </button>
+
+        {/* Month navigator — hidden in all-time mode */}
+        {allTime ? (
+          <span className="text-sm font-medium w-28 text-center" style={{ color: 'var(--text)' }}>
+            All time
+          </span>
+        ) : (
+          <>
+            <button onClick={() => nav(prevYear, prevMonth)}
+              className="flex items-center justify-center w-8 h-8 rounded-lg"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <ChevronLeft size={16} style={{ color: 'var(--text-2)' }} />
+            </button>
+            <span className="text-sm font-medium w-28 text-center" style={{ color: 'var(--text)' }}>
+              {monthLabel}
+            </span>
+            <button onClick={() => nav(nextYear, nextMonth)}
+              className="flex items-center justify-center w-8 h-8 rounded-lg"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <ChevronRight size={16} style={{ color: 'var(--text-2)' }} />
+            </button>
+          </>
+        )}
+
+        {/* Export dropdown */}
+        <div className="relative" onClick={e => e.stopPropagation()}>
+          <button
+            onClick={() => setShowExportMenu(v => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+            style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)' }}
+          >
+            Export
+            <ChevronDown size={10} />
+          </button>
+
+          {showExportMenu && (
+            <div
+              className="absolute right-0 top-full mt-1 w-48 rounded-lg overflow-hidden z-20"
+              style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', boxShadow: '0 4px 12px #0006' }}
+            >
+              <a
+                href={(() => {
+                  const p = new URLSearchParams()
+                  if (!allTime) { p.set('year', String(year)); p.set('month', String(month)) }
+                  if (search) p.set('search', search)
+                  if (catFilter && catFilter !== 'uncategorized') p.set('categoryId', catFilter)
+                  p.set('scope', 'filtered')
+                  return `${BASE_URL}/transactions/export?${p.toString()}`
+                })()}
+                download
+                onClick={() => setShowExportMenu(false)}
+                className="flex items-center px-3 py-2.5 text-xs hover:bg-white/5 transition-colors"
+                style={{ color: 'var(--text)' }}
+              >
+                Export current view
+              </a>
+
+              {allTime ? (
+                <span
+                  className="flex items-center px-3 py-2.5 text-xs cursor-not-allowed"
+                  style={{ color: 'var(--text-3)' }}
+                >
+                  Export entire month
+                </span>
+              ) : (
+                <a
+                  href={`${BASE_URL}/transactions/export?year=${year}&month=${month}&scope=month`}
+                  download
+                  onClick={() => setShowExportMenu(false)}
+                  className="flex items-center px-3 py-2.5 text-xs hover:bg-white/5 transition-colors"
+                  style={{ color: 'var(--text)' }}
+                >
+                  Export entire month
+                </a>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Main card */}
@@ -298,6 +374,18 @@ function TransactionsContent() {
               </span>
             </button>
           )}
+
+            <button
+              onClick={() => { setAllTime(v => !v); setPage(1) }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+              style={{
+                background: allTime ? '#f59e0b18' : 'var(--surface)',
+                border:     `1px solid ${allTime ? '#f59e0b44' : 'var(--border)'}`,
+                color:      allTime ? 'var(--accent)' : 'var(--text-2)',
+              }}
+            >
+              {allTime ? 'All time' : 'This month'}
+            </button>
 
           <span
             className="text-sm font-semibold px-3 py-1.5 rounded-lg"
