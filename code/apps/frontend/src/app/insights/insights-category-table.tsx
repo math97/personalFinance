@@ -90,10 +90,11 @@ export function InsightsCategoryTable({ categories, currentMonthLabel, onRowClic
   const colLabels = [prevPrev?.label ?? '', prev?.label ?? '', curr?.label ?? currentMonthLabel]
 
   return (
-    <div
-      className="rounded-xl overflow-hidden"
-      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-    >
+    <div className="overflow-x-auto">
+      <div
+        className="min-w-[920px] overflow-hidden rounded-xl"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+      >
       {/* Header row */}
       <div
         className="grid items-center px-5 py-2.5 text-xs font-semibold uppercase tracking-wider"
@@ -175,6 +176,7 @@ export function InsightsCategoryTable({ categories, currentMonthLabel, onRowClic
           </div>
         )
       })}
+      </div>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 export default function TransactionsLoading() {
   return (
-    <div className="px-8 py-6 max-w-5xl mx-auto animate-pulse">
+    <div className="mx-auto max-w-5xl animate-pulse px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
       <div className="flex items-center gap-4 mb-6">
         <div className="h-7 w-40 rounded-lg" style={{ background: 'var(--surface-2)' }} />
         <div className="flex-1" />

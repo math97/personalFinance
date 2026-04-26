@@ -7,7 +7,7 @@ export default async function ImportInboxPage() {
   const batches = await api.import.batches()
 
   return (
-    <div className="px-8 py-6 max-w-3xl mx-auto">
+    <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-6">
       <div className="flex items-center gap-3 mb-6">
         <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Import Inbox</h1>
         {batches.length > 0 && (
@@ -32,7 +32,7 @@ export default async function ImportInboxPage() {
         <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
           {batches.map((batch: any, i: number) => (
             <Link key={batch.id} href={`/import/${batch.id}`}
-              className="flex items-center gap-4 px-5 py-4 transition-colors"
+              className="flex items-center gap-3 px-4 py-4 transition-colors sm:gap-4 sm:px-5"
               style={{ background: 'var(--surface)', borderBottom: i < batches.length - 1 ? '1px solid var(--border)' : 'none' }}>
               <div className="flex items-center justify-center w-9 h-9 rounded-lg shrink-0" style={{ background: 'var(--surface-2)' }}>
                 <FileText size={16} style={{ color: 'var(--text-2)' }} />

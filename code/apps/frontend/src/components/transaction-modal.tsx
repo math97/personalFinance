@@ -58,7 +58,7 @@ function PickerStep({ onSelect, onClose }: { onSelect: (s: Step) => void; onClos
         <button onClick={onClose} className="text-text-2"><X size={18} /></button>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {cards.map(card => (
           <button
             key={card.id}
@@ -118,7 +118,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
   const accentColor = type === 'income' ? 'var(--green)' : 'var(--accent)'
 
   return (
-    <div className="w-full max-w-md rounded-2xl bg-surface border border-border-2">
+    <div className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-border-2 bg-surface">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-border">
         <h2 className="text-base font-semibold text-text">Add transaction</h2>
@@ -220,7 +220,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
       </div>
 
       {/* Footer */}
-      <div className="flex gap-3 px-6 py-4 border-t border-border">
+      <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row">
         <button
           onClick={onBack}
           className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors bg-surface-2 text-text-2 border border-border"
@@ -282,7 +282,7 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
   const removeFile = (id: string) => setFiles(prev => prev.filter(f => f.id !== id))
 
   return (
-    <div className="w-full max-w-lg rounded-2xl bg-surface border border-border-2">
+    <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-border-2 bg-surface">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-border">
         <h2 className="text-base font-semibold text-text">Upload documents</h2>
@@ -343,7 +343,7 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between px-6 py-4 border-t border-border">
+      <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         {error
           ? <p className="text-xs text-red">{error}</p>
           : <p className="text-xs text-text-2">
@@ -352,7 +352,7 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
                 : 'No files selected'}
             </p>
         }
-        <div className="flex gap-2">
+        <div className="flex gap-2 sm:justify-end">
           <button
             onClick={onBack}
             className="px-4 py-2 rounded-lg text-sm transition-colors bg-surface-2 text-text-2 border border-border"

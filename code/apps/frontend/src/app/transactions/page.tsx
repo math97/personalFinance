@@ -180,85 +180,87 @@ function TransactionsContent() {
   }
 
   return (
-    <div className="px-8 py-6 max-w-5xl mx-auto">
+    <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <h1 className="text-xl font-semibold flex-1 text-text">
+      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+        <h1 className="hidden flex-1 text-xl font-semibold text-text md:block">
           All Transactions
         </h1>
 
         {/* Month navigator — hidden in all-time mode */}
-        {allTime ? (
-          <span className="text-sm font-medium w-28 text-center text-text">
-            All time
-          </span>
-        ) : (
-          <>
-            <button onClick={() => nav(prevYear, prevMonth)}
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-surface border border-border">
-              <ChevronLeft size={16} className="text-text-2" />
-            </button>
-            <span className="text-sm font-medium w-28 text-center text-text">
-              {monthLabel}
+        <div className="flex flex-wrap items-center gap-2 md:ml-auto">
+          {allTime ? (
+            <span className="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text">
+              All time
             </span>
-            <button onClick={() => nav(nextYear, nextMonth)}
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-surface border border-border">
-              <ChevronRight size={16} className="text-text-2" />
+          ) : (
+            <>
+              <button onClick={() => nav(prevYear, prevMonth)}
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface">
+                <ChevronLeft size={16} className="text-text-2" />
+              </button>
+              <span className="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text">
+                {monthLabel}
+              </span>
+              <button onClick={() => nav(nextYear, nextMonth)}
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface">
+                <ChevronRight size={16} className="text-text-2" />
+              </button>
+            </>
+          )}
+
+          {/* Export dropdown */}
+          <div className="relative" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setShowExportMenu(v => !v)}
+              className="flex items-center gap-1.5 rounded-lg border border-border-2 bg-surface-2 px-3 py-2 text-xs font-medium text-text-2"
+            >
+              Export
+              <ChevronDown size={10} />
             </button>
-          </>
-        )}
 
-        {/* Export dropdown */}
-        <div className="relative" onClick={e => e.stopPropagation()}>
-          <button
-            onClick={() => setShowExportMenu(v => !v)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-surface-2 border border-border-2 text-text-2"
-          >
-            Export
-            <ChevronDown size={10} />
-          </button>
-
-          {showExportMenu && (
-            <div className="absolute right-0 top-full mt-1 w-48 rounded-lg overflow-hidden z-20 bg-surface-2 border border-border-2 shadow-xl">
-              <a
-                href={(() => {
-                  const p = new URLSearchParams()
-                  if (!allTime) { p.set('year', String(year)); p.set('month', String(month)) }
-                  if (search) p.set('search', search)
-                  if (catFilter && catFilter !== 'uncategorized') p.set('categoryId', catFilter)
-                  p.set('scope', 'filtered')
-                  return `${BASE_URL}/transactions/export?${p.toString()}`
-                })()}
-                download
-                onClick={() => setShowExportMenu(false)}
-                className="flex items-center px-3 py-2.5 text-xs hover:bg-white/5 transition-colors text-text"
-              >
-                Export current view
-              </a>
-
-              {allTime ? (
-                <span className="flex items-center px-3 py-2.5 text-xs cursor-not-allowed text-text-3">
-                  Export entire month
-                </span>
-              ) : (
+            {showExportMenu && (
+              <div className="absolute right-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-lg border border-border-2 bg-surface-2 shadow-xl">
                 <a
-                  href={`${BASE_URL}/transactions/export?year=${year}&month=${month}&scope=month`}
+                  href={(() => {
+                    const p = new URLSearchParams()
+                    if (!allTime) { p.set('year', String(year)); p.set('month', String(month)) }
+                    if (search) p.set('search', search)
+                    if (catFilter && catFilter !== 'uncategorized') p.set('categoryId', catFilter)
+                    p.set('scope', 'filtered')
+                    return `${BASE_URL}/transactions/export?${p.toString()}`
+                  })()}
                   download
                   onClick={() => setShowExportMenu(false)}
-                  className="flex items-center px-3 py-2.5 text-xs hover:bg-white/5 transition-colors text-text"
+                  className="flex items-center px-3 py-2.5 text-xs text-text transition-colors hover:bg-white/5"
                 >
-                  Export entire month
+                  Export current view
                 </a>
-              )}
-            </div>
-          )}
+
+                {allTime ? (
+                  <span className="flex cursor-not-allowed items-center px-3 py-2.5 text-xs text-text-3">
+                    Export entire month
+                  </span>
+                ) : (
+                  <a
+                    href={`${BASE_URL}/transactions/export?year=${year}&month=${month}&scope=month`}
+                    download
+                    onClick={() => setShowExportMenu(false)}
+                    className="flex items-center px-3 py-2.5 text-xs text-text transition-colors hover:bg-white/5"
+                  >
+                    Export entire month
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Main card */}
       <div className="rounded-xl overflow-hidden bg-surface border border-border">
         {/* Filters */}
-        <div className="flex items-center gap-3 px-5 py-3 border-b border-border">
+        <div className="flex flex-col gap-3 border-b border-border px-4 py-4 sm:px-5">
           <div className="flex items-center gap-2 flex-1 rounded-lg px-3 py-2 bg-surface-2 border border-border">
             <Search size={14} className="text-text-2" />
             <input
@@ -269,87 +271,309 @@ function TransactionsContent() {
             />
           </div>
 
-          <select
-            value={catFilter}
-            onChange={e => { setCatFilter(e.target.value); setPage(1) }}
-            className={cn('rounded-lg px-3 py-2 text-sm outline-none bg-surface-2 border border-border', catFilter ? 'text-text' : 'text-text-2')}
-          >
-            <option value="">All categories</option>
-            <option value="uncategorized">No category</option>
-            {categories.map((c: any) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <select
+              value={catFilter}
+              onChange={e => { setCatFilter(e.target.value); setPage(1) }}
+              className={cn('w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm outline-none sm:w-auto', catFilter ? 'text-text' : 'text-text-2')}
+            >
+              <option value="">All categories</option>
+              <option value="uncategorized">No category</option>
+              {categories.map((c: any) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
 
-          {/* Amount range */}
-          <div className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm bg-surface-2 border border-border">
-            <span className="text-text-2">{currency}</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={amountMin}
-              onChange={e => { setAmountMin(e.target.value); setPage(1) }}
-              placeholder="min"
-              className="w-14 bg-transparent outline-none text-sm text-text"
-            />
-            <span className="text-text-3">–</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={amountMax}
-              onChange={e => { setAmountMax(e.target.value); setPage(1) }}
-              placeholder="max"
-              className="w-14 bg-transparent outline-none text-sm text-text"
-            />
+            {/* Amount range */}
+            <div className="flex w-full items-center gap-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm sm:w-auto">
+              <span className="text-text-2">{currency}</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={amountMin}
+                onChange={e => { setAmountMin(e.target.value); setPage(1) }}
+                placeholder="min"
+                className="w-full min-w-0 bg-transparent text-sm text-text outline-none sm:w-14"
+              />
+              <span className="text-text-3">–</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={amountMax}
+                onChange={e => { setAmountMax(e.target.value); setPage(1) }}
+                placeholder="max"
+                className="w-full min-w-0 bg-transparent text-sm text-text outline-none sm:w-14"
+              />
+            </div>
           </div>
 
-          {predicted.length > 0 && (
-            <button
-              onClick={() => setShowPredicted(p => !p)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={{
-                background: showPredicted ? '#818cf822' : 'transparent',
-                border: `1px solid ${showPredicted ? '#818cf860' : 'var(--border)'}`,
-                color: showPredicted ? '#818cf8' : 'var(--text-3)',
-                boxShadow: showPredicted ? '0 0 0 1px #818cf820 inset' : 'none',
-              }}
-            >
-              {showPredicted ? <Eye size={12} /> : <EyeOff size={12} />}
-              Predicted
-              <span
-                className="ml-0.5 px-1.5 py-0.5 rounded text-xs font-bold"
+          <div className="flex flex-wrap items-center gap-2">
+            {predicted.length > 0 && (
+              <button
+                onClick={() => setShowPredicted(p => !p)}
+                className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
                 style={{
-                  background: showPredicted ? '#818cf830' : 'var(--surface-2)',
+                  background: showPredicted ? '#818cf822' : 'transparent',
+                  border: `1px solid ${showPredicted ? '#818cf860' : 'var(--border)'}`,
                   color: showPredicted ? '#818cf8' : 'var(--text-3)',
+                  boxShadow: showPredicted ? '0 0 0 1px #818cf820 inset' : 'none',
                 }}
               >
-                {predicted.length}
-              </span>
+                {showPredicted ? <Eye size={12} /> : <EyeOff size={12} />}
+                Predicted
+                <span
+                  className="ml-0.5 rounded px-1.5 py-0.5 text-xs font-bold"
+                  style={{
+                    background: showPredicted ? '#818cf830' : 'var(--surface-2)',
+                    color: showPredicted ? '#818cf8' : 'var(--text-3)',
+                  }}
+                >
+                  {predicted.length}
+                </span>
+              </button>
+            )}
+
+            <button
+              onClick={() => { setAllTime(v => !v); setPage(1) }}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+              style={{
+                background: allTime ? '#f59e0b18' : 'var(--surface)',
+                border:     `1px solid ${allTime ? '#f59e0b44' : 'var(--border)'}`,
+                color:      allTime ? 'var(--accent)' : 'var(--text-2)',
+              }}
+            >
+              {allTime ? 'All time' : 'This month'}
             </button>
-          )}
 
-          <button
-            onClick={() => { setAllTime(v => !v); setPage(1) }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-            style={{
-              background: allTime ? '#f59e0b18' : 'var(--surface)',
-              border:     `1px solid ${allTime ? '#f59e0b44' : 'var(--border)'}`,
-              color:      allTime ? 'var(--accent)' : 'var(--text-2)',
-            }}
-          >
-            {allTime ? 'All time' : 'This month'}
-          </button>
-
-          <span className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-surface-2 text-accent">
-            {total} transactions
-          </span>
+            <span className="rounded-lg bg-surface-2 px-3 py-1.5 text-sm font-semibold text-accent">
+              {total} transactions
+            </span>
+          </div>
         </div>
 
+        <div className="md:hidden">
+          {error ? (
+            <p className="py-12 text-center text-sm text-text-3">{error}</p>
+          ) : isLoading ? (
+            <div className="space-y-3 px-4 py-4">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="animate-pulse rounded-xl border border-border bg-surface-2 px-4 py-4">
+                  <div className="mb-3 h-4 w-2/3 rounded bg-surface" />
+                  <div className="mb-2 h-3 w-1/3 rounded bg-surface" />
+                  <div className="h-6 w-24 rounded-full bg-surface" />
+                </div>
+              ))}
+            </div>
+          ) : pageItems.length === 0 ? (
+            <p className="py-12 text-center text-sm text-text-3">No transactions found</p>
+          ) : (
+            <div className="space-y-3 px-4 py-4">
+              {pageItems.map(tx => {
+                if (tx._predicted) {
+                  return (
+                    <div
+                      key={tx.id}
+                      className="rounded-xl border px-4 py-3"
+                      style={{ background: '#818cf80a', borderColor: '#818cf840' }}
+                    >
+                      <div className="mb-3 flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-medium text-text">{tx.description}</p>
+                          <p className="mt-1 text-xs" style={{ color: '#818cf8' }}>
+                            ~{format(new Date(year, month - 1, tx.expectedDay), 'd MMM')} · predicted recurring
+                          </p>
+                        </div>
+                        <p className="text-sm font-semibold tabular-nums" style={{ color: '#818cf8' }}>
+                          <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full px-2 py-1 text-[11px] font-bold uppercase tracking-wide" style={{ background: '#818cf818', color: '#818cf8' }}>
+                          predicted
+                        </span>
+                        {tx.category
+                          ? <CategoryPill name={tx.category.name} color={tx.category.color} />
+                          : <span className="text-xs text-text-3">No category</span>}
+                      </div>
+
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          onClick={() => {
+                            setConfirmItem(tx)
+                            setConfirmDate(`${year}-${String(month).padStart(2, '0')}-${String(tx.expectedDay).padStart(2, '0')}`)
+                            setConfirmAmount(Math.abs(tx.typicalAmount).toFixed(2))
+                          }}
+                          className="flex-1 rounded-lg px-3 py-2 text-sm font-semibold"
+                          style={{ background: '#22c55e20', color: '#22c55e' }}
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          onClick={async () => {
+                            await api.recurring.dismissPattern(tx.patternId)
+                            setPredicted(prev => prev.filter(p => p.patternId !== tx.patternId))
+                          }}
+                          className="flex-1 rounded-lg border border-border px-3 py-2 text-sm text-text-2"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </div>
+                  )
+                }
+
+                const isEditing = editing === tx.id
+                const ed = editData[tx.id] ?? {}
+
+                return (
+                  <div key={tx.id} className={cn('rounded-xl border border-border bg-surface-2 px-4 py-3', isEditing && 'bg-surface')}>
+                    {isEditing ? (
+                      <div className="space-y-3">
+                        <input type="date" value={ed.date}
+                          onChange={e => updateField(tx.id, { date: e.target.value })}
+                          className="w-full rounded-md border border-border-2 bg-surface px-3 py-2 text-sm text-text outline-none"
+                          style={{ colorScheme: 'dark' }} />
+                        <input value={ed.description}
+                          onChange={e => updateField(tx.id, { description: e.target.value })}
+                          className="w-full rounded-md border border-border-2 bg-surface px-3 py-2 text-sm text-text outline-none" />
+                        {ed.isIncome ? (
+                          <span className="text-sm text-green">Income</span>
+                        ) : (
+                          <select value={ed.categoryId}
+                            onChange={e => updateField(tx.id, { categoryId: e.target.value })}
+                            className="w-full rounded-md border border-border-2 bg-surface px-3 py-2 text-sm text-text outline-none">
+                            <option value="">— none —</option>
+                            {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                          </select>
+                        )}
+                        <button
+                          onClick={() => updateField(tx.id, { isIncome: !ed.isIncome })}
+                          className="rounded-md px-3 py-2 text-sm font-medium"
+                          style={{
+                            background: ed.isIncome ? '#4ade8022' : 'var(--surface)',
+                            color: ed.isIncome ? '#4ade80' : 'var(--text-2)',
+                            border: `1px solid ${ed.isIncome ? '#4ade8066' : 'var(--border-2)'}`,
+                          }}
+                        >
+                          {ed.isIncome ? 'Income' : 'Expense'}
+                        </button>
+                        <div className="flex items-center gap-2 rounded-md border border-border-2 bg-surface px-3 py-2">
+                          <span className="text-sm text-text-2">{currency}</span>
+                          <input type="number" step="0.01" value={ed.amount}
+                            onChange={e => updateField(tx.id, { amount: e.target.value })}
+                            className={cn('w-full bg-transparent text-sm outline-none', ed.isIncome ? 'text-green' : 'text-text')} />
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => saveEdit(tx.id)} className="flex-1 rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-bg">
+                            Save
+                          </button>
+                          <button onClick={() => setEditing(null)} className="flex-1 rounded-lg border border-border px-3 py-2 text-sm text-text-2">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="mb-3 flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 items-start gap-3">
+                            <input
+                              type="checkbox"
+                              style={{ accentColor: 'var(--accent)', cursor: 'pointer' }}
+                              checked={selectedIds.has(tx.id)}
+                              onChange={e => {
+                                setSelectedIds(prev => {
+                                  const next = new Set(prev)
+                                  if (e.target.checked) next.add(tx.id)
+                                  else next.delete(tx.id)
+                                  return next
+                                })
+                              }}
+                              className="mt-1"
+                            />
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium text-text">{tx.description}</p>
+                              <p className="text-xs text-text-2">{format(new Date(tx.date), 'd MMM yyyy')}</p>
+                            </div>
+                          </div>
+                          <span className={cn('text-right text-sm font-medium tabular-nums', Number(tx.amount) > 0 ? 'text-green' : 'text-text')}>
+                            {Number(tx.amount) > 0 ? '+' : ''}{currency}{Math.abs(Number(tx.amount)).toFixed(2)}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          {tx.category
+                            ? <CategoryPill name={tx.category.name} color={tx.category.color} />
+                            : <span className="text-xs text-text-3">No category</span>}
+                          <SourcePill source={tx.source} />
+                        </div>
+
+                        <div className="mt-3 flex justify-end gap-2">
+                          <button onClick={() => startEdit(tx)} className="rounded-lg border border-border px-3 py-2 text-sm text-text-2">
+                            Edit
+                          </button>
+                          <button onClick={async () => {
+                            if (!window.confirm('Delete this transaction? This cannot be undone.')) return
+                            await api.transactions.remove(tx.id)
+                            setAllItems(prev => prev.filter(t => t.id !== tx.id))
+                          }} className="rounded-lg border border-red/40 px-3 py-2 text-sm text-red">
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {!error && !isLoading && total > 0 && (
+            <div className="flex flex-col gap-3 border-t border-border px-4 py-3">
+              <span className="text-xs text-text-2">
+                Showing {total === 0 ? 0 : (page - 1) * perPage + 1}–{Math.min(page * perPage, total)} of {total}
+              </span>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-1 rounded-md border border-border bg-surface-2 px-2.5 py-1 text-xs">
+                  <span className="text-text-2">Show</span>
+                  <select
+                    value={perPage}
+                    onChange={e => { setPerPage(Number(e.target.value)); setPage(1) }}
+                    className="ml-1 appearance-none bg-transparent text-xs text-text outline-none"
+                  >
+                    {PER_PAGE_OPTIONS.map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                  <ChevronDown size={10} className="text-text-2" />
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1">
+                    {page > 1 && (
+                      <button onClick={() => setPage(p => Math.max(1, p - 1))} className="flex h-7 w-7 items-center justify-center rounded-md text-xs text-text-2">
+                        ‹
+                      </button>
+                    )}
+                    <span className="text-xs text-text-2">{page}/{totalPages}</span>
+                    {page < totalPages && (
+                      <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} className="flex h-7 w-7 items-center justify-center rounded-md text-xs text-text-2">
+                        ›
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="hidden md:block">
+          <div className="overflow-x-auto">
+            <div className="min-w-[680px]">
         {/* Table header */}
         <div
-          className="grid text-xs font-medium uppercase tracking-wider px-5 py-2.5 border-b border-border text-text-2"
+          className="grid border-b border-border px-5 py-2.5 text-xs font-medium uppercase tracking-wider text-text-2"
           style={{ gridTemplateColumns: '32px 110px 1fr 180px 90px 130px 48px' }}
         >
           <div className="flex items-center">
@@ -389,23 +613,21 @@ function TransactionsContent() {
 
         {/* Rows */}
         {error ? (
-          <p className="text-sm py-12 text-center text-text-3">{error}</p>
+          <p className="py-12 text-center text-sm text-text-3">{error}</p>
         ) : isLoading ? (
           <div className="animate-pulse">
             {[0, 1, 2, 3, 4].map(i => (
-              <div key={i} className="flex items-center gap-4 px-5 py-3 border-b border-border">
+              <div key={i} className="flex items-center gap-4 border-b border-border px-5 py-3">
                 <div className="h-3 w-20 rounded bg-surface-2" />
                 <div className="h-3 flex-1 rounded bg-surface-2" />
                 <div className="h-5 w-24 rounded-full bg-surface-2" />
                 <div className="h-5 w-14 rounded-full bg-surface-2" />
-                <div className="h-3 w-16 rounded ml-auto bg-surface-2" />
+                <div className="ml-auto h-3 w-16 rounded bg-surface-2" />
               </div>
             ))}
           </div>
         ) : pageItems.length === 0 ? (
-          <p className="text-sm py-12 text-center text-text-3">
-            No transactions found
-          </p>
+          <p className="py-12 text-center text-sm text-text-3">No transactions found</p>
         ) : (
           pageItems.map(tx => {
             if (tx._predicted) {
@@ -426,7 +648,7 @@ function TransactionsContent() {
                   <div className="pr-4">
                     <span className="text-sm text-text-2">{tx.description}</span>
                     <span
-                      className="ml-2 text-xs px-1.5 py-0.5 rounded font-bold uppercase tracking-wide"
+                      className="ml-2 rounded px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide"
                       style={{ background: '#818cf818', color: '#818cf8', letterSpacing: '0.05em' }}
                     >
                       predicted
@@ -438,7 +660,7 @@ function TransactionsContent() {
                       : <span className="text-text-3">—</span>}
                   </div>
                   <span className="text-xs text-text-3">—</span>
-                  <span className="text-sm font-medium tabular-nums text-right" style={{ color: '#818cf8', opacity: 0.8 }}>
+                  <span className="text-right text-sm font-medium tabular-nums" style={{ color: '#818cf8', opacity: 0.8 }}>
                     <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
                   </span>
                   <div className="flex justify-end gap-1">
@@ -448,7 +670,7 @@ function TransactionsContent() {
                         setConfirmDate(`${year}-${String(month).padStart(2, '0')}-${String(tx.expectedDay).padStart(2, '0')}`)
                         setConfirmAmount(Math.abs(tx.typicalAmount).toFixed(2))
                       }}
-                      className="w-7 h-7 rounded-md flex items-center justify-center text-sm font-bold"
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-sm font-bold"
                       style={{ background: '#22c55e20', color: '#22c55e' }}
                       title="Confirm transaction"
                     >
@@ -459,7 +681,7 @@ function TransactionsContent() {
                         await api.recurring.dismissPattern(tx.patternId)
                         setPredicted(prev => prev.filter(p => p.patternId !== tx.patternId))
                       }}
-                      className="w-7 h-7 rounded-md flex items-center justify-center text-sm ml-1 bg-surface-2 text-text-2"
+                      className="ml-1 flex h-7 w-7 items-center justify-center rounded-md bg-surface-2 text-sm text-text-2"
                       title="Remove recurring"
                     >
                       ✕
@@ -670,16 +892,19 @@ function TransactionsContent() {
             </div>
           )}
         </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Confirm predicted transaction popover */}
       {confirmItem && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: '#00000060' }}
           onClick={(e) => e.target === e.currentTarget && setConfirmItem(null)}
         >
-          <div className="rounded-xl w-80 overflow-hidden bg-surface border border-border-2">
+          <div className="w-full max-w-sm overflow-hidden rounded-xl border border-border-2 bg-surface">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <span className="text-sm font-semibold text-text">Confirm transaction</span>
               <button onClick={() => setConfirmItem(null)} className="text-text-2">✕</button>
@@ -724,7 +949,7 @@ function TransactionsContent() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border">
+            <div className="flex flex-col-reverse gap-2 border-t border-border px-4 py-3 sm:flex-row sm:justify-end">
               <button
                 onClick={() => setConfirmItem(null)}
                 className="px-3 py-1.5 rounded-lg text-sm bg-surface-2 text-text-2"
@@ -763,8 +988,8 @@ function TransactionsContent() {
       {/* Bulk categorize floating bar */}
       {selectedIds.size > 0 && (
         <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-xl bg-surface-2 border border-border-2"
-          style={{ boxShadow: '0 8px 32px #000a', minWidth: 420 }}
+          className="fixed inset-x-4 bottom-24 z-50 flex flex-col gap-3 rounded-xl border border-border-2 bg-surface-2 px-4 py-3 sm:inset-x-auto sm:left-1/2 sm:bottom-6 sm:w-[min(520px,calc(100vw-2rem))] sm:-translate-x-1/2 sm:flex-row sm:items-center"
+          style={{ boxShadow: '0 8px 32px #000a' }}
         >
           <span className="text-sm font-medium shrink-0 text-text">
             {selectedIds.size} selected
@@ -773,7 +998,7 @@ function TransactionsContent() {
           <select
             value={bulkCategoryId}
             onChange={e => { setBulkCategoryId(e.target.value); setBulkError(null) }}
-            className="flex-1 rounded-lg px-3 py-1.5 text-sm outline-none bg-surface border border-border-2 text-text"
+            className="w-full rounded-lg bg-surface px-3 py-1.5 text-sm text-text outline-none border border-border-2 sm:flex-1"
           >
             <option value="">Pick a category…</option>
             <option value="__none__">No category</option>
@@ -799,20 +1024,20 @@ function TransactionsContent() {
                 setBulkSaving(false)
               }
             }}
-            className="px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-40 shrink-0 bg-accent text-bg"
+            className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-bg disabled:opacity-40 sm:shrink-0"
           >
             {bulkSaving ? 'Applying…' : 'Apply'}
           </button>
 
           <button
             onClick={() => { setSelectedIds(new Set()); setBulkCategoryId(''); setBulkError(null) }}
-            className="text-xs shrink-0 text-text-2"
+            className="text-left text-xs text-text-2 sm:shrink-0"
           >
             Deselect all
           </button>
 
           {bulkError && (
-            <span className="text-xs text-red">{bulkError}</span>
+            <span className="text-xs text-red sm:shrink-0">{bulkError}</span>
           )}
         </div>
       )}

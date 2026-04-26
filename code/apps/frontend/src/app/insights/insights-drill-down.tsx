@@ -48,7 +48,7 @@ export function InsightsDrillDown({ row, onBack }: Props) {
   return (
     <div className="space-y-5">
       {/* Back link + title */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={onBack}
           className="text-sm flex items-center gap-1"
@@ -63,7 +63,7 @@ export function InsightsDrillDown({ row, onBack }: Props) {
       </div>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="3-Month Total"
           value={<CurrencyAmount amount={sum} />}
@@ -104,7 +104,7 @@ export function InsightsDrillDown({ row, onBack }: Props) {
         {/* Delta tag */}
         {row.delta !== null && (
           <div
-            className="absolute top-4 right-4 px-2 py-1 rounded-md text-xs font-semibold"
+            className="absolute left-5 right-5 top-4 rounded-md px-2 py-1 text-center text-xs font-semibold sm:left-auto sm:right-4 sm:text-left"
             style={{
               background: row.delta > 0 ? '#f8717120' : '#22c55e20',
               color: row.delta > 0 ? 'var(--red)' : '#22c55e',
@@ -151,7 +151,7 @@ export function InsightsDrillDown({ row, onBack }: Props) {
               <LabelList
                 dataKey="total"
                 position="top"
-                formatter={(v: number) => `£${v.toFixed(0)}`}
+                formatter={value => typeof value === 'number' ? `£${value.toFixed(0)}` : ''}
                 style={{ fontSize: 11, fill: 'var(--text-2)' }}
               />
               {row.months.map((_, i) => (

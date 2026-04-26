@@ -58,12 +58,12 @@ export default function ImportPage() {
   })
 
   return (
-    <div className="px-8 py-6 max-w-3xl mx-auto">
+    <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-6">
       <h1 className="text-xl font-semibold mb-6" style={{ color: 'var(--text)' }}>Upload Files</h1>
 
       <div
         {...getRootProps()}
-        className="rounded-2xl text-center cursor-pointer transition-all py-16 mb-6"
+        className="mb-6 cursor-pointer rounded-2xl px-4 py-14 text-center transition-all sm:px-6 sm:py-16"
         style={{
           border: `2px dashed ${isDragActive ? 'var(--accent)' : uploading ? 'var(--border)' : 'var(--border-2)'}`,
           background: isDragActive ? 'var(--accent-dim)' : 'var(--surface)',
@@ -90,7 +90,7 @@ export default function ImportPage() {
             <p className="text-base font-medium mb-1.5" style={{ color: 'var(--text)' }}>
               Drop files here
             </p>
-            <div className="flex items-center justify-center gap-1.5 mb-4">
+            <div className="mb-4 flex flex-wrap items-center justify-center gap-1.5">
               <p className="text-sm" style={{ color: 'var(--text-2)' }}>
                 Bank statements — PDF, JPG, PNG, HEIC, CSV
               </p>
@@ -110,7 +110,7 @@ export default function ImportPage() {
                 {showTooltip && (
                   <div
                     role="tooltip"
-                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-lg px-3 py-2.5 text-left z-10"
+                    className="absolute bottom-full left-1/2 z-10 mb-2 w-56 -translate-x-1/2 rounded-lg px-3 py-2.5 text-left max-sm:left-auto max-sm:right-0 max-sm:translate-x-0"
                     style={{
                       background: 'var(--surface-2)',
                       border: '1px solid var(--border-2)',
@@ -150,7 +150,7 @@ export default function ImportPage() {
           <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             {batches.map((batch: any, i: number) => (
               <Link key={batch.id} href={`/import/${batch.id}`}
-                className="flex items-center gap-4 px-5 py-4"
+                className="flex items-center gap-3 px-4 py-4 sm:gap-4 sm:px-5"
                 style={{ background: 'var(--surface)', borderBottom: i < batches.length - 1 ? '1px solid var(--border)' : 'none' }}>
                 <FileText size={18} style={{ color: 'var(--text-2)', flexShrink: 0 }} />
                 <div className="flex-1 min-w-0">
