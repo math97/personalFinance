@@ -271,11 +271,11 @@ function TransactionsContent() {
             />
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="flex flex-wrap items-center gap-2">
             <select
               value={catFilter}
               onChange={e => { setCatFilter(e.target.value); setPage(1) }}
-              className={cn('w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm outline-none sm:w-auto', catFilter ? 'text-text' : 'text-text-2')}
+              className={cn('rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm outline-none', catFilter ? 'text-text' : 'text-text-2')}
             >
               <option value="">All categories</option>
               <option value="uncategorized">No category</option>
@@ -285,7 +285,7 @@ function TransactionsContent() {
             </select>
 
             {/* Amount range */}
-            <div className="flex w-full items-center gap-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm sm:w-auto">
+            <div className="flex items-center gap-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm">
               <span className="text-text-2">{currency}</span>
               <input
                 type="number"
@@ -294,7 +294,7 @@ function TransactionsContent() {
                 value={amountMin}
                 onChange={e => { setAmountMin(e.target.value); setPage(1) }}
                 placeholder="min"
-                className="w-full min-w-0 bg-transparent text-sm text-text outline-none sm:w-14"
+                className="w-14 min-w-0 bg-transparent text-sm text-text outline-none"
               />
               <span className="text-text-3">–</span>
               <input
@@ -304,12 +304,10 @@ function TransactionsContent() {
                 value={amountMax}
                 onChange={e => { setAmountMax(e.target.value); setPage(1) }}
                 placeholder="max"
-                className="w-full min-w-0 bg-transparent text-sm text-text outline-none sm:w-14"
+                className="w-14 min-w-0 bg-transparent text-sm text-text outline-none"
               />
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-2">
             {predicted.length > 0 && (
               <button
                 onClick={() => setShowPredicted(p => !p)}
@@ -645,21 +643,18 @@ function TransactionsContent() {
                   <span className="text-xs" style={{ color: '#818cf8', opacity: 0.8 }}>
                     ~{format(new Date(year, month - 1, tx.expectedDay), 'd MMM')}
                   </span>
-                  <div className="pr-4">
-                    <span className="text-sm text-text-2">{tx.description}</span>
-                    <span
-                      className="ml-2 rounded px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide"
-                      style={{ background: '#818cf818', color: '#818cf8', letterSpacing: '0.05em' }}
-                    >
-                      predicted
-                    </span>
-                  </div>
+                  <span className="truncate pr-4 text-sm text-text-2">{tx.description}</span>
                   <div className="pr-4">
                     {tx.category
                       ? <CategoryPill name={tx.category.name} color={tx.category.color} />
                       : <span className="text-text-3">—</span>}
                   </div>
-                  <span className="text-xs text-text-3">—</span>
+                  <span
+                    className="rounded px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide"
+                    style={{ background: '#818cf818', color: '#818cf8', letterSpacing: '0.05em' }}
+                  >
+                    predicted
+                  </span>
                   <span className="text-right text-sm font-medium tabular-nums" style={{ color: '#818cf8', opacity: 0.8 }}>
                     <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
                   </span>
