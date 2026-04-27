@@ -12,6 +12,7 @@ import {
   Inbox,
   Tag,
   Settings,
+  PanelLeftClose,
 } from 'lucide-react'
 
 type NavItem = {
@@ -22,7 +23,14 @@ type NavItem = {
   disabled?: boolean
 }
 
-export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
+type SidebarProps = {
+  onAddClick?: () => void
+  onNavigate?: () => void
+  className?: string
+  showMobileClose?: boolean
+}
+
+export function Sidebar({ onAddClick, onNavigate, className, showMobileClose = false }: SidebarProps) {
   const pathname = usePathname()
   const [inboxCount, setInboxCount] = useState(0)
 
@@ -67,16 +75,28 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
   }
 
   return (
-    <aside className="flex flex-col w-64 shrink-0 h-screen bg-surface border-r border-border">
+    <aside className={cn('flex h-full w-64 shrink-0 flex-col bg-surface border-r border-border', className)}>
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5">
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold shrink-0 bg-accent text-bg">
-          F
+      <div className="flex items-center justify-between gap-3 px-5 py-5">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold shrink-0 bg-accent text-bg">
+            F
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-text">Finance</p>
+            <p className="text-xs text-text-2">Personal tracker</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-semibold text-text">Finance</p>
-          <p className="text-xs text-text-2">Personal tracker</p>
-        </div>
+        {showMobileClose && (
+          <button
+            type="button"
+            onClick={onNavigate}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface-2 text-text-2 md:hidden"
+            aria-label="Close navigation"
+          >
+            <PanelLeftClose size={16} />
+          </button>
+        )}
       </div>
 
       {/* Add button */}
@@ -105,6 +125,7 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
                   <Link
                     key={item.label}
                     href={item.disabled ? '#' : item.href}
+                    onClick={item.disabled ? undefined : onNavigate}
                     className={cn(
                       'flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors',
                       active ? 'bg-surface-2 text-text' : 'text-text-2',

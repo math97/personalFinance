@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { TransactionRepository } from '../../domain/repositories/transaction.repository'
 import { TransactionEntity } from '../../domain/entities/transaction.entity'
 import { CreateTransactionDto } from './dto/create-transaction.dto'
+import { UpdateTransactionDto } from './dto/update-transaction.dto'
 import { TransactionQueryDto } from './dto/transaction-query.dto'
 
 @Injectable()
@@ -73,7 +74,7 @@ export class TransactionsService {
     return tx
   }
 
-  async update(id: string, dto: Partial<CreateTransactionDto>) {
+  async update(id: string, dto: UpdateTransactionDto) {
     await this.findOne(id)
     return this.repo.update(id, {
       ...(dto.amount      !== undefined && { amount:      dto.amount             }),
