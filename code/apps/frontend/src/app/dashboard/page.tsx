@@ -84,11 +84,11 @@ export default async function DashboardPage({
         <h1 className="flex-1 text-xl font-semibold text-text">{monthLabel}</h1>
         <div className="ml-auto flex items-center gap-2">
           <Link href={`/dashboard?year=${prevYear}&month=${prevMonth}`}
-            className="flex items-center justify-center w-9 h-9 rounded-lg bg-surface border border-border">
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface">
             <ChevronLeft size={16} className="text-text-2" />
           </Link>
           <Link href={`/dashboard?year=${nextYear}&month=${nextMonth}`}
-            className="flex items-center justify-center w-9 h-9 rounded-lg bg-surface border border-border">
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface">
             <ChevronRight size={16} className="text-text-2" />
           </Link>
         </div>

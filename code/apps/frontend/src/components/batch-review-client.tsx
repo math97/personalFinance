@@ -125,26 +125,28 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
   }
 
   return (
-    <div className="px-8 py-6 max-w-5xl mx-auto">
+    <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 sm:py-6">
       {/* TopBar */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
         <Link href="/import/inbox" className="flex items-center gap-1.5 text-sm text-text-2">
           <ChevronLeft size={14} /> Inbox
         </Link>
-        <span className="text-text-3">/</span>
-        <span className="text-sm font-medium truncate text-text">{batch.filename}</span>
+        <span className="hidden text-text-3 lg:block">/</span>
+        <span className="text-sm font-medium text-text lg:truncate">{batch.filename}</span>
         <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent-dim text-accent">
           Reviewing
         </span>
-        <div className="flex-1" />
-        <button onClick={handleDiscard} disabled={loading}
-          className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-40 bg-surface text-red border border-border">
-          Discard
-        </button>
-        <button onClick={handleConfirm} disabled={loading}
-          className="px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-40 bg-accent text-bg">
-          Confirm all {items.length}
-        </button>
+        <div className="hidden flex-1 lg:block" />
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button onClick={handleDiscard} disabled={loading}
+            className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-red disabled:opacity-40">
+            Discard
+          </button>
+          <button onClick={handleConfirm} disabled={loading}
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-bg disabled:opacity-40">
+            Confirm all {items.length}
+          </button>
+        </div>
       </div>
 
       {/* Save-as-rule prompt */}
@@ -173,8 +175,9 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
           : <span className="text-green">all categorized ✓</span>}
       </p>
 
-      <div className="rounded-xl overflow-hidden bg-surface border border-border">
-        <div className="grid text-xs font-medium uppercase tracking-wider px-5 py-3 text-text-2 border-b border-border"
+      <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+        <div className="min-w-[660px]">
+        <div className="grid border-b border-border px-5 py-3 text-xs font-medium uppercase tracking-wider text-text-2"
           style={{ gridTemplateColumns: '110px 1fr 180px 48px 130px 72px' }}>
           <span>Date</span><span>Description</span><span>Category</span>
           <span>Type</span><span className="text-right">Amount</span><span />
@@ -277,6 +280,7 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
             </div>
           )
         })}
+        </div>
       </div>
     </div>
   )

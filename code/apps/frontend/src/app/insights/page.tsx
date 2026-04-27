@@ -67,13 +67,13 @@ export default function InsightsPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 py-5 sm:px-6 sm:py-6">
       {selected ? (
         <InsightsDrillDown row={selected} onBack={() => setSelected(null)} />
       ) : (
         <>
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Insights</h1>
               <p className="text-sm mt-0.5" style={{ color: 'var(--text-2)' }}>
@@ -95,9 +95,9 @@ export default function InsightsPage() {
               >
                 <ChevronLeft size={14} />
               </button>
-              <span className="text-sm font-medium px-2" style={{ color: 'var(--text)', minWidth: 80, textAlign: 'center' }}>
-                {monthLabel}
-              </span>
+                <span className="px-2 text-sm font-medium" style={{ color: 'var(--text)', minWidth: 96, textAlign: 'center' }}>
+                  {monthLabel}
+                </span>
               <button
                 onClick={nextMonth}
                 className="p-1.5 rounded-md transition-colors"

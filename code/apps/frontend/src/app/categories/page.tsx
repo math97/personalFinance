@@ -99,24 +99,24 @@ export default function CategoriesPage() {
   }
 
   if (error) return (
-    <div className="px-8 py-6 max-w-3xl mx-auto">
+    <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-6">
       <p className="text-sm py-12 text-center" style={{ color: 'var(--text-2)' }}>{error}</p>
     </div>
   )
 
   return (
-    <div className="px-8 py-6 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-6">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Categories</h1>
         <button onClick={() => setShowAddCat(s => !s)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
+          className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium"
           style={{ background: showAddCat ? 'var(--accent)' : 'var(--surface)', color: showAddCat ? '#0c0c0e' : 'var(--text)', border: '1px solid var(--border)' }}>
           <Plus size={14} /> Add category
         </button>
       </div>
 
       {showAddCat && (
-        <div className="flex items-center gap-3 rounded-xl px-4 py-3 mb-4"
+        <div className="mb-4 flex flex-col gap-3 rounded-xl px-4 py-3 sm:flex-row sm:items-center"
           style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <input type="color" value={newCatColor} onChange={e => setNewCatColor(e.target.value)}
             className="w-8 h-8 rounded-lg cursor-pointer border-0" />
@@ -124,9 +124,9 @@ export default function CategoriesPage() {
             onKeyDown={e => e.key === 'Enter' && addCategory()}
             placeholder="Category name…" autoFocus
             className="flex-1 bg-transparent text-sm outline-none" style={{ color: 'var(--text)' }} />
-          <button onClick={addCategory} className="px-3 py-1.5 rounded-lg text-sm font-semibold"
+          <button onClick={addCategory} className="rounded-lg px-3 py-1.5 text-sm font-semibold"
             style={{ background: 'var(--accent)', color: '#0c0c0e' }}>Add</button>
-          <button onClick={() => setShowAddCat(false)} style={{ color: 'var(--text-2)' }}><X size={16} /></button>
+          <button onClick={() => setShowAddCat(false)} className="self-end sm:self-auto" style={{ color: 'var(--text-2)' }}><X size={16} /></button>
         </div>
       )}
 
@@ -145,12 +145,12 @@ export default function CategoriesPage() {
         {categories.map((cat, i) => (
           <div key={cat.id}>
             <button onClick={() => setExpanded(e => e === cat.id ? null : cat.id)}
-              className="w-full flex items-center gap-3 px-5 py-4 text-left"
+              className="flex w-full flex-wrap items-center gap-2 px-4 py-4 text-left sm:px-5"
               style={{ background: expanded === cat.id ? 'var(--surface-2)' : 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: cat.color }} />
               <span className="flex-1 text-sm font-medium" style={{ color: 'var(--text)' }}>{cat.name}</span>
-              <span className="text-xs mr-4" style={{ color: 'var(--text-2)' }}>{cat.rules?.length ?? 0} rules</span>
-              <span className="text-xs mr-3" style={{ color: 'var(--text-2)' }}>{cat._count?.transactions ?? 0} transactions</span>
+              <span className="text-xs" style={{ color: 'var(--text-2)' }}>{cat.rules?.length ?? 0} rules</span>
+              <span className="text-xs" style={{ color: 'var(--text-2)' }}>{cat._count?.transactions ?? 0} transactions</span>
               {cat.monthlyBudget != null ? (
                 <span
                   className="text-xs px-2 py-0.5 rounded-md font-medium"
@@ -165,7 +165,7 @@ export default function CategoriesPage() {
             </button>
 
             {expanded === cat.id && (
-              <div className="px-5 py-4" style={{ background: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
+              <div className="px-4 py-4 sm:px-5" style={{ background: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
                 <p className="text-xs font-medium mb-3" style={{ color: 'var(--text-2)' }}>AUTO-MATCH RULES — if description contains:</p>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {(cat.rules ?? []).map((rule: any) => (
@@ -178,15 +178,15 @@ export default function CategoriesPage() {
                     </span>
                   ))}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <input value={newKeywords[cat.id] ?? ''}
                     onChange={e => setNewKeywords(prev => ({ ...prev, [cat.id]: e.target.value }))}
                     onKeyDown={e => e.key === 'Enter' && addRule(cat.id)}
                     placeholder="add keyword…"
-                    className="rounded-lg px-3 py-1.5 text-xs outline-none flex-1 max-w-48"
+                    className="flex-1 rounded-lg px-3 py-1.5 text-xs outline-none sm:max-w-48"
                     style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', color: 'var(--text)' }} />
                   <button onClick={() => addRule(cat.id)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium"
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium"
                     style={{ background: 'var(--surface)', color: 'var(--text-2)', border: '1px solid var(--border-2)' }}>
                     + Add rule
                   </button>
@@ -213,7 +213,7 @@ export default function CategoriesPage() {
                   </div>
 
                   {/* £ / % toggle */}
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
                     <span className="text-xs" style={{ color: 'var(--text-3)' }}>Set by</span>
                     {(['amount', 'pct'] as const).map(m => (
                       <button
@@ -232,10 +232,10 @@ export default function CategoriesPage() {
                   </div>
 
                   {/* Input row */}
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                     <div
                       className="flex items-center gap-1 px-3 h-9 rounded-lg text-sm"
-                      style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', width: 160 }}
+                      style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', width: '100%', maxWidth: 160 }}
                     >
                       <span style={{ color: 'var(--text-3)' }}>
                         {(budgetMode[cat.id] ?? 'amount') === 'amount' ? currency : '%'}

@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
 import { cn } from '@/lib/cn'
 import {
   LayoutDashboard,
@@ -12,7 +11,6 @@ import {
   Inbox,
   Tag,
   Settings,
-  PanelLeftClose,
 } from 'lucide-react'
 
 type NavItem = {
@@ -23,24 +21,13 @@ type NavItem = {
   disabled?: boolean
 }
 
-type SidebarProps = {
+interface SidebarProps extends React.ComponentProps<'aside'> {
   onAddClick?: () => void
-  onNavigate?: () => void
-  className?: string
-  showMobileClose?: boolean
+  inboxCount?: number
 }
 
-export function Sidebar({ onAddClick, onNavigate, className, showMobileClose = false }: SidebarProps) {
+export function Sidebar({ onAddClick, inboxCount = 0, className, ...props }: SidebarProps) {
   const pathname = usePathname()
-  const [inboxCount, setInboxCount] = useState(0)
-
-  useEffect(() => {
-    const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
-    fetch(`${base}/import/batches`)
-      .then(r => r.json())
-      .then((batches: any[]) => setInboxCount(batches.length))
-      .catch(() => {})
-  }, [pathname]) // re-fetch when navigating
 
   const sections: { label: string; items: NavItem[] }[] = [
     {
@@ -75,28 +62,16 @@ export function Sidebar({ onAddClick, onNavigate, className, showMobileClose = f
   }
 
   return (
-    <aside className={cn('flex h-full w-64 shrink-0 flex-col bg-surface border-r border-border', className)}>
+    <aside className={cn('flex h-screen w-64 shrink-0 flex-col border-r border-border bg-surface', className)} {...props}>
       {/* Logo */}
-      <div className="flex items-center justify-between gap-3 px-5 py-5">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold shrink-0 bg-accent text-bg">
-            F
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-text">Finance</p>
-            <p className="text-xs text-text-2">Personal tracker</p>
-          </div>
+      <div className="flex items-center gap-3 px-5 py-5">
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold shrink-0 bg-accent text-bg">
+          F
         </div>
-        {showMobileClose && (
-          <button
-            type="button"
-            onClick={onNavigate}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface-2 text-text-2 md:hidden"
-            aria-label="Close navigation"
-          >
-            <PanelLeftClose size={16} />
-          </button>
-        )}
+        <div>
+          <p className="text-sm font-semibold text-text">Finance</p>
+          <p className="text-xs text-text-2">Personal tracker</p>
+        </div>
       </div>
 
       {/* Add button */}
@@ -125,7 +100,6 @@ export function Sidebar({ onAddClick, onNavigate, className, showMobileClose = f
                   <Link
                     key={item.label}
                     href={item.disabled ? '#' : item.href}
-                    onClick={item.disabled ? undefined : onNavigate}
                     className={cn(
                       'flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors',
                       active ? 'bg-surface-2 text-text' : 'text-text-2',
