@@ -161,6 +161,47 @@ Last updated: 2026-04-27
 ✓ P9 — Transaction Notes
   Optional notes field per transaction, inline edit input, subtitle display.
 
+── NEXT UP ──────────────────────────────────────────────────
+
+[BUG FIXES]
+  - Triage and fix open bugs before new features
+
+[TERMINOLOGY & FINANCIAL LITERACY REBRAND]
+  Goal: align UI language with real financial terms so users learn vocabulary
+        they'll also see in investment/stock reports. First rule of wealth = spend better.
+  - Audit every label, heading, and pill in the app
+  - Replace informal terms with proper cash-flow vocabulary
+    e.g. "spent" → "outflow", income → "inflow", leftover → "net cash flow", etc.
+  - Keep a glossary doc mapping old → new terms
+  - Update seeds / category names to match
+
+[INTERNATIONALISATION (i18n)]
+  Audience: Brazilian Portuguese speakers living in Portugal + English users
+  - Add i18n framework (next-intl or similar)
+  - Language option in Settings: English | Português (BR) | Português (PT)
+  - Translate all UI strings, validation messages, and category names
+  - Default language auto-detected from browser; persisted in settings/localStorage
+
+[ELECTRON DESKTOP APP]
+  Goal: zero-friction install for non-developers; fully local, private, no cloud needed
+  - Bundle frontend + backend + SQLite (or embedded Postgres) into a single Electron app
+  - Auto-start backend on launch, open frontend in Electron window
+  - Installer for macOS (.dmg) and Windows (.exe)
+  - Auto-update mechanism
+  - App icon + splash screen
+
+[PRODUCT LANDING PAGE]
+  Goal: public-facing site to present, distribute, and get community support
+  Hosting: Vercel or Cloudflare Pages
+  Sections:
+    - Hero — what is this app and why it matters
+    - Features — screenshots / demo video
+    - Download — links to macOS + Windows Electron installers (GitHub Releases)
+    - Privacy promise — local DB, your data never leaves your machine
+    - Who Am I — personal story, why I built this (Matheus)
+    - Support Me — "Buy me a coffee" or Ko-fi button to fund ongoing development
+  Stack: Next.js static export or plain HTML/CSS — keep it lightweight
+
 ── HOW TO RUN ───────────────────────────────────────────────
 
 cd code
