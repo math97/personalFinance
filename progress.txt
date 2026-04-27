@@ -1,6 +1,6 @@
 ═══════════════════════════════════════════════════════════
 PERSONAL FINANCE APP — PROGRESS LOG
-Last updated: 2026-04-21
+Last updated: 2026-04-27
 ═══════════════════════════════════════════════════════════
 
 ── DONE ────────────────────────────────────────────────────
@@ -70,14 +70,20 @@ Last updated: 2026-04-21
     - Filters: search, category (incl. "No category"), amount min/max (client-side)
     - Pagination (arrows hidden when single page / at boundaries)
     - Per-page selector (native arrow removed)
-    - Inline row edit: date, description, category, Expense/Income toggle
+    - Inline row edit: date, description, category, Expense/Income toggle, notes
     - Delete transaction (trash icon, removes from DB instantly)
     - Income transactions shown in green with + prefix
+    - All-time mode toggle (searches across all months)
+    - Bulk categorize: select multiple rows → assign category via floating bar
+    - Export to CSV: current view or entire month (scope=filtered|month)
+    - Predicted recurring rows with confirm/dismiss
+    - Transaction notes: optional memo shown as subtitle under description
 
 ✓ Upload Files
-    - Dropzone (PDF, JPG, PNG, HEIC) — multiple files supported
+    - Dropzone (PDF, JPG, PNG, HEIC, CSV) — multiple files supported
     - Processing feedback: spinner + "Extracting (1/3)" + filename
     - Single file → goes to batch review; multiple → goes to inbox
+    - CSV import: opinionated format (date,description,amount), rules-only categorization
 
 ✓ Import Inbox — live batch list with count
 
@@ -104,7 +110,7 @@ Last updated: 2026-04-21
 ✓ Error handling (error.tsx + client isLoading/error states)
 
 [Testing]
-✓ Backend unit tests  — 94 passing (in-memory repos, no DB)
+✓ Backend unit tests  — 154 passing (in-memory repos, no DB)
 ✓ Backend e2e tests   — 21 passing (Supertest + isolated per-run PostgreSQL)
 ✓ Frontend unit tests — 26 passing (Vitest + RTL; api.ts + BatchReviewClient)
 
@@ -133,32 +139,27 @@ Last updated: 2026-04-21
   Detect recurring expenses, predicted rows on Transactions page,
   upcoming panel + Net Available card on Dashboard, daily spending chart.
 
-[P4 — CSV / OFX Import]
-  Alternative to PDF for banks that export CSV statements.
-  Reuses the existing ImportBatch + review flow.
-  Lower priority — PDF covers most UK/EU banks already.
+✓ P4 — CSV Import
+  CSV upload (date,description,amount format), rules-only categorization,
+  info tooltip with expected format on upload page.
 
-── PHASE 3 — QUALITY OF LIFE (priority order) ─────────────
+── PHASE 3 — QUALITY OF LIFE (all done) ───────────────────
 
-[P5 — Bulk Categorize]
-  Select multiple uncategorized transactions → assign category to all at once.
-  Useful after importing a large batch with many uncategorized rows.
+✓ P5 — Bulk Categorize
+  Checkboxes on transaction rows, floating action bar, select-all per page.
 
-[P6 — Search Across All Months]
-  Current search is scoped to the selected month.
-  Add an "all time" mode or a global search bar.
+✓ P6 — Search Across All Months
+  All-time toggle on Transactions page, hides month navigator when active.
 
-[P7 — Mobile-Responsive Layout]
-  Currently desktop-only. Sidebar collapses to bottom nav on mobile.
-  Large effort — defer until core feature set is stable.
+✓ P7 — Mobile-Responsive Layout  ← PR #10 open
+  Top bar + bottom nav on mobile, sidebar hidden, safe-area insets,
+  "More" sheet for secondary routes, responsive page padding across all routes.
 
-[P8 — Export to CSV]
-  Download all transactions for a date range as CSV.
-  Useful for tax season or importing into spreadsheets.
+✓ P8 — Export to CSV
+  GET /api/transactions/export with scope=filtered|month, download button with dropdown.
 
-[P9 — Transaction Notes / Memo Field]
-  Optional free-text note per transaction (e.g. "reimbursed by work").
-  Small schema change, low effort.
+✓ P9 — Transaction Notes
+  Optional notes field per transaction, inline edit input, subtitle display.
 
 ── HOW TO RUN ───────────────────────────────────────────────
 
