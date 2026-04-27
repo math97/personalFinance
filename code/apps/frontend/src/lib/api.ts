@@ -79,7 +79,7 @@ export const api = {
       get<{ items: any[]; total: number; page: number; perPage: number; totalPages: number }>('/transactions', params as any),
     create: (data: { amount: number; date: string; description: string; categoryId?: string; source?: string }) =>
       post<any>('/transactions', data),
-    update: (id: string, data: Partial<{ amount: number; date: string; description: string; categoryId: string }>) =>
+    update: (id: string, data: Partial<{ amount: number; date: string; description: string; categoryId: string; notes: string | null }>) =>
       patch<any>(`/transactions/${id}`, data),
     remove: (id: string) => del<any>(`/transactions/${id}`),
     bulkCategorize: (ids: string[], categoryId: string | null) =>

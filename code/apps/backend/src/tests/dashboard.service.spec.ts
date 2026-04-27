@@ -57,6 +57,7 @@ describe('DashboardService', () => {
       overrides.categoryId  ?? null,
       null, null, null,
       new Date(),
+      null,
     )
     return txRepo.save(e)
   }

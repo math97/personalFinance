@@ -1,4 +1,4 @@
-import { IsNumber, IsString, IsOptional, IsDateString, MaxLength } from 'class-validator'
+import { IsNumber, IsString, IsOptional, IsDateString, MaxLength, ValidateIf } from 'class-validator'
 
 export class UpdateTransactionDto {
   @IsOptional()
@@ -17,4 +17,10 @@ export class UpdateTransactionDto {
   @IsOptional()
   @IsString()
   categoryId?: string
+
+  @IsOptional()
+  @ValidateIf(o => o.notes !== null)
+  @IsString()
+  @MaxLength(500)
+  notes?: string | null
 }

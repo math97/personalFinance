@@ -35,7 +35,7 @@ describe('RecurringService', () => {
 
   async function saveTx(description: string, date: string, amount = -50, categoryId: string | null = null) {
     return txRepo.save(new TransactionEntity(
-      '', amount, new Date(date), description, 'pdf', categoryId, null, null, null, new Date(),
+      '', amount, new Date(date), description, 'pdf', categoryId, null, null, null, new Date(), null,
     ))
   }
 

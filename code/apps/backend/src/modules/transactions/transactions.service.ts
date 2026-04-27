@@ -21,6 +21,7 @@ export class TransactionsService {
       dto.merchant ?? null,
       dto.account ?? null,
       new Date(),
+      dto.notes ?? null,
     )
     return this.repo.save(entity)
   }
@@ -54,12 +55,13 @@ export class TransactionsService {
     const { items } = await this.repo.findAll(filters)
     const sorted = [...items].sort((a, b) => a.date.getTime() - b.date.getTime())
 
-    const header = 'date,description,category,amount'
+    const header = 'date,description,category,amount,notes'
     const rows = sorted.map(tx => {
       const date        = tx.date.toISOString().slice(0, 10)
       const description = `"${tx.description.replace(/"/g, '""')}"`
       const category    = tx.category?.name ? `"${tx.category.name.replace(/"/g, '""')}"` : ''
-      return `${date},${description},${category},${tx.amount}`
+      const notes       = tx.notes ? `"${tx.notes.replace(/"/g, '""')}"` : ''
+      return `${date},${description},${category},${tx.amount},${notes}`
     })
 
     return [header, ...rows].join('\n')
@@ -78,6 +80,7 @@ export class TransactionsService {
       ...(dto.date                      && { date:        new Date(dto.date)     }),
       ...(dto.description               && { description: dto.description        }),
       ...(dto.categoryId  !== undefined && { categoryId:  dto.categoryId ?? null }),
+      ...('notes' in dto                && { notes:       dto.notes ?? null      }),
     })
   }
 

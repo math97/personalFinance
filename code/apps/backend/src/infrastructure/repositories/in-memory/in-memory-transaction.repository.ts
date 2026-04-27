@@ -37,12 +37,16 @@ export class InMemoryTransactionRepository extends TransactionRepository {
       id, entity.amount, entity.date, entity.description,
       entity.source, entity.categoryId, entity.category,
       entity.merchant, entity.account, entity.createdAt,
+      entity.notes,
     )
     this.store.set(id, persisted)
     return persisted
   }
 
-  async update(id: string, data: Partial<Pick<TransactionEntity, 'amount' | 'date' | 'description' | 'categoryId'>>): Promise<TransactionEntity> {
+  async update(
+    id: string,
+    data: Partial<Pick<TransactionEntity, 'amount' | 'date' | 'description' | 'categoryId' | 'notes'>>,
+  ): Promise<TransactionEntity> {
     const existing = this.store.get(id)
     if (!existing) throw new Error(`Transaction ${id} not found`)
     const updated = new TransactionEntity(
@@ -56,6 +60,7 @@ export class InMemoryTransactionRepository extends TransactionRepository {
       existing.merchant,
       existing.account,
       existing.createdAt,
+      'notes' in data ? (data.notes ?? null) : existing.notes,
     )
     this.store.set(id, updated)
     return updated
@@ -129,6 +134,7 @@ export class InMemoryTransactionRepository extends TransactionRepository {
         existing.id, existing.amount, existing.date, existing.description,
         existing.source, categoryId, null,
         existing.merchant, existing.account, existing.createdAt,
+        existing.notes,
       ))
       count++
     }

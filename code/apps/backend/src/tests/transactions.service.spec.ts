@@ -217,13 +217,46 @@ describe('TransactionsService', () => {
       const csv = await service.exportCsv({ year: '2020', month: '1' } as any, 'filtered')
       const lines = csv.trim().split('\n')
       expect(lines).toHaveLength(1)
-      expect(lines[0]).toBe('date,description,category,amount')
+      expect(lines[0]).toBe('date,description,category,amount,notes')
     })
 
     it('all-time export returns all transactions', async () => {
       const csv = await service.exportCsv({} as any, 'filtered')
       const lines = csv.trim().split('\n')
       expect(lines).toHaveLength(4) // header + 3 rows
+    })
+  })
+
+  // ── notes ────────────────────────────────────────────────────────
+  describe('notes', () => {
+    it('saves a note when creating a transaction', async () => {
+      const result = await service.create({
+        amount: -10, date: '2026-04-01', description: 'Test', notes: 'reimbursed by work',
+      } as any)
+      expect(result.notes).toBe('reimbursed by work')
+    })
+
+    it('saves null notes when not provided', async () => {
+      const result = await tx()
+      expect(result.notes).toBeNull()
+    })
+
+    it('update sets notes', async () => {
+      const created = await tx()
+      const updated = await service.update(created.id, { notes: 'split with João' })
+      expect(updated.notes).toBe('split with João')
+    })
+
+    it('update clears notes when set to null', async () => {
+      const created = await service.create({ amount: -10, date: '2026-04-01', description: 'Test', notes: 'memo' } as any)
+      const updated = await service.update(created.id, { notes: null })
+      expect(updated.notes).toBeNull()
+    })
+
+    it('update without notes field leaves existing note unchanged', async () => {
+      const created = await service.create({ amount: -10, date: '2026-04-01', description: 'Test', notes: 'keep me' } as any)
+      const updated = await service.update(created.id, { description: 'Changed' })
+      expect(updated.notes).toBe('keep me')
     })
   })
 

@@ -14,6 +14,7 @@ export interface CreateTransactionData {
   categoryId?: string | null
   merchant?: string | null
   account?: string | null
+  notes?: string | null
 }
 
 export class TransactionEntity {
@@ -28,9 +29,9 @@ export class TransactionEntity {
     public readonly merchant: string | null,
     public readonly account: string | null,
     public readonly createdAt: Date,
+    public readonly notes: string | null,
   ) {}
 
-  // Used only for in-memory repository (Prisma generates id on its own)
   static fromData(data: CreateTransactionData): Omit<TransactionEntity, 'id' | 'createdAt'> {
     return {
       amount: data.amount,
@@ -41,6 +42,7 @@ export class TransactionEntity {
       category: null,
       merchant: data.merchant ?? null,
       account: data.account ?? null,
+      notes: data.notes ?? null,
     }
   }
 }

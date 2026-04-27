@@ -129,7 +129,7 @@ export class ImportService {
       const tx = await this.txRepo.save(
         new TransactionEntity(
           '', Number(imp.rawAmount), new Date(imp.rawDate), imp.rawDescription,
-          source, imp.aiCategoryId, null, null, null, new Date(),
+          source, imp.aiCategoryId, null, null, null, new Date(), null,
         ),
       )
       await this.batchRepo.promoteToTransaction(imp.id, tx.id)

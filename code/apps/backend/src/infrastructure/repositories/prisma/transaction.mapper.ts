@@ -15,6 +15,7 @@ export class TransactionMapper {
       p.merchant ?? null,
       p.account ?? null,
       p.createdAt,
+      p.notes ?? null,
     )
   }
 }
