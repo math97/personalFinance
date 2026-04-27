@@ -78,18 +78,20 @@ export default async function DashboardPage({
   const isEmpty = summary.transactionCount === 0
 
   return (
-    <div className="px-8 py-6 max-w-5xl mx-auto">
+    <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <h1 className="text-xl font-semibold flex-1 text-text">{monthLabel}</h1>
-        <Link href={`/dashboard?year=${prevYear}&month=${prevMonth}`}
-          className="flex items-center justify-center w-8 h-8 rounded-lg bg-surface border border-border">
-          <ChevronLeft size={16} className="text-text-2" />
-        </Link>
-        <Link href={`/dashboard?year=${nextYear}&month=${nextMonth}`}
-          className="flex items-center justify-center w-8 h-8 rounded-lg bg-surface border border-border">
-          <ChevronRight size={16} className="text-text-2" />
-        </Link>
+      <div className="mb-6 flex flex-wrap items-center gap-3 sm:gap-4">
+        <h1 className="flex-1 text-xl font-semibold text-text">{monthLabel}</h1>
+        <div className="ml-auto flex items-center gap-2">
+          <Link href={`/dashboard?year=${prevYear}&month=${prevMonth}`}
+            className="flex items-center justify-center w-9 h-9 rounded-lg bg-surface border border-border">
+            <ChevronLeft size={16} className="text-text-2" />
+          </Link>
+          <Link href={`/dashboard?year=${nextYear}&month=${nextMonth}`}
+            className="flex items-center justify-center w-9 h-9 rounded-lg bg-surface border border-border">
+            <ChevronRight size={16} className="text-text-2" />
+          </Link>
+        </div>
       </div>
 
       {isEmpty ? (
@@ -97,7 +99,7 @@ export default async function DashboardPage({
       ) : (
         <>
           {/* Summary cards */}
-          <div className="grid grid-cols-5 gap-4 mb-6">
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <Card>
               <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">Spent this month</p>
               <p className="text-3xl font-bold text-text">
@@ -155,7 +157,7 @@ export default async function DashboardPage({
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
             <Card>
               <SpendingSection
                 data={byCategory}
@@ -206,26 +208,47 @@ export default async function DashboardPage({
                 View all →
               </Link>
             </div>
-            <table className="w-full text-sm">
-              <tbody>
-                {recentTxs.map((tx: any) => (
-                  <tr key={tx.id} className="border-b border-border">
-                    <td className="py-3 pr-4 text-xs whitespace-nowrap text-text-2 w-20">
-                      {format(new Date(tx.date), 'd MMM')}
-                    </td>
-                    <td className="py-3 pr-4 text-text">{tx.description}</td>
-                    <td className="py-3 pr-4">
-                      {tx.category
-                        ? <CategoryPill name={tx.category.name} color={tx.category.color} />
-                        : <span className="text-text-3">—</span>}
-                    </td>
-                    <td className="py-3 text-right font-medium tabular-nums text-text">
+            <div className="space-y-3 md:hidden">
+              {recentTxs.map((tx: any) => (
+                <div key={tx.id} className="rounded-xl border border-border bg-surface-2 px-4 py-3">
+                  <div className="mb-2 flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-text">{tx.description}</p>
+                      <p className="text-xs text-text-2">{format(new Date(tx.date), 'd MMM yyyy')}</p>
+                    </div>
+                    <p className="text-right text-sm font-medium tabular-nums text-text">
                       <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </p>
+                  </div>
+                  {tx.category
+                    ? <CategoryPill name={tx.category.name} color={tx.category.color} />
+                    : <span className="text-xs text-text-3">No category</span>}
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden md:block">
+              <table className="w-full text-sm">
+                <tbody>
+                  {recentTxs.map((tx: any) => (
+                    <tr key={tx.id} className="border-b border-border last:border-b-0">
+                      <td className="w-20 whitespace-nowrap py-3 pr-4 text-xs text-text-2">
+                        {format(new Date(tx.date), 'd MMM')}
+                      </td>
+                      <td className="py-3 pr-4 text-text">{tx.description}</td>
+                      <td className="py-3 pr-4">
+                        {tx.category
+                          ? <CategoryPill name={tx.category.name} color={tx.category.color} />
+                          : <span className="text-text-3">—</span>}
+                      </td>
+                      <td className="py-3 text-right font-medium tabular-nums text-text">
+                        <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </Card>
         </>
       )}
