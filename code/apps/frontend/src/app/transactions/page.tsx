@@ -658,7 +658,7 @@ function TransactionsContent() {
                   <span className="text-right text-sm font-medium tabular-nums" style={{ color: '#818cf8', opacity: 0.8 }}>
                     <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
                   </span>
-                  <div className="flex justify-end gap-1">
+                  <div className="flex justify-end gap-2 px-2">
                     <button
                       onClick={() => {
                         setConfirmItem(tx)
@@ -795,7 +795,7 @@ function TransactionsContent() {
               )}
 
               {/* Actions */}
-              <div className="flex justify-end gap-1">
+              <div className="flex justify-end gap-2 px-2">
                 {isEditing ? (
                   <>
                     <button onClick={() => saveEdit(tx.id)}
