@@ -13,7 +13,7 @@ personalFinance/
   docs/superpowers/
     specs/                  ← approved design specs
     plans/                  ← implementation plans
-  worktrees               ← GIT worktrees
+  .worktrees/               ← GIT worktrees
   progress.txt              ← roadmap / what's done
 ```
 
@@ -56,4 +56,4 @@ See `code/apps/backend/CLAUDE.md` for full DB safety rules.
 - Keep backend and frontend guidance scoped to their own folders.
 - For any database migration or destructive database operation, take a backup first.
 - Do not assume framework defaults are current; read the local docs in the app folder before changing behavior.
-- Always use worktrees.
+- Always use worktrees on the folder .worktrees
