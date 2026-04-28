@@ -59,12 +59,13 @@ export default function InsightsPage() {
     })),
   }
 
-  if (isLoading) return null
   if (error) return (
     <div className="flex items-center justify-center h-64">
       <p className="text-sm" style={{ color: 'var(--text-2)' }}>{error}</p>
     </div>
   )
+
+  const showLoading = isLoading && categories.length === 0
 
   return (
     <div className="space-y-6 px-4 py-5 sm:px-6 sm:py-6">
@@ -115,6 +116,15 @@ export default function InsightsPage() {
             currentMonthLabel={currentMonthLabel}
             onRowClick={setSelected}
           />
+
+          {showLoading && (
+            <div
+              className="flex items-center justify-center py-12"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12 }}
+            >
+              <div className="h-5 w-5 animate-spin rounded-full border-2" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
+            </div>
+          )}
         </>
       )}
 
