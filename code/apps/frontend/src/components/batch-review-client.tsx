@@ -234,7 +234,7 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
               {!isEditing && (
                 <button
                   onClick={() => toggleIncome(item.id)}
-                  title={isIncome ? 'Mark as expense' : 'Mark as income'}
+                  title={isIncome ? 'Mark as spending' : 'Mark as income'}
                   className="w-7 h-7 flex items-center justify-center rounded-md transition-colors border border-border"
                   style={{ background: isIncome ? '#4ade8022' : 'var(--surface-2)', color: isIncome ? '#4ade80' : 'var(--text-3)' }}>
                   {isIncome ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}

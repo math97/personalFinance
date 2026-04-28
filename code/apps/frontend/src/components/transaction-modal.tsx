@@ -140,7 +140,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
                 border: type === t ? '1px solid var(--border-2)' : '1px solid transparent',
               }}
             >
-              {t === 'expense' ? 'Expense' : 'Income'}
+              {t === 'expense' ? 'Spending' : 'Income'}
             </button>
           ))}
         </div>
@@ -233,7 +233,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
           className="flex-1 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-40"
           style={{ background: accentColor, color: '#0c0c0e' }}
         >
-          {loading ? 'Saving…' : type === 'income' ? 'Add Income' : 'Add Expense'}
+          {loading ? 'Saving…' : type === 'income' ? 'Add Income' : 'Add Spending'}
         </button>
       </div>
     </div>

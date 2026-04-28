@@ -64,7 +64,7 @@ function BudgetCell({ total, budget, color }: { total: number; budget: number | 
         style={{ color: isOver ? 'var(--red)' : isNear ? '#f59e0b' : 'var(--text-2)' }}
       >
         {isOver
-          ? <><CurrencyAmount amount={Math.abs(left)} /> over budget</>
+          ? <><CurrencyAmount amount={Math.abs(left)} /> over limit</>
           : <><CurrencyAmount amount={left} /> left{isNear ? ` — ${Math.round(pct)}%` : ''}</>
         }
       </span>

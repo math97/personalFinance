@@ -456,7 +456,7 @@ function TransactionsContent() {
                             border: `1px solid ${ed.isIncome ? '#4ade8066' : 'var(--border-2)'}`,
                           }}
                         >
-                          {ed.isIncome ? 'Income' : 'Expense'}
+                          {ed.isIncome ? 'Income' : 'Spending'}
                         </button>
                         <div className="flex items-center gap-2 rounded-md border border-border-2 bg-surface px-3 py-2">
                           <span className="text-sm text-text-2">{currency}</span>
@@ -774,7 +774,7 @@ function TransactionsContent() {
                     color: ed.isIncome ? '#4ade80' : 'var(--text-2)',
                     border: `1px solid ${ed.isIncome ? '#4ade8066' : 'var(--border-2)'}`,
                   }}>
-                  {ed.isIncome ? 'Income' : 'Expense'}
+                  {ed.isIncome ? 'Income' : 'Spending'}
                 </button>
               ) : (
                 <div><SourcePill source={tx.source} /></div>
