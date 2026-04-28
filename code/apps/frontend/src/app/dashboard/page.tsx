@@ -6,6 +6,8 @@ import { UpcomingPanel } from '@/components/upcoming-panel'
 import { ChartsToggleCard } from '@/components/charts-toggle-card'
 import { CategoryPill } from '@/components/ui/category-pill'
 import { Card } from '@/components/ui/card'
+import { InfoIcon } from '@/components/ui/info-icon'
+import { TERMS } from '@/lib/terminology'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { format } from 'date-fns'
@@ -101,7 +103,9 @@ export default async function DashboardPage({
           {/* Summary cards */}
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">Spent this month</p>
+              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
+              {TERMS.moneyOut.label}<InfoIcon term="moneyOut" />
+            </p>
               <p className="text-3xl font-bold text-text">
                 <CurrencyAmount amount={Number(summary.totalSpent)} />
               </p>
@@ -135,7 +139,9 @@ export default async function DashboardPage({
               )}
             </Card>
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">Upcoming this month</p>
+              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
+              {TERMS.dueSoon.label}<InfoIcon term="dueSoon" />
+            </p>
               <p className="text-3xl font-bold text-accent">
                 {upcoming.items.length > 0
                   ? <CurrencyAmount amount={upcoming.total} />
@@ -148,11 +154,13 @@ export default async function DashboardPage({
               )}
             </Card>
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">Net available today</p>
-              <p className="text-3xl font-bold text-green">
-                <CurrencyAmount amount={Math.max(0, Number(summary.totalIncome) - Number(summary.totalSpent) - upcoming.total)} />
-              </p>
-              <p className="text-xs mt-1 text-text-2">income − spent − upcoming</p>
+              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
+              {TERMS.availableNow.label}<InfoIcon term="availableNow" />
+            </p>
+            <p className="text-3xl font-bold text-green">
+              <CurrencyAmount amount={Math.max(0, Number(summary.totalIncome) - Number(summary.totalSpent) - upcoming.total)} />
+            </p>
+            <p className="text-xs mt-1 text-text-2">money in − money out − due soon</p>
             </Card>
           </div>
 
