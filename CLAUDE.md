@@ -13,6 +13,7 @@ personalFinance/
   docs/superpowers/
     specs/                  ← approved design specs
     plans/                  ← implementation plans
+  worktrees               ← GIT worktrees
   progress.txt              ← roadmap / what's done
 ```
 
@@ -48,3 +49,11 @@ docker exec code-db-1 pg_dump -U finance finance > ~/finance-backup-$(date +%Y%m
 ```
 
 See `code/apps/backend/CLAUDE.md` for full DB safety rules.
+
+## Common Rules
+
+- Treat `code/` as the active application workspace.
+- Keep backend and frontend guidance scoped to their own folders.
+- For any database migration or destructive database operation, take a backup first.
+- Do not assume framework defaults are current; read the local docs in the app folder before changing behavior.
+- Always use worktrees.

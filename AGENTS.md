@@ -11,7 +11,9 @@ personalFinance/
     apps/frontend/     Next.js App Router frontend
     docker-compose.yml Local Postgres + supporting services
   design/              Pencil design files
-  docs/                Specs, plans, research, and review notes
+  docs/                Specs, plans, research, and review
+  worktrees            GIT worktrees
+  notes
   progress.txt         High-level project status
   README.md            Repo overview for humans
 ```
@@ -28,4 +30,4 @@ personalFinance/
 - Keep backend and frontend guidance scoped to their own folders.
 - For any database migration or destructive database operation, take a backup first.
 - Do not assume framework defaults are current; read the local docs in the app folder before changing behavior.
-
+- Always use worktrees.
