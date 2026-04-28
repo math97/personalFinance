@@ -38,7 +38,7 @@ export function InfoIcon({ term }: InfoIconProps) {
       >
         <span style={{ fontSize: 9, fontWeight: 700, lineHeight: 1, fontFamily: 'Inter, sans-serif' }}>i</span>
       </button>
-      {open && <TermPopover term={term} onClose={() => setOpen(false)} />}
+      {open && <TermPopover term={term} />}
     </span>
   )
 }

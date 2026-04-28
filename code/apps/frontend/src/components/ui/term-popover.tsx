@@ -1,11 +1,12 @@
+'use client'
+
 import { TERMS, TermKey } from '@/lib/terminology'
 
 interface TermPopoverProps {
   term: TermKey
-  onClose: () => void
 }
 
-export function TermPopover({ term, onClose }: TermPopoverProps) {
+export function TermPopover({ term }: TermPopoverProps) {
   const t = TERMS[term]
   return (
     <div

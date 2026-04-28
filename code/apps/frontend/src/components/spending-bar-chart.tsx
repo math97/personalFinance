@@ -3,6 +3,7 @@
 import { Banknote, Pencil, Check, X, ArrowDownToLine } from 'lucide-react'
 import { useCurrency } from '@/hooks/useCurrency'
 import { TERMS } from '@/lib/terminology'
+import { InfoIcon } from '@/components/ui/info-icon'
 
 type Row = { name: string; total: number; color: string }
 
@@ -197,8 +198,8 @@ export function SpendingBarChart({
             </div>
           ) : (
             <>
-              <span className="text-xs" style={{ color: 'var(--text-2)' }}>
-                {TERMS.saved.label}: {currency}{leftover.toLocaleString()}
+              <span className="text-xs flex items-center" style={{ color: 'var(--text-2)' }}>
+                {TERMS.saved.label}<InfoIcon term="saved" />: {currency}{leftover.toLocaleString()}
               </span>
               <button onClick={onEditLeftover}
                 className="flex items-center gap-1 px-2 py-0.5 rounded"

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { SpendingBarChart } from './spending-bar-chart'
+import { TERMS } from '@/lib/terminology'
 
 type Row = { name: string; total: number; color: string }
 
@@ -67,7 +68,7 @@ export function SpendingSection({
   const incomeData: Row[] = mode === 'income'
     ? [
         { name: totalIncome > 0 ? 'Income' : 'Salary', total: effectiveIncome, color: '#4ade80' },
-        { name: 'Leftover', total: leftover, color: '#a78bfa' },
+        { name: TERMS.saved.label, total: leftover, color: '#a78bfa' },
       ]
     : data
 
