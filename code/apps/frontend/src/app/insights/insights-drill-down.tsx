@@ -87,7 +87,7 @@ export function InsightsDrillDown({ row, onBack }: Props) {
           sub={
             row.monthlyBudget != null
               ? <span style={{ color: isOver ? 'var(--red)' : '#22c55e' }}>
-                  {isOver ? 'Over budget' : 'Under budget'}
+                  {isOver ? 'Over limit' : 'Under limit'}
                 </span>
               : <a href="/categories" className="underline" style={{ color: 'var(--accent)' }}>
                   Set budget →
