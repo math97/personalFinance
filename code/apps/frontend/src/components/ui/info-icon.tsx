@@ -24,7 +24,13 @@ export function InfoIcon({ term }: InfoIconProps) {
   }, [open])
 
   return (
-    <span ref={wrapRef} className="relative inline-flex">
+    <span
+      ref={wrapRef}
+      className="relative inline-flex items-center"
+      style={{ verticalAlign: 'middle' }}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
@@ -34,9 +40,12 @@ export function InfoIcon({ term }: InfoIconProps) {
           border: `1px solid ${open ? '#f59e0b' : 'var(--text-3)'}`,
           background: open ? '#f59e0b18' : 'transparent',
           color: open ? '#f59e0b' : 'var(--text-3)',
+          flexShrink: 0,
+          position: 'relative',
+          top: '-1px',
         }}
       >
-        <span style={{ fontSize: 9, fontWeight: 700, lineHeight: 1, fontFamily: 'Inter, sans-serif' }}>i</span>
+        <span style={{ fontSize: 8, fontWeight: 900, lineHeight: 1, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>i</span>
       </button>
       {open && <TermPopover term={term} />}
     </span>

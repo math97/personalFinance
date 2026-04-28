@@ -10,7 +10,7 @@ export function TermPopover({ term }: TermPopoverProps) {
   const t = TERMS[term]
   return (
     <div
-      className="absolute left-0 top-full z-50 mt-1.5 w-[220px] rounded-lg border border-border-2 bg-surface-2 p-3"
+      className="absolute left-0 bottom-full z-50 mb-1.5 w-[220px] rounded-lg border border-border-2 bg-surface-2 p-3"
       style={{ boxShadow: '0 4px 16px #00000066' }}
     >
       <div className="mb-2 flex items-center justify-between gap-2">
