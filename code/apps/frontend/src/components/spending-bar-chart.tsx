@@ -2,6 +2,7 @@
 
 import { Banknote, Pencil, Check, X, ArrowDownToLine } from 'lucide-react'
 import { useCurrency } from '@/hooks/useCurrency'
+import { TERMS } from '@/lib/terminology'
 
 type Row = { name: string; total: number; color: string }
 
@@ -56,7 +57,7 @@ export function SpendingBarChart({
     <div className="flex flex-col gap-0">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Spending by Category</h2>
+        <h2 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{TERMS.whereItGoes.label}</h2>
         <div className="flex gap-0.5 rounded-lg p-0.5" style={{ background: 'var(--surface-2)' }}>
           {(['spending', 'income'] as const).map(m => (
             <button key={m} onClick={() => onModeChange(m)}
@@ -184,7 +185,7 @@ export function SpendingBarChart({
                 className="text-xs rounded px-1.5 py-0.5 outline-none w-20"
                 style={{ background: 'var(--surface-2)', border: '1px solid var(--accent)', color: 'var(--text)' }}
               />
-              <span className="text-xs" style={{ color: 'var(--text-2)' }}>leftover</span>
+              <span className="text-xs" style={{ color: 'var(--text-2)' }}>{TERMS.saved.label.toLowerCase()}</span>
               <button onClick={onSaveLeftover} className="w-5 h-5 flex items-center justify-center rounded"
                 style={{ background: 'var(--accent)', color: '#0c0c0e' }}>
                 <Check size={10} />
@@ -197,7 +198,7 @@ export function SpendingBarChart({
           ) : (
             <>
               <span className="text-xs" style={{ color: 'var(--text-2)' }}>
-                Leftover: {currency}{leftover.toLocaleString()}
+                {TERMS.saved.label}: {currency}{leftover.toLocaleString()}
               </span>
               <button onClick={onEditLeftover}
                 className="flex items-center gap-1 px-2 py-0.5 rounded"
