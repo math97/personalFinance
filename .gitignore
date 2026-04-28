@@ -63,3 +63,9 @@ demo/
 
 # Git worktrees
 .worktrees/
+
+progress.txt
+
+# Design specs and implementation plans (local only)
+docs/superpowers/specs/
+docs/superpowers/plans/
