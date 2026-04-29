@@ -1,0 +1,182 @@
+{
+  "common": {
+    "save": "Save",
+    "saved": "Saved",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "loading": "Loading…",
+    "error": "Error",
+    "noData": "No data"
+  },
+  "sidebar": {
+    "overview": "OVERVIEW",
+    "import": "IMPORT",
+    "manage": "MANAGE",
+    "dashboard": "Dashboard",
+    "insights": "Insights",
+    "transactions": "Transactions",
+    "uploadFiles": "Upload Files",
+    "importInbox": "Import Inbox",
+    "categories": "Categories",
+    "settings": "Settings",
+    "addTransaction": "+ Add transaction"
+  },
+  "dashboard": {
+    "moneyOut": "Money Out",
+    "biggestCategory": "Biggest category",
+    "transactions": "Transactions",
+    "dueSoon": "Due Soon",
+    "availableNow": "Available Now",
+    "noneDetected": "None detected",
+    "recurringExpected": "{count} recurring expected",
+    "moneyFormula": "money in − money out − due soon",
+    "recentTransactions": "Recent transactions",
+    "viewAll": "View all →",
+    "noTransactionsTitle": "No transactions in {month}",
+    "noTransactionsDesc": "Add transactions manually or upload a bank statement to get started.",
+    "uploadStatement": "Upload statement",
+    "vsLastMonth": "vs last month",
+    "ofTotal": "% of total",
+    "inboxCount": "{count} in inbox →",
+    "noCategory": "No category",
+    "upcomingThisMonth": "Upcoming this month",
+    "expected": "{count} expected",
+    "budgetProgress": "Budget progress"
+  },
+  "transactions": {
+    "title": "Transactions",
+    "searchPlaceholder": "Search…",
+    "allTime": "All time",
+    "noCategory": "No category",
+    "loading": "Loading…",
+    "errorLoad": "Failed to load transactions",
+    "empty": "No transactions found",
+    "export": "Export",
+    "selected": "{count} selected",
+    "categorize": "Categorize",
+    "bulkError": "Failed to bulk-categorize",
+    "filterCategory": "All categories",
+    "perPage": "Per page",
+    "prev": "Previous",
+    "next": "Next",
+    "addTransaction": "Add transaction",
+    "addManually": "Add manually",
+    "addManuallyDesc": "Enter amount, description and date by hand",
+    "uploadDocs": "Upload documents",
+    "uploadDocsDesc": "Drop PDFs or photos — Claude extracts transactions automatically"
+  },
+  "insights": {
+    "title": "Insights",
+    "errorLoad": "Failed to load insights",
+    "noCategories": "No spending data for this period"
+  },
+  "categories": {
+    "title": "Categories",
+    "addCategory": "New category",
+    "name": "Name",
+    "color": "Color",
+    "budget": "Budget",
+    "keywords": "Keywords",
+    "addKeyword": "Add keyword",
+    "errorLoad": "Failed to load categories",
+    "noBudget": "No budget",
+    "save": "Save",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "spentThisMonth": "spent this month",
+    "ofBudget": "of budget"
+  },
+  "import": {
+    "title": "Upload Files",
+    "dropzoneActive": "Drop files here…",
+    "dropzoneIdle": "Drop bank statements here, or click to browse",
+    "dropzoneHint": "PDFs and images supported",
+    "uploading": "Uploading {current} of {total}: {filename}",
+    "errorUpload": "Upload failed",
+    "recentBatches": "Recent imports",
+    "review": "Review",
+    "inbox": {
+      "title": "Import Inbox",
+      "approve": "Approve",
+      "skip": "Skip",
+      "errorLoad": "Failed to load inbox"
+    },
+    "batch": {
+      "back": "← Back to inbox",
+      "approve": "Approve",
+      "reject": "Reject",
+      "description": "Description",
+      "amount": "Amount",
+      "date": "Date",
+      "category": "Category",
+      "source": "Source",
+      "errorLoad": "Failed to load batch"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your preferences and AI configuration",
+    "general": "General",
+    "currency": "Currency",
+    "currencyDesc": "Symbol displayed across all amounts",
+    "salary": "Monthly salary",
+    "salaryDesc": "Used to calculate % of income spent",
+    "language": "Language",
+    "languageDesc": "Display language for the app",
+    "aiProvider": "AI Provider",
+    "provider": "Provider",
+    "providerDesc": "Select which AI service to use",
+    "apiKey": "API Key",
+    "apiKeyDesc": "Stored securely in DB",
+    "model": "Model",
+    "modelDesc": "Exact model ID",
+    "modelHint": "Enter the model ID exactly as the provider expects it",
+    "testConnection": "Test connection",
+    "testing": "Testing…",
+    "connectionOk": "Connection successful",
+    "connectionFail": "Invalid key or model",
+    "requestFailed": "Request failed",
+    "save": "Save changes"
+  },
+  "terminology": {
+    "moneyOut": {
+      "label": "Money Out",
+      "technical": "Outflow",
+      "description": "Total money leaving your account this period — what you spent."
+    },
+    "saved": {
+      "label": "Saved",
+      "technical": "Net Cash Flow",
+      "description": "What remains after all spending. Positive means you saved money."
+    },
+    "availableNow": {
+      "label": "Available Now",
+      "technical": "Liquidity",
+      "description": "Your balance minus known upcoming expenses this period."
+    },
+    "dueSoon": {
+      "label": "Due Soon",
+      "technical": "Committed Outflows",
+      "description": "Recurring expenses expected before the end of this period."
+    },
+    "spending": {
+      "label": "Spending",
+      "technical": "Expenditure",
+      "description": "Any money leaving your account, grouped for analysis."
+    },
+    "whereItGoes": {
+      "label": "Where it Goes",
+      "technical": "Expenditure Breakdown",
+      "description": "Your outflows grouped by category."
+    },
+    "overLimit": {
+      "label": "Over limit",
+      "technical": "Budget Variance",
+      "description": "Amount spent beyond your set limit for this category."
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong",
+    "tryAgain": "Try again"
+  }
+}

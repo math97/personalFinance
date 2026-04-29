@@ -1,0 +1,182 @@
+{
+  "common": {
+    "save": "Salvar",
+    "saved": "Salvo",
+    "saving": "Salvando…",
+    "cancel": "Cancelar",
+    "loading": "Carregando…",
+    "error": "Erro",
+    "noData": "Sem dados"
+  },
+  "sidebar": {
+    "overview": "VISÃO GERAL",
+    "import": "IMPORTAR",
+    "manage": "GERENCIAR",
+    "dashboard": "Painel",
+    "insights": "Insights",
+    "transactions": "Transações",
+    "uploadFiles": "Enviar Arquivos",
+    "importInbox": "Caixa de Importação",
+    "categories": "Categorias",
+    "settings": "Configurações",
+    "addTransaction": "+ Adicionar transação"
+  },
+  "dashboard": {
+    "moneyOut": "Saídas",
+    "biggestCategory": "Maior categoria",
+    "transactions": "Transações",
+    "dueSoon": "Vence Em Breve",
+    "availableNow": "Disponível Agora",
+    "noneDetected": "Nenhum detectado",
+    "recurringExpected": "{count} recorrentes esperados",
+    "moneyFormula": "receitas − gastos − vence em breve",
+    "recentTransactions": "Transações recentes",
+    "viewAll": "Ver tudo →",
+    "noTransactionsTitle": "Sem transações em {month}",
+    "noTransactionsDesc": "Adicione transações manualmente ou envie um extrato bancário para começar.",
+    "uploadStatement": "Enviar extrato",
+    "vsLastMonth": "vs mês anterior",
+    "ofTotal": "% do total",
+    "inboxCount": "{count} na caixa →",
+    "noCategory": "Sem categoria",
+    "upcomingThisMonth": "Vence este mês",
+    "expected": "{count} esperados",
+    "budgetProgress": "Progresso do orçamento"
+  },
+  "transactions": {
+    "title": "Transações",
+    "searchPlaceholder": "Pesquisar…",
+    "allTime": "Todo período",
+    "noCategory": "Sem categoria",
+    "loading": "Carregando…",
+    "errorLoad": "Erro ao carregar transações",
+    "empty": "Nenhuma transação encontrada",
+    "export": "Exportar",
+    "selected": "{count} selecionados",
+    "categorize": "Categorizar",
+    "bulkError": "Erro ao categorizar em lote",
+    "filterCategory": "Todas as categorias",
+    "perPage": "Por página",
+    "prev": "Anterior",
+    "next": "Próxima",
+    "addTransaction": "Adicionar transação",
+    "addManually": "Adicionar manualmente",
+    "addManuallyDesc": "Digite valor, descrição e data manualmente",
+    "uploadDocs": "Enviar documentos",
+    "uploadDocsDesc": "Solte PDFs ou fotos — Claude extrai as transações automaticamente"
+  },
+  "insights": {
+    "title": "Insights",
+    "errorLoad": "Erro ao carregar insights",
+    "noCategories": "Sem dados de gastos para este período"
+  },
+  "categories": {
+    "title": "Categorias",
+    "addCategory": "Nova categoria",
+    "name": "Nome",
+    "color": "Cor",
+    "budget": "Orçamento",
+    "keywords": "Palavras-chave",
+    "addKeyword": "Adicionar palavra-chave",
+    "errorLoad": "Erro ao carregar categorias",
+    "noBudget": "Sem orçamento",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "cancel": "Cancelar",
+    "spentThisMonth": "gasto este mês",
+    "ofBudget": "do orçamento"
+  },
+  "import": {
+    "title": "Enviar Arquivos",
+    "dropzoneActive": "Solte os arquivos aqui…",
+    "dropzoneIdle": "Solte extratos bancários aqui, ou clique para navegar",
+    "dropzoneHint": "PDFs e imagens suportados",
+    "uploading": "Enviando {current} de {total}: {filename}",
+    "errorUpload": "Erro no envio",
+    "recentBatches": "Importações recentes",
+    "review": "Revisar",
+    "inbox": {
+      "title": "Caixa de Importação",
+      "approve": "Aprovar",
+      "skip": "Pular",
+      "errorLoad": "Erro ao carregar caixa de importação"
+    },
+    "batch": {
+      "back": "← Voltar para a caixa",
+      "approve": "Aprovar",
+      "reject": "Rejeitar",
+      "description": "Descrição",
+      "amount": "Valor",
+      "date": "Data",
+      "category": "Categoria",
+      "source": "Origem",
+      "errorLoad": "Erro ao carregar lote"
+    }
+  },
+  "settings": {
+    "title": "Configurações",
+    "subtitle": "Gerencie suas preferências e configuração de IA",
+    "general": "Geral",
+    "currency": "Moeda",
+    "currencyDesc": "Símbolo exibido em todos os valores",
+    "salary": "Salário mensal",
+    "salaryDesc": "Usado para calcular % da renda gasta",
+    "language": "Idioma",
+    "languageDesc": "Idioma de exibição do aplicativo",
+    "aiProvider": "Provedor de IA",
+    "provider": "Provedor",
+    "providerDesc": "Selecione qual serviço de IA usar",
+    "apiKey": "Chave de API",
+    "apiKeyDesc": "Armazenada com segurança no banco de dados",
+    "model": "Modelo",
+    "modelDesc": "ID exato do modelo",
+    "modelHint": "Digite o ID do modelo exatamente como o provedor espera",
+    "testConnection": "Testar conexão",
+    "testing": "Testando…",
+    "connectionOk": "Conexão bem-sucedida",
+    "connectionFail": "Chave ou modelo inválidos",
+    "requestFailed": "Requisição falhou",
+    "save": "Salvar alterações"
+  },
+  "terminology": {
+    "moneyOut": {
+      "label": "Saídas",
+      "technical": "Saída de Caixa",
+      "description": "Total de dinheiro saindo da sua conta neste período — o que você gastou."
+    },
+    "saved": {
+      "label": "Economizado",
+      "technical": "Fluxo de Caixa Líquido",
+      "description": "O que resta após todos os gastos. Positivo significa que você economizou dinheiro."
+    },
+    "availableNow": {
+      "label": "Disponível Agora",
+      "technical": "Liquidez",
+      "description": "Seu saldo menos as despesas futuras conhecidas neste período."
+    },
+    "dueSoon": {
+      "label": "Vence Em Breve",
+      "technical": "Saídas Comprometidas",
+      "description": "Despesas recorrentes esperadas antes do final deste período."
+    },
+    "spending": {
+      "label": "Gastos",
+      "technical": "Despesa",
+      "description": "Qualquer dinheiro saindo da sua conta, agrupado para análise."
+    },
+    "whereItGoes": {
+      "label": "Para Onde Vai",
+      "technical": "Detalhamento de Despesas",
+      "description": "Suas saídas agrupadas por categoria."
+    },
+    "overLimit": {
+      "label": "Acima do Limite",
+      "technical": "Variação de Orçamento",
+      "description": "Valor gasto além do seu limite definido para esta categoria."
+    }
+  },
+  "errors": {
+    "generic": "Algo deu errado",
+    "tryAgain": "Tentar novamente"
+  }
+}
