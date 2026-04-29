@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/cn'
 import {
   LayoutDashboard,
@@ -15,7 +16,7 @@ import {
 
 type NavItem = {
   href: string
-  label: string
+  labelKey: string
   icon: React.ComponentType<{ size?: number; className?: string }>
   badge?: number
   disabled?: boolean
@@ -28,28 +29,29 @@ interface SidebarProps extends React.ComponentProps<'aside'> {
 
 export function Sidebar({ onAddClick, inboxCount = 0, className, ...props }: SidebarProps) {
   const pathname = usePathname()
+  const t = useTranslations('sidebar')
 
-  const sections: { label: string; items: NavItem[] }[] = [
+  const sections: { labelKey: string; items: NavItem[] }[] = [
     {
-      label: 'OVERVIEW',
+      labelKey: 'overview',
       items: [
-        { href: '/dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
-        { href: '/insights',     label: 'Insights',     icon: BarChart3       },
-        { href: '/transactions', label: 'Transactions', icon: CreditCard      },
+        { href: '/dashboard',    labelKey: 'dashboard',    icon: LayoutDashboard },
+        { href: '/insights',     labelKey: 'insights',     icon: BarChart3       },
+        { href: '/transactions', labelKey: 'transactions', icon: CreditCard      },
       ],
     },
     {
-      label: 'IMPORT',
+      labelKey: 'import',
       items: [
-        { href: '/import',       label: 'Upload Files', icon: Upload },
-        { href: '/import/inbox', label: 'Import Inbox', icon: Inbox, badge: inboxCount || undefined },
+        { href: '/import',       labelKey: 'uploadFiles',  icon: Upload },
+        { href: '/import/inbox', labelKey: 'importInbox',  icon: Inbox, badge: inboxCount || undefined },
       ],
     },
     {
-      label: 'MANAGE',
+      labelKey: 'manage',
       items: [
-        { href: '/categories', label: 'Categories', icon: Tag },
-        { href: '/settings',   label: 'Settings',   icon: Settings },
+        { href: '/categories', labelKey: 'categories', icon: Tag },
+        { href: '/settings',   labelKey: 'settings',   icon: Settings },
       ],
     },
   ]
@@ -81,7 +83,7 @@ export function Sidebar({ onAddClick, inboxCount = 0, className, ...props }: Sid
             onClick={onAddClick}
             className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-colors bg-accent text-bg"
           >
-            + Add transaction
+            {t('addTransaction')}
           </button>
         </div>
       )}
@@ -89,16 +91,16 @@ export function Sidebar({ onAddClick, inboxCount = 0, className, ...props }: Sid
       {/* Nav */}
       <nav className="flex-1 px-3 py-2 overflow-y-auto space-y-5">
         {sections.map(section => (
-          <div key={section.label}>
+          <div key={section.labelKey}>
             <p className="text-xs font-semibold tracking-wider px-2 mb-1 text-text-3">
-              {section.label}
+              {t(section.labelKey)}
             </p>
             <div className="space-y-0.5">
               {section.items.map(item => {
                 const active = isActive(item.href)
                 return (
                   <Link
-                    key={item.label}
+                    key={item.labelKey}
                     href={item.disabled ? '#' : item.href}
                     className={cn(
                       'flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors',
@@ -109,7 +111,7 @@ export function Sidebar({ onAddClick, inboxCount = 0, className, ...props }: Sid
                     <span className={cn('flex', active ? 'text-accent' : 'text-text-2')}>
                       <item.icon size={16} />
                     </span>
-                    <span className="flex-1">{item.label}</span>
+                    <span className="flex-1">{t(item.labelKey)}</span>
                     {item.badge && (
                       <span className="flex items-center justify-center w-[18px] h-[18px] rounded-full text-xs font-bold bg-accent text-bg">
                         {item.badge}
