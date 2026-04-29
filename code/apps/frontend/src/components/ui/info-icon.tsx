@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { TermPopover } from './term-popover'
-import { TermKey } from '@/lib/terminology'
+import { TermPopover, TermKey } from './term-popover'
+
+export type { TermKey }
 
 interface InfoIconProps {
   term: TermKey

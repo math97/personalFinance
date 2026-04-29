@@ -7,7 +7,7 @@ import { ChartsToggleCard } from '@/components/charts-toggle-card'
 import { CategoryPill } from '@/components/ui/category-pill'
 import { Card } from '@/components/ui/card'
 import { InfoIcon } from '@/components/ui/info-icon'
-import { TERMS } from '@/lib/terminology'
+import { getTranslations } from 'next-intl/server'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { format } from 'date-fns'
@@ -43,6 +43,7 @@ export default async function DashboardPage({
   searchParams: Promise<{ year?: string; month?: string }>
 }) {
   const params = await searchParams
+  const tDash = await getTranslations('dashboard')
   const now = new Date()
   const rawYear  = Number(params.year)
   const rawMonth = Number(params.month)
@@ -104,7 +105,7 @@ export default async function DashboardPage({
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <Card>
               <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
-                {TERMS.moneyOut.label}<InfoIcon term="moneyOut" />
+                {tDash('moneyOut')}<InfoIcon term="moneyOut" />
               </p>
               <p className="text-3xl font-bold text-text">
                 <CurrencyAmount amount={Number(summary.totalSpent)} />
@@ -140,7 +141,7 @@ export default async function DashboardPage({
             </Card>
             <Card>
               <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
-                {TERMS.dueSoon.label}<InfoIcon term="dueSoon" />
+                {tDash('dueSoon')}<InfoIcon term="dueSoon" />
               </p>
               <p className="text-3xl font-bold text-accent">
                 {upcoming.items.length > 0
@@ -155,7 +156,7 @@ export default async function DashboardPage({
             </Card>
             <Card>
               <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
-                {TERMS.availableNow.label}<InfoIcon term="availableNow" />
+                {tDash('availableNow')}<InfoIcon term="availableNow" />
               </p>
             <p className="text-3xl font-bold text-green">
               <CurrencyAmount amount={Math.max(0, Number(summary.totalIncome) - Number(summary.totalSpent) - upcoming.total)} />
