@@ -144,7 +144,7 @@ export default function SettingsPage() {
                 salarySaved ? 'bg-green/10 text-green' : 'bg-accent text-bg',
               )}
             >
-              {salarySaved ? <><Check size={14} /> {t('save')}</> : t('save')}
+              {salarySaved ? <><Check size={14} /> {t('saved')}</> : t('save')}
             </button>
           </div>
         </div>
