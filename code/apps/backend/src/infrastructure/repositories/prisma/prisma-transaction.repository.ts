@@ -38,7 +38,7 @@ export class PrismaTransactionRepository extends TransactionRepository {
     }
 
     if (filters.search) {
-      where.description = { contains: filters.search, mode: 'insensitive' }
+      where.description = { contains: filters.search }
     }
     if (filters.categoryId) {
       where.categoryId = filters.categoryId
