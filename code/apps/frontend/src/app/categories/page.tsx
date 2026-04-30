@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { ChevronDown, ChevronUp, X, Plus, Tag } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import { BudgetBar } from '@/components/budget-bar'
 import { CurrencyAmount } from '@/components/currency-amount'
 import { useCurrency } from '@/hooks/useCurrency'
 
 export default function CategoriesPage() {
+  const t = useTranslations('categories')
   const [categories, setCategories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -39,7 +41,7 @@ export default function CategoriesPage() {
           currentMonthSpent: spendMap[c.id] ?? 0,
         })))
       })
-      .catch(() => setError('Failed to load categories'))
+      .catch(() => setError(t('errorLoad')))
       .finally(() => setIsLoading(false))
   }, [])
 
@@ -107,11 +109,11 @@ export default function CategoriesPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-6">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Categories</h1>
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>{t('title')}</h1>
         <button onClick={() => setShowAddCat(s => !s)}
           className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium"
           style={{ background: showAddCat ? 'var(--accent)' : 'var(--surface)', color: showAddCat ? '#0c0c0e' : 'var(--text)', border: '1px solid var(--border)' }}>
-          <Plus size={14} /> Add category
+          <Plus size={14} /> {t('addCategory')}
         </button>
       </div>
 
@@ -125,7 +127,7 @@ export default function CategoriesPage() {
             placeholder="Category name…" autoFocus
             className="flex-1 bg-transparent text-sm outline-none" style={{ color: 'var(--text)' }} />
           <button onClick={addCategory} className="rounded-lg px-3 py-1.5 text-sm font-semibold"
-            style={{ background: 'var(--accent)', color: '#0c0c0e' }}>Add</button>
+            style={{ background: 'var(--accent)', color: '#0c0c0e' }}>{t('addBtn')}</button>
           <button onClick={() => setShowAddCat(false)} className="self-end sm:self-auto" style={{ color: 'var(--text-2)' }}><X size={16} /></button>
         </div>
       )}
@@ -135,8 +137,8 @@ export default function CategoriesPage() {
           <div className="flex items-center justify-center w-12 h-12 rounded-full" style={{ background: 'var(--surface-2)' }}>
             <Tag size={20} style={{ color: 'var(--text-2)' }} />
           </div>
-          <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>No categories yet</p>
-          <p className="text-xs" style={{ color: 'var(--text-2)' }}>Add a category to start organizing your transactions</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{t('noCategories')}</p>
+          <p className="text-xs" style={{ color: 'var(--text-2)' }}>{t('addFirst')}</p>
         </div>
       )}
 
@@ -149,8 +151,8 @@ export default function CategoriesPage() {
               style={{ background: expanded === cat.id ? 'var(--surface-2)' : 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: cat.color }} />
               <span className="flex-1 text-sm font-medium" style={{ color: 'var(--text)' }}>{cat.name}</span>
-              <span className="text-xs" style={{ color: 'var(--text-2)' }}>{cat.rules?.length ?? 0} rules</span>
-              <span className="text-xs" style={{ color: 'var(--text-2)' }}>{cat._count?.transactions ?? 0} transactions</span>
+              <span className="text-xs" style={{ color: 'var(--text-2)' }}>{t('rulesCount', { count: cat.rules?.length ?? 0 })}</span>
+              <span className="text-xs" style={{ color: 'var(--text-2)' }}>{t('transactionsCount', { count: cat._count?.transactions ?? 0 })}</span>
               {cat.monthlyBudget != null ? (
                 <span
                   className="text-xs px-2 py-0.5 rounded-md font-medium"
@@ -159,14 +161,14 @@ export default function CategoriesPage() {
                   <CurrencyAmount amount={cat.monthlyBudget} />/mo
                 </span>
               ) : (
-                <span className="text-xs" style={{ color: 'var(--text-3)' }}>no budget</span>
+                <span className="text-xs" style={{ color: 'var(--text-3)' }}>{t('noBudget')}</span>
               )}
               {expanded === cat.id ? <ChevronUp size={14} style={{ color: 'var(--text-2)' }} /> : <ChevronDown size={14} style={{ color: 'var(--text-2)' }} />}
             </button>
 
             {expanded === cat.id && (
               <div className="px-4 py-4 sm:px-5" style={{ background: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
-                <p className="text-xs font-medium mb-3" style={{ color: 'var(--text-2)' }}>AUTO-MATCH RULES — if description contains:</p>
+                <p className="text-xs font-medium mb-3" style={{ color: 'var(--text-2)' }}>{t('autoMatchRules')}</p>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {(cat.rules ?? []).map((rule: any) => (
                     <span key={rule.id} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full"
@@ -188,7 +190,7 @@ export default function CategoriesPage() {
                   <button onClick={() => addRule(cat.id)}
                     className="rounded-lg px-3 py-1.5 text-xs font-medium"
                     style={{ background: 'var(--surface)', color: 'var(--text-2)', border: '1px solid var(--border-2)' }}>
-                    + Add rule
+                    {t('addRuleBtn')}
                   </button>
                 </div>
 
@@ -199,7 +201,7 @@ export default function CategoriesPage() {
                 >
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>
-                      Monthly Budget
+                      {t('monthlyBudgetLabel')}
                     </p>
                     {cat.monthlyBudget != null && (
                       <button
@@ -207,14 +209,14 @@ export default function CategoriesPage() {
                         className="text-xs"
                         style={{ color: 'var(--text-3)' }}
                       >
-                        Clear
+                        {t('clearBudget')}
                       </button>
                     )}
                   </div>
 
                   {/* £ / % toggle */}
                   <div className="mb-3 flex flex-wrap items-center gap-2">
-                    <span className="text-xs" style={{ color: 'var(--text-3)' }}>Set by</span>
+                    <span className="text-xs" style={{ color: 'var(--text-3)' }}>{t('setBy')}</span>
                     {(['amount', 'pct'] as const).map(m => (
                       <button
                         key={m}
@@ -226,7 +228,7 @@ export default function CategoriesPage() {
                           border:     (budgetMode[cat.id] ?? 'amount') === m ? 'none'           : '1px solid var(--border)',
                         }}
                       >
-                        {m === 'amount' ? `${currency} Amount` : '% of salary'}
+                        {m === 'amount' ? `${currency} ${t('amountMode')}` : t('pctOfSalary')}
                       </button>
                     ))}
                   </div>
@@ -257,7 +259,7 @@ export default function CategoriesPage() {
                       className="px-4 h-9 rounded-lg text-sm font-semibold disabled:opacity-40"
                       style={{ background: 'var(--accent)', color: '#0c0c0e' }}
                     >
-                      {budgetSaving[cat.id] ? 'Saving…' : 'Save'}
+                      {budgetSaving[cat.id] ? t('save') : t('save')}
                     </button>
                     {(budgetMode[cat.id] ?? 'amount') === 'pct' && budgetInputs[cat.id] && (
                       <span className="text-xs px-3 py-1 rounded-lg" style={{ background: '#f59e0b10', color: 'var(--accent)' }}>
@@ -273,11 +275,11 @@ export default function CategoriesPage() {
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs" style={{ color: 'var(--text-2)' }}>
                         <span>
-                          <CurrencyAmount amount={cat.currentMonthSpent} /> spent
+                          <CurrencyAmount amount={cat.currentMonthSpent} /> {t('spentThisMonth')}
                         </span>
                         <span style={{ color: cat.currentMonthSpent > cat.monthlyBudget ? 'var(--red)' : 'var(--text-2)' }}>
                           <CurrencyAmount amount={Math.abs(cat.monthlyBudget - cat.currentMonthSpent)} />
-                          {cat.currentMonthSpent > cat.monthlyBudget ? ' over' : ' remaining'}
+                          {' '}{cat.currentMonthSpent > cat.monthlyBudget ? t('over') : t('remaining')}
                         </span>
                       </div>
                       <BudgetBar
