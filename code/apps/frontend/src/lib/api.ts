@@ -1,4 +1,11 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
+function getApiBase(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL
+  // Electron/production: proxy through Next.js rewrites
+  if (typeof window !== 'undefined') return '/api'
+  // Server-side in Next.js: call through own server (which rewrites to backend)
+  return `http://localhost:${process.env.PORT ?? 3000}/api`
+}
+const BASE = getApiBase()
 
 async function get<T>(path: string, params?: Record<string, string | number>): Promise<T> {
   const url = new URL(`${BASE}${path}`)
