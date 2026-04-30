@@ -104,9 +104,9 @@ export default async function DashboardPage({
           {/* Summary cards */}
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
+              <div className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
                 {tDash('moneyOut')}<InfoIcon term="moneyOut" />
-              </p>
+              </div>
               <p className="text-3xl font-bold text-text">
                 <CurrencyAmount amount={Number(summary.totalSpent)} />
               </p>
@@ -140,9 +140,9 @@ export default async function DashboardPage({
               )}
             </Card>
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
+              <div className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
                 {tDash('dueSoon')}<InfoIcon term="dueSoon" />
-              </p>
+              </div>
               <p className="text-3xl font-bold text-accent">
                 {upcoming.items.length > 0
                   ? <CurrencyAmount amount={upcoming.total} />
@@ -155,9 +155,9 @@ export default async function DashboardPage({
               )}
             </Card>
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
+              <div className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
                 {tDash('availableNow')}<InfoIcon term="availableNow" />
-              </p>
+              </div>
             <p className="text-3xl font-bold text-green">
               <CurrencyAmount amount={Math.max(0, Number(summary.totalIncome) - Number(summary.totalSpent) - upcoming.total)} />
             </p>
