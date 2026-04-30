@@ -6,9 +6,15 @@
     "cancel": "Cancel",
     "loading": "Loading…",
     "error": "Error",
-    "noData": "No data"
+    "noData": "No data",
+    "back": "Back",
+    "income": "Income",
+    "spending": "Spending",
+    "deselectAll": "Deselect all"
   },
   "sidebar": {
+    "appName": "Finance",
+    "appTagline": "Personal tracker",
     "overview": "OVERVIEW",
     "import": "IMPORT",
     "manage": "MANAGE",
@@ -41,7 +47,9 @@
     "noCategory": "No category",
     "upcomingThisMonth": "Upcoming this month",
     "expected": "{count} expected",
-    "budgetProgress": "Budget progress"
+    "budgetProgress": "Budget progress",
+    "spendingVsBudget": "Spending vs Budget",
+    "budgetAlerts": "{count, plural, one {# alert} other {# alerts}}"
   },
   "transactions": {
     "title": "Transactions",
@@ -63,12 +71,27 @@
     "addManually": "Add manually",
     "addManuallyDesc": "Enter amount, description and date by hand",
     "uploadDocs": "Upload documents",
-    "uploadDocsDesc": "Drop PDFs or photos — Claude extracts transactions automatically"
+    "uploadDocsDesc": "Drop PDFs or photos — Claude extracts transactions automatically",
+    "allTransactions": "All Transactions",
+    "addIncome": "Add Income",
+    "addSpending": "Add Spending",
+    "uploadExtract": "Upload & extract",
+    "keywordHint": "Keyword rules will auto-categorize matching transactions going forward",
+    "confirm": "Confirm",
+    "dismiss": "Dismiss",
+    "confirmTransaction": "Confirm transaction",
+    "actualDate": "Actual date",
+    "actualAmount": "Actual amount",
+    "saveAsTransaction": "Save as transaction",
+    "applying": "Applying…",
+    "pickCategory": "Pick a category…",
+    "predicted": "predicted recurring"
   },
   "insights": {
     "title": "Insights",
     "errorLoad": "Failed to load insights",
-    "noCategories": "No spending data for this period"
+    "noCategories": "No spending data for this period",
+    "subtitle": "3-month spending breakdown by category"
   },
   "categories": {
     "title": "Categories",
@@ -84,7 +107,21 @@
     "delete": "Delete",
     "cancel": "Cancel",
     "spentThisMonth": "spent this month",
-    "ofBudget": "of budget"
+    "ofBudget": "of budget",
+    "autoMatchRules": "AUTO-MATCH RULES — if description contains:",
+    "clearBudget": "Clear",
+    "setBy": "Set by",
+    "pctOfSalary": "% of salary",
+    "monthlyBudgetLabel": "Monthly Budget",
+    "over": "over",
+    "remaining": "remaining",
+    "noCategories": "No categories yet",
+    "addFirst": "Add a category to start organizing your transactions",
+    "addBtn": "Add",
+    "addRuleBtn": "+ Add rule",
+    "amountMode": "Amount",
+    "rulesCount": "{count} rules",
+    "transactionsCount": "{count} transactions"
   },
   "import": {
     "title": "Upload Files",
@@ -95,6 +132,21 @@
     "errorUpload": "Upload failed",
     "recentBatches": "Recent imports",
     "review": "Review",
+    "reviewing": "Reviewing",
+    "discard": "Discard",
+    "confirmAll": "Confirm all {count}",
+    "extracted": "{count} transactions extracted",
+    "needCategorization": "{count} need categorization",
+    "allCategorized": "all categorized ✓",
+    "saveRule": "Save rule",
+    "uncategorized": "Uncategorized",
+    "browseFiles": "Browse files",
+    "pendingReview": "PENDING REVIEW",
+    "extracting": "Extracting transactions…",
+    "extractingOf": "Extracting transactions… ({current}/{total})",
+    "dropHere": "Drop files here",
+    "fileHint": "Bank statements — PDF, JPG, PNG, HEIC, CSV",
+    "csvFormatTitle": "Expected CSV format",
     "inbox": {
       "title": "Import Inbox",
       "approve": "Approve",
@@ -110,7 +162,12 @@
       "date": "Date",
       "category": "Category",
       "source": "Source",
-      "errorLoad": "Failed to load batch"
+      "errorLoad": "Failed to load batch",
+      "alwaysCategorize": "Always categorize \"{keyword}\" as {category}?",
+      "type": "Type",
+      "income": "Income",
+      "markIncome": "Mark as income",
+      "markSpending": "Mark as spending"
     }
   },
   "settings": {

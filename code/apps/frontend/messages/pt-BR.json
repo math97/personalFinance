@@ -6,9 +6,15 @@
     "cancel": "Cancelar",
     "loading": "Carregando…",
     "error": "Erro",
-    "noData": "Sem dados"
+    "noData": "Sem dados",
+    "back": "Voltar",
+    "income": "Receita",
+    "spending": "Gastos",
+    "deselectAll": "Desmarcar tudo"
   },
   "sidebar": {
+    "appName": "Finanças",
+    "appTagline": "Controle pessoal",
     "overview": "VISÃO GERAL",
     "import": "IMPORTAR",
     "manage": "GERENCIAR",
@@ -41,7 +47,9 @@
     "noCategory": "Sem categoria",
     "upcomingThisMonth": "Vence este mês",
     "expected": "{count} esperados",
-    "budgetProgress": "Progresso do orçamento"
+    "budgetProgress": "Progresso do orçamento",
+    "spendingVsBudget": "Gastos vs Orçamento",
+    "budgetAlerts": "{count, plural, one {# alerta} other {# alertas}}"
   },
   "transactions": {
     "title": "Transações",
@@ -63,12 +71,27 @@
     "addManually": "Adicionar manualmente",
     "addManuallyDesc": "Digite valor, descrição e data manualmente",
     "uploadDocs": "Enviar documentos",
-    "uploadDocsDesc": "Solte PDFs ou fotos — Claude extrai as transações automaticamente"
+    "uploadDocsDesc": "Solte PDFs ou fotos — Claude extrai as transações automaticamente",
+    "allTransactions": "Todas as Transações",
+    "addIncome": "Adicionar Receita",
+    "addSpending": "Adicionar Gasto",
+    "uploadExtract": "Enviar e extrair",
+    "keywordHint": "Regras de palavras-chave categorizarão automaticamente as transações correspondentes",
+    "confirm": "Confirmar",
+    "dismiss": "Ignorar",
+    "confirmTransaction": "Confirmar transação",
+    "actualDate": "Data real",
+    "actualAmount": "Valor real",
+    "saveAsTransaction": "Salvar como transação",
+    "applying": "Aplicando…",
+    "pickCategory": "Escolha uma categoria…",
+    "predicted": "recorrente previsto"
   },
   "insights": {
     "title": "Insights",
     "errorLoad": "Erro ao carregar insights",
-    "noCategories": "Sem dados de gastos para este período"
+    "noCategories": "Sem dados de gastos para este período",
+    "subtitle": "Detalhamento de gastos dos últimos 3 meses por categoria"
   },
   "categories": {
     "title": "Categorias",
@@ -84,7 +107,21 @@
     "delete": "Excluir",
     "cancel": "Cancelar",
     "spentThisMonth": "gasto este mês",
-    "ofBudget": "do orçamento"
+    "ofBudget": "do orçamento",
+    "autoMatchRules": "REGRAS DE AUTO-CORRESPONDÊNCIA — se a descrição contiver:",
+    "clearBudget": "Limpar",
+    "setBy": "Definir por",
+    "pctOfSalary": "% do salário",
+    "monthlyBudgetLabel": "Orçamento Mensal",
+    "over": "acima",
+    "remaining": "restante",
+    "noCategories": "Sem categorias ainda",
+    "addFirst": "Adicione uma categoria para começar a organizar suas transações",
+    "addBtn": "Adicionar",
+    "addRuleBtn": "+ Adicionar regra",
+    "amountMode": "Valor",
+    "rulesCount": "{count} regras",
+    "transactionsCount": "{count} transações"
   },
   "import": {
     "title": "Enviar Arquivos",
@@ -95,6 +132,21 @@
     "errorUpload": "Erro no envio",
     "recentBatches": "Importações recentes",
     "review": "Revisar",
+    "reviewing": "Revisando",
+    "discard": "Descartar",
+    "confirmAll": "Confirmar todos {count}",
+    "extracted": "{count} transações extraídas",
+    "needCategorization": "{count} precisam de categorização",
+    "allCategorized": "todas categorizadas ✓",
+    "saveRule": "Salvar regra",
+    "uncategorized": "Sem categoria",
+    "browseFiles": "Navegar arquivos",
+    "pendingReview": "AGUARDANDO REVISÃO",
+    "extracting": "Extraindo transações…",
+    "extractingOf": "Extraindo transações… ({current}/{total})",
+    "dropHere": "Solte os arquivos aqui",
+    "fileHint": "Extratos bancários — PDF, JPG, PNG, HEIC, CSV",
+    "csvFormatTitle": "Formato CSV esperado",
     "inbox": {
       "title": "Caixa de Importação",
       "approve": "Aprovar",
@@ -110,7 +162,12 @@
       "date": "Data",
       "category": "Categoria",
       "source": "Origem",
-      "errorLoad": "Erro ao carregar lote"
+      "errorLoad": "Erro ao carregar lote",
+      "alwaysCategorize": "Sempre categorizar \"{keyword}\" como {category}?",
+      "type": "Tipo",
+      "income": "Receita",
+      "markIncome": "Marcar como receita",
+      "markSpending": "Marcar como gasto"
     }
   },
   "settings": {

@@ -1,4 +1,5 @@
 import { Calendar } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 import { CurrencyAmount } from './currency-amount'
 
 type UpcomingItem = {
@@ -16,7 +17,9 @@ type Props = {
   currentMonthLabel: string
 }
 
-export function UpcomingPanel({ items, currentMonthLabel }: Props) {
+export async function UpcomingPanel({ items, currentMonthLabel }: Props) {
+  const t = await getTranslations('dashboard')
+
   if (items.length === 0) return null
 
   return (
@@ -25,11 +28,11 @@ export function UpcomingPanel({ items, currentMonthLabel }: Props) {
         <div className="flex items-center gap-2">
           <Calendar size={14} className="text-accent" />
           <span className="text-sm font-semibold text-text">
-            Upcoming this month
+            {t('upcomingThisMonth')}
           </span>
         </div>
         <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-accent-dim text-accent">
-          {items.length} expected
+          {t('expected', { count: items.length })}
         </span>
       </div>
 

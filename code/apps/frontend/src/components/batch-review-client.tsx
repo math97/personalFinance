@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, Pencil, TriangleAlert, Check, Sparkles, X, Trash2, ArrowDownLeft, ArrowUpRight } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import { useCurrency } from '@/hooks/useCurrency'
 import { cn } from '@/lib/cn'
@@ -25,6 +26,8 @@ interface SaveRulePrompt {
 }
 
 export function BatchReviewClient({ batch, categories }: { batch: any; categories: any[] }) {
+  const t = useTranslations('import')
+  const tc = useTranslations('common')
   const router = useRouter()
   const [currency] = useCurrency()
   const [items, setItems] = useState<any[]>(batch.imported)
@@ -129,22 +132,22 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
       {/* TopBar */}
       <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
         <Link href="/import/inbox" className="flex items-center gap-1.5 text-sm text-text-2">
-          <ChevronLeft size={14} /> Inbox
+          <ChevronLeft size={14} /> {t('inbox.title')}
         </Link>
         <span className="hidden text-text-3 lg:block">/</span>
         <span className="text-sm font-medium text-text lg:truncate">{batch.filename}</span>
         <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent-dim text-accent">
-          Reviewing
+          {t('reviewing')}
         </span>
         <div className="hidden flex-1 lg:block" />
         <div className="flex flex-col gap-2 sm:flex-row">
           <button onClick={handleDiscard} disabled={loading}
             className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-red disabled:opacity-40">
-            Discard
+            {t('discard')}
           </button>
           <button onClick={handleConfirm} disabled={loading}
             className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-bg disabled:opacity-40">
-            Confirm all {items.length}
+            {t('confirmAll', { count: items.length })}
           </button>
         </div>
       </div>
@@ -154,13 +157,13 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
         <div className="flex items-center gap-3 rounded-xl px-4 py-3 mb-4 bg-accent-dim border border-accent/20">
           <Sparkles size={14} className="text-accent shrink-0" />
           <p className="text-sm flex-1 text-accent">
-            Always categorize <strong>"{saveRulePrompt.keyword}"</strong> as <strong>{saveRulePrompt.categoryName}</strong>?
+            {t('batch.alwaysCategorize', { keyword: saveRulePrompt.keyword, category: saveRulePrompt.categoryName })}
           </p>
           <button
             onClick={handleSaveRule}
             className="px-3 py-1 rounded-lg text-xs font-semibold bg-accent text-bg"
           >
-            Save rule
+            {t('saveRule')}
           </button>
           <button onClick={() => setSaveRulePrompt(null)} className="text-accent">
             <X size={14} />
@@ -169,18 +172,18 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
       )}
 
       <p className="text-sm mb-4 text-text-2">
-        {items.length} transactions extracted ·{' '}
+        {t('extracted', { count: items.length })} ·{' '}
         {uncategorized > 0
-          ? <span className="text-accent">{uncategorized} need categorization</span>
-          : <span className="text-green">all categorized ✓</span>}
+          ? <span className="text-accent">{t('needCategorization', { count: uncategorized })}</span>
+          : <span className="text-green">{t('allCategorized')}</span>}
       </p>
 
       <div className="overflow-x-auto rounded-xl border border-border bg-surface">
         <div className="min-w-[660px]">
         <div className="grid border-b border-border px-5 py-3 text-xs font-medium uppercase tracking-wider text-text-2"
           style={{ gridTemplateColumns: '110px 1fr 180px 48px 130px 72px' }}>
-          <span>Date</span><span>Description</span><span>Category</span>
-          <span>Type</span><span className="text-right">Amount</span><span />
+          <span>{t('batch.date')}</span><span>{t('batch.description')}</span><span>{t('batch.category')}</span>
+          <span>{t('batch.type')}</span><span className="text-right">{t('batch.amount')}</span><span />
         </div>
 
         {items.map(item => {
@@ -221,11 +224,11 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
               ) : (
                 <div>
                   {isIncome
-                    ? <span className="flex items-center gap-1 text-xs font-medium text-green">Income</span>
+                    ? <span className="flex items-center gap-1 text-xs font-medium text-green">{t('batch.income')}</span>
                     : item.aiCategory
                       ? <CategoryPill name={item.aiCategory.name} color={item.aiCategory.color} />
                       : <span className="flex items-center gap-1 text-xs font-medium text-accent">
-                          <TriangleAlert size={12} /> Uncategorized
+                          <TriangleAlert size={12} /> {t('uncategorized')}
                         </span>}
                 </div>
               )}
@@ -234,7 +237,7 @@ export function BatchReviewClient({ batch, categories }: { batch: any; categorie
               {!isEditing && (
                 <button
                   onClick={() => toggleIncome(item.id)}
-                  title={isIncome ? 'Mark as spending' : 'Mark as income'}
+                  title={isIncome ? t('batch.markSpending') : t('batch.markIncome')}
                   className="w-7 h-7 flex items-center justify-center rounded-md transition-colors border border-border"
                   style={{ background: isIncome ? '#4ade8022' : 'var(--surface-2)', color: isIncome ? '#4ade80' : 'var(--text-3)' }}>
                   {isIncome ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}

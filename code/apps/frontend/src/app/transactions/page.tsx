@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { ChevronLeft, ChevronRight, Search, Pencil, ChevronDown, Check, X, Trash2, Eye, EyeOff } from 'lucide-react'
@@ -22,6 +23,8 @@ export default function TransactionsPage() {
 }
 
 function TransactionsContent() {
+  const t = useTranslations('transactions')
+  const tc = useTranslations('common')
   const [currency] = useCurrency()
   const searchParams = useSearchParams()
   const now = new Date()
@@ -74,7 +77,7 @@ function TransactionsContent() {
     setBulkError(null)
     api.transactions.list(allTime ? { perPage: 1000 } : { year, month, perPage: 1000 })
       .then(r => setAllItems(r.items))
-      .catch(() => setError('Failed to load transactions'))
+      .catch(() => setError(t('errorLoad')))
       .finally(() => setIsLoading(false))
   }, [year, month, allTime])
 
@@ -184,14 +187,14 @@ function TransactionsContent() {
       {/* Header */}
       <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
         <h1 className="hidden flex-1 text-xl font-semibold text-text md:block">
-          All Transactions
+          {t('allTransactions')}
         </h1>
 
         {/* Month navigator — hidden in all-time mode */}
         <div className="flex flex-wrap items-center gap-2 md:ml-auto">
           {allTime ? (
             <span className="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text">
-              All time
+              {t('allTime')}
             </span>
           ) : (
             <>
@@ -215,7 +218,7 @@ function TransactionsContent() {
               onClick={() => setShowExportMenu(v => !v)}
               className="flex items-center gap-1.5 rounded-lg border border-border-2 bg-surface-2 px-3 py-2 text-xs font-medium text-text-2"
             >
-              Export
+              {t('export')}
               <ChevronDown size={10} />
             </button>
 
@@ -266,7 +269,7 @@ function TransactionsContent() {
             <input
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
-              placeholder="Search transactions…"
+              placeholder={t('searchPlaceholder')}
               className="flex-1 bg-transparent text-sm outline-none text-text"
             />
           </div>
@@ -277,8 +280,8 @@ function TransactionsContent() {
               onChange={e => { setCatFilter(e.target.value); setPage(1) }}
               className={cn('rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm outline-none', catFilter ? 'text-text' : 'text-text-2')}
             >
-              <option value="">All categories</option>
-              <option value="uncategorized">No category</option>
+              <option value="">{t('filterCategory')}</option>
+              <option value="uncategorized">{t('noCategory')}</option>
               {categories.map((c: any) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
@@ -320,7 +323,7 @@ function TransactionsContent() {
                 }}
               >
                 {showPredicted ? <Eye size={12} /> : <EyeOff size={12} />}
-                Predicted
+                {t('predicted')}
                 <span
                   className="ml-0.5 rounded px-1.5 py-0.5 text-xs font-bold"
                   style={{
@@ -342,11 +345,11 @@ function TransactionsContent() {
                 color:      allTime ? 'var(--accent)' : 'var(--text-2)',
               }}
             >
-              {allTime ? 'All time' : 'This month'}
+              {allTime ? t('allTime') : 'This month'}
             </button>
 
             <span className="rounded-lg bg-surface-2 px-3 py-1.5 text-sm font-semibold text-accent">
-              {total} transactions
+              {total} {t('title').toLowerCase()}
             </span>
           </div>
         </div>
@@ -365,7 +368,7 @@ function TransactionsContent() {
               ))}
             </div>
           ) : pageItems.length === 0 ? (
-            <p className="py-12 text-center text-sm text-text-3">No transactions found</p>
+            <p className="py-12 text-center text-sm text-text-3">{t('empty')}</p>
           ) : (
             <div className="space-y-3 px-4 py-4">
               {pageItems.map(tx => {
@@ -380,7 +383,7 @@ function TransactionsContent() {
                         <div>
                           <p className="text-sm font-medium text-text">{tx.description}</p>
                           <p className="mt-1 text-xs" style={{ color: '#818cf8' }}>
-                            ~{format(new Date(year, month - 1, tx.expectedDay), 'd MMM')} · predicted recurring
+                            ~{format(new Date(year, month - 1, tx.expectedDay), 'd MMM')} · {t('predicted')}
                           </p>
                         </div>
                         <p className="text-sm font-semibold tabular-nums" style={{ color: '#818cf8' }}>
@@ -390,11 +393,11 @@ function TransactionsContent() {
 
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="rounded-full px-2 py-1 text-[11px] font-bold uppercase tracking-wide" style={{ background: '#818cf818', color: '#818cf8' }}>
-                          predicted
+                          {t('predicted')}
                         </span>
                         {tx.category
                           ? <CategoryPill name={tx.category.name} color={tx.category.color} />
-                          : <span className="text-xs text-text-3">No category</span>}
+                          : <span className="text-xs text-text-3">{t('noCategory')}</span>}
                       </div>
 
                       <div className="mt-3 flex gap-2">
@@ -407,7 +410,7 @@ function TransactionsContent() {
                           className="flex-1 rounded-lg px-3 py-2 text-sm font-semibold"
                           style={{ background: '#22c55e20', color: '#22c55e' }}
                         >
-                          Confirm
+                          {t('confirm')}
                         </button>
                         <button
                           onClick={async () => {
@@ -416,7 +419,7 @@ function TransactionsContent() {
                           }}
                           className="flex-1 rounded-lg border border-border px-3 py-2 text-sm text-text-2"
                         >
-                          Dismiss
+                          {t('dismiss')}
                         </button>
                       </div>
                     </div>
@@ -438,7 +441,7 @@ function TransactionsContent() {
                           onChange={e => updateField(tx.id, { description: e.target.value })}
                           className="w-full rounded-md border border-border-2 bg-surface px-3 py-2 text-sm text-text outline-none" />
                         {ed.isIncome ? (
-                          <span className="text-sm text-green">Income</span>
+                          <span className="text-sm text-green">{tc('income')}</span>
                         ) : (
                           <select value={ed.categoryId}
                             onChange={e => updateField(tx.id, { categoryId: e.target.value })}
@@ -456,7 +459,7 @@ function TransactionsContent() {
                             border: `1px solid ${ed.isIncome ? '#4ade8066' : 'var(--border-2)'}`,
                           }}
                         >
-                          {ed.isIncome ? 'Income' : 'Spending'}
+                          {ed.isIncome ? tc('income') : tc('spending')}
                         </button>
                         <div className="flex items-center gap-2 rounded-md border border-border-2 bg-surface px-3 py-2">
                           <span className="text-sm text-text-2">{currency}</span>
@@ -466,10 +469,10 @@ function TransactionsContent() {
                         </div>
                         <div className="flex gap-2">
                           <button onClick={() => saveEdit(tx.id)} className="flex-1 rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-bg">
-                            Save
+                            {tc('save')}
                           </button>
                           <button onClick={() => setEditing(null)} className="flex-1 rounded-lg border border-border px-3 py-2 text-sm text-text-2">
-                            Cancel
+                            {tc('cancel')}
                           </button>
                         </div>
                       </div>
@@ -504,7 +507,7 @@ function TransactionsContent() {
                         <div className="flex flex-wrap items-center gap-2">
                           {tx.category
                             ? <CategoryPill name={tx.category.name} color={tx.category.color} />
-                            : <span className="text-xs text-text-3">No category</span>}
+                            : <span className="text-xs text-text-3">{t('noCategory')}</span>}
                           <SourcePill source={tx.source} />
                         </div>
 
@@ -625,7 +628,7 @@ function TransactionsContent() {
             ))}
           </div>
         ) : pageItems.length === 0 ? (
-          <p className="py-12 text-center text-sm text-text-3">No transactions found</p>
+          <p className="py-12 text-center text-sm text-text-3">{t('empty')}</p>
         ) : (
           pageItems.map(tx => {
             if (tx._predicted) {
@@ -653,7 +656,7 @@ function TransactionsContent() {
                     className="rounded px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide"
                     style={{ background: '#818cf818', color: '#818cf8', letterSpacing: '0.05em' }}
                   >
-                    predicted
+                    {t('predicted')}
                   </span>
                   <span className="text-right text-sm font-medium tabular-nums" style={{ color: '#818cf8', opacity: 0.8 }}>
                     <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
@@ -667,7 +670,7 @@ function TransactionsContent() {
                       }}
                       className="flex h-7 w-7 items-center justify-center rounded-md text-sm font-bold"
                       style={{ background: '#22c55e20', color: '#22c55e' }}
-                      title="Confirm transaction"
+                      title={t('confirmTransaction')}
                     >
                       ✓
                     </button>
@@ -677,7 +680,7 @@ function TransactionsContent() {
                         setPredicted(prev => prev.filter(p => p.patternId !== tx.patternId))
                       }}
                       className="ml-1 flex h-7 w-7 items-center justify-center rounded-md bg-surface-2 text-sm text-text-2"
-                      title="Remove recurring"
+                      title={t('dismiss')}
                     >
                       ✕
                     </button>
@@ -749,7 +752,7 @@ function TransactionsContent() {
               {/* Category */}
               {isEditing ? (
                 ed.isIncome
-                  ? <span className="text-xs pr-4 text-green">Income</span>
+                  ? <span className="text-xs pr-4 text-green">{tc('income')}</span>
                   : <select value={ed.categoryId}
                       onChange={e => updateField(tx.id, { categoryId: e.target.value })}
                       className="text-xs rounded-md px-2 py-1 outline-none pr-4 bg-surface border border-border-2 text-text">
@@ -774,7 +777,7 @@ function TransactionsContent() {
                     color: ed.isIncome ? '#4ade80' : 'var(--text-2)',
                     border: `1px solid ${ed.isIncome ? '#4ade8066' : 'var(--border-2)'}`,
                   }}>
-                  {ed.isIncome ? 'Income' : 'Spending'}
+                  {ed.isIncome ? tc('income') : tc('spending')}
                 </button>
               ) : (
                 <div><SourcePill source={tx.source} /></div>
@@ -901,7 +904,7 @@ function TransactionsContent() {
         >
           <div className="w-full max-w-sm overflow-hidden rounded-xl border border-border-2 bg-surface">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <span className="text-sm font-semibold text-text">Confirm transaction</span>
+              <span className="text-sm font-semibold text-text">{t('confirmTransaction')}</span>
               <button onClick={() => setConfirmItem(null)} className="text-text-2">✕</button>
             </div>
 
@@ -919,7 +922,7 @@ function TransactionsContent() {
 
             <div className="px-4 pb-3 space-y-3">
               <div>
-                <label className="text-xs font-medium block mb-1 text-text-2">Actual date</label>
+                <label className="text-xs font-medium block mb-1 text-text-2">{t('actualDate')}</label>
                 <input
                   type="date"
                   value={confirmDate}
@@ -929,7 +932,7 @@ function TransactionsContent() {
                 />
               </div>
               <div>
-                <label className="text-xs font-medium block mb-1 text-text-2">Actual amount</label>
+                <label className="text-xs font-medium block mb-1 text-text-2">{t('actualAmount')}</label>
                 <div className="flex items-center rounded-lg px-3 h-9 bg-surface-2 border border-accent">
                   <span className="text-sm mr-1 text-text-3">{currency}</span>
                   <input
@@ -949,7 +952,7 @@ function TransactionsContent() {
                 onClick={() => setConfirmItem(null)}
                 className="px-3 py-1.5 rounded-lg text-sm bg-surface-2 text-text-2"
               >
-                Cancel
+                {tc('cancel')}
               </button>
               <button
                 disabled={confirmSaving || !confirmDate || !confirmAmount}
@@ -973,7 +976,7 @@ function TransactionsContent() {
                 }}
                 className="px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-40 bg-accent text-bg"
               >
-                {confirmSaving ? 'Saving…' : 'Save as transaction'}
+                {confirmSaving ? tc('saving') : t('saveAsTransaction')}
               </button>
             </div>
           </div>
@@ -987,7 +990,7 @@ function TransactionsContent() {
           style={{ boxShadow: '0 8px 32px #000a' }}
         >
           <span className="text-sm font-medium shrink-0 text-text">
-            {selectedIds.size} selected
+            {t('selected', { count: selectedIds.size })}
           </span>
 
           <select
@@ -995,8 +998,8 @@ function TransactionsContent() {
             onChange={e => { setBulkCategoryId(e.target.value); setBulkError(null) }}
             className="w-full rounded-lg bg-surface px-3 py-1.5 text-sm text-text outline-none border border-border-2 sm:flex-1"
           >
-            <option value="">Pick a category…</option>
-            <option value="__none__">No category</option>
+            <option value="">{t('pickCategory')}</option>
+            <option value="__none__">{t('noCategory')}</option>
             {categories.map((c: any) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
@@ -1014,21 +1017,21 @@ function TransactionsContent() {
                 setBulkCategoryId('')
                 refresh()
               } catch {
-                setBulkError('Failed to apply — please retry')
+                setBulkError(t('bulkError'))
               } finally {
                 setBulkSaving(false)
               }
             }}
             className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-bg disabled:opacity-40 sm:shrink-0"
           >
-            {bulkSaving ? 'Applying…' : 'Apply'}
+            {bulkSaving ? t('applying') : t('categorize')}
           </button>
 
           <button
             onClick={() => { setSelectedIds(new Set()); setBulkCategoryId(''); setBulkError(null) }}
             className="text-left text-xs text-text-2 sm:shrink-0"
           >
-            Deselect all
+            {tc('deselectAll')}
           </button>
 
           {bulkError && (

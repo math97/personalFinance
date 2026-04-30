@@ -1,4 +1,5 @@
 import { TriangleAlert, CircleAlert } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 import { BudgetBar } from './budget-bar'
 import { CurrencyAmount } from './currency-amount'
 
@@ -10,7 +11,9 @@ type BudgetRow = {
   monthlyBudget: number | null
 }
 
-export function BudgetProgressPanel({ rows }: { rows: BudgetRow[] }) {
+export async function BudgetProgressPanel({ rows }: { rows: BudgetRow[] }) {
+  const t = await getTranslations('dashboard')
+
   const budgetRows = rows.filter(r => r.monthlyBudget !== null)
   if (budgetRows.length === 0) return null
 
@@ -29,11 +32,11 @@ export function BudgetProgressPanel({ rows }: { rows: BudgetRow[] }) {
         style={{ borderBottom: '1px solid var(--border)' }}
       >
         <h2 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-          Spending vs Budget
+          {t('spendingVsBudget')}
         </h2>
         {alerts.length > 0 && (
           <span className="text-xs font-medium" style={{ color: 'var(--red)' }}>
-            {alerts.length} {alerts.length === 1 ? 'alert' : 'alerts'}
+            {t('budgetAlerts', { count: alerts.length })}
           </span>
         )}
       </div>

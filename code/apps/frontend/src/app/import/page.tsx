@@ -6,9 +6,11 @@ import { useDropzone } from 'react-dropzone'
 import { useRouter } from 'next/navigation'
 import { CloudUpload, FileText, ChevronRight, Loader2, Info } from 'lucide-react'
 import { format } from 'date-fns'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 
 export default function ImportPage() {
+  const t = useTranslations('import')
   const router = useRouter()
   const [batches, setBatches] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
@@ -37,7 +39,7 @@ export default function ImportPage() {
         router.push('/import/inbox')
       }
     } catch (e: any) {
-      setError(e.message ?? 'Upload failed')
+      setError(e.message ?? t('errorUpload'))
       setUploading(false)
       setUploadStatus(null)
     }
@@ -59,7 +61,7 @@ export default function ImportPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-6">
-      <h1 className="text-xl font-semibold mb-6" style={{ color: 'var(--text)' }}>Upload Files</h1>
+      <h1 className="text-xl font-semibold mb-6" style={{ color: 'var(--text)' }}>{t('title')}</h1>
 
       <div
         {...getRootProps()}
@@ -76,8 +78,8 @@ export default function ImportPage() {
             <Loader2 size={32} className="mx-auto mb-3 animate-spin" style={{ color: 'var(--accent)' }} />
             <p className="text-base font-medium mb-1" style={{ color: 'var(--text)' }}>
               {uploadStatus
-                ? `Extracting transactions… (${uploadStatus.current}/${uploadStatus.total})`
-                : 'Extracting transactions…'}
+                ? t('extractingOf', { current: uploadStatus.current, total: uploadStatus.total })
+                : t('extracting')}
             </p>
             {uploadStatus && (
               <p className="text-sm" style={{ color: 'var(--text-2)' }}>{uploadStatus.filename}</p>
@@ -88,11 +90,11 @@ export default function ImportPage() {
             <CloudUpload size={32} className="mx-auto mb-3"
               style={{ color: isDragActive ? 'var(--accent)' : 'var(--text-2)' }} />
             <p className="text-base font-medium mb-1.5" style={{ color: 'var(--text)' }}>
-              Drop files here
+              {isDragActive ? t('dropHere') : t('dropHere')}
             </p>
             <div className="mb-4 flex flex-wrap items-center justify-center gap-1.5">
               <p className="text-sm" style={{ color: 'var(--text-2)' }}>
-                Bank statements — PDF, JPG, PNG, HEIC, CSV
+                {t('fileHint')}
               </p>
               <div
                 className="relative"
@@ -118,7 +120,7 @@ export default function ImportPage() {
                     }}
                   >
                     <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--text)' }}>
-                      Expected CSV format
+                      {t('csvFormatTitle')}
                     </p>
                     <code
                       className="text-xs block mb-1.5 px-2 py-1 rounded"
@@ -136,7 +138,7 @@ export default function ImportPage() {
             </div>
             <button className="inline-flex px-4 py-2 rounded-lg text-sm font-medium"
               style={{ background: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border-2)' }}>
-              Browse files
+              {t('browseFiles')}
             </button>
           </>
         )}
@@ -146,7 +148,7 @@ export default function ImportPage() {
 
       {batches.length > 0 && (
         <div>
-          <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-2)' }}>PENDING REVIEW</h2>
+          <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-2)' }}>{t('pendingReview')}</h2>
           <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             {batches.map((batch: any, i: number) => (
               <Link key={batch.id} href={`/import/${batch.id}`}
@@ -161,7 +163,7 @@ export default function ImportPage() {
                 </div>
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0"
                   style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}>
-                  Review
+                  {t('review')}
                 </span>
                 <ChevronRight size={14} style={{ color: 'var(--text-2)' }} />
               </Link>

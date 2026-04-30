@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import { InsightsCategoryTable } from './insights-category-table'
 import { InsightsDrillDown }     from './insights-drill-down'
@@ -14,6 +15,7 @@ type InsightRow = {
 }
 
 export default function InsightsPage() {
+  const t = useTranslations('insights')
   const now = new Date()
   const [year, setYear]             = useState(now.getFullYear())
   const [month, setMonth]           = useState(now.getMonth() + 1)
@@ -27,7 +29,7 @@ export default function InsightsPage() {
     setSelected(null)
     api.insights.categories(year, month)
       .then(data => setCategories(data.categories))
-      .catch(() => setError('Failed to load insights'))
+      .catch(() => setError(t('errorLoad')))
       .finally(() => setIsLoading(false))
   }, [year, month])
 
@@ -76,9 +78,9 @@ export default function InsightsPage() {
           {/* Header */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Insights</h1>
+              <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{t('title')}</h1>
               <p className="text-sm mt-0.5" style={{ color: 'var(--text-2)' }}>
-                3-month spending breakdown by category
+                {t('subtitle')}
               </p>
             </div>
 

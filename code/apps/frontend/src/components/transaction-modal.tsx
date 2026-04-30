@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { X, Sparkles, CloudUpload, PenLine, FileText, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { useCurrency } from '@/hooks/useCurrency'
@@ -34,27 +35,29 @@ export function TransactionModal({ onClose }: { onClose: () => void }) {
 }
 
 function PickerStep({ onSelect, onClose }: { onSelect: (s: Step) => void; onClose: () => void }) {
+  const t = useTranslations('transactions')
+  const tc = useTranslations('common')
   const [hovered, setHovered] = useState<'manual' | 'batch' | null>('manual')
 
   const cards = [
     {
       id: 'manual' as const,
       icon: PenLine,
-      title: 'Add manually',
-      desc: 'Enter amount, description and date by hand',
+      title: t('addManually'),
+      desc: t('addManuallyDesc'),
     },
     {
       id: 'batch' as const,
       icon: CloudUpload,
-      title: 'Upload documents',
-      desc: 'Drop PDFs or photos — Claude extracts transactions automatically',
+      title: t('uploadDocs'),
+      desc: t('uploadDocsDesc'),
     },
   ]
 
   return (
     <div className="w-full max-w-sm rounded-2xl p-6 space-y-4 bg-surface border border-border-2">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-text">Add transaction</h2>
+        <h2 className="text-base font-semibold text-text">{t('addTransaction')}</h2>
         <button onClick={onClose} className="text-text-2"><X size={18} /></button>
       </div>
 
@@ -84,13 +87,16 @@ function PickerStep({ onSelect, onClose }: { onSelect: (s: Step) => void; onClos
         onClick={onClose}
         className="w-full py-2 rounded-lg text-sm transition-colors bg-surface-2 text-text-2 border border-border"
       >
-        Cancel
+        {tc('cancel')}
       </button>
     </div>
   )
 }
 
 function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => void }) {
+  const t = useTranslations('transactions')
+  const tc = useTranslations('common')
+  const tb = useTranslations('import.batch')
   const [currency] = useCurrency()
   const [type, setType] = useState<'expense' | 'income'>('expense')
   const [amountFocused, setAmountFocused] = useState(false)
@@ -121,7 +127,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
     <div className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-border-2 bg-surface">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <h2 className="text-base font-semibold text-text">Add transaction</h2>
+        <h2 className="text-base font-semibold text-text">{t('addTransaction')}</h2>
         <button onClick={onClose} className="text-text-2"><X size={18} /></button>
       </div>
 
@@ -129,25 +135,25 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
       <div className="px-6 py-5 space-y-4">
         {/* Type toggle */}
         <div className="flex gap-0.5 rounded-lg p-0.5 bg-surface-2">
-          {(['expense', 'income'] as const).map(t => (
+          {(['expense', 'income'] as const).map(tp => (
             <button
-              key={t}
-              onClick={() => setType(t)}
+              key={tp}
+              onClick={() => setType(tp)}
               className="flex-1 py-1.5 rounded-md text-xs font-medium capitalize transition-all"
               style={{
-                background: type === t ? 'var(--bg)' : 'transparent',
-                color: type === t ? (t === 'income' ? 'var(--green)' : 'var(--text)') : 'var(--text-2)',
-                border: type === t ? '1px solid var(--border-2)' : '1px solid transparent',
+                background: type === tp ? 'var(--bg)' : 'transparent',
+                color: type === tp ? (tp === 'income' ? 'var(--green)' : 'var(--text)') : 'var(--text-2)',
+                border: type === tp ? '1px solid var(--border-2)' : '1px solid transparent',
               }}
             >
-              {t === 'expense' ? 'Spending' : 'Income'}
+              {tp === 'expense' ? tc('spending') : tc('income')}
             </button>
           ))}
         </div>
 
         {/* Amount */}
         <div>
-          <label className="text-xs font-medium mb-1.5 block text-text-2">Amount</label>
+          <label className="text-xs font-medium mb-1.5 block text-text-2">{tb('amount')}</label>
           <div
             className="flex items-center rounded-lg px-3 py-2.5 transition-all bg-surface-2"
             style={{
@@ -171,7 +177,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
 
         {/* Description */}
         <div>
-          <label className="text-xs font-medium mb-1.5 block text-text-2">Description</label>
+          <label className="text-xs font-medium mb-1.5 block text-text-2">{tb('description')}</label>
           <input
             type="text"
             placeholder={type === 'income' ? 'e.g. Rent contribution' : 'e.g. Tesco Metro'}
@@ -183,7 +189,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
 
         {/* Date */}
         <div>
-          <label className="text-xs font-medium mb-1.5 block text-text-2">Date</label>
+          <label className="text-xs font-medium mb-1.5 block text-text-2">{tb('date')}</label>
           <input
             type="date"
             value={form.date}
@@ -197,7 +203,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
         {type === 'expense' && (
           <>
             <div>
-              <label className="text-xs font-medium mb-1.5 block text-text-2">Category</label>
+              <label className="text-xs font-medium mb-1.5 block text-text-2">{tb('category')}</label>
               <select
                 value={form.categoryId}
                 onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
@@ -212,7 +218,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
             <div className="flex items-start gap-2.5 rounded-lg px-3 py-2.5 bg-accent-dim border border-accent/10">
               <Sparkles size={14} className="text-accent mt-0.5 shrink-0" />
               <p className="text-xs leading-relaxed text-accent">
-                Keyword rules will auto-categorize matching transactions going forward
+                {t('keywordHint')}
               </p>
             </div>
           </>
@@ -225,7 +231,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
           onClick={onBack}
           className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors bg-surface-2 text-text-2 border border-border"
         >
-          Back
+          {tc('back')}
         </button>
         <button
           onClick={handleSubmit}
@@ -233,7 +239,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
           className="flex-1 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-40"
           style={{ background: accentColor, color: '#0c0c0e' }}
         >
-          {loading ? 'Saving…' : type === 'income' ? 'Add Income' : 'Add Spending'}
+          {loading ? tc('saving') : type === 'income' ? t('addIncome') : t('addSpending')}
         </button>
       </div>
     </div>
@@ -241,6 +247,9 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
 }
 
 function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => void }) {
+  const t = useTranslations('transactions')
+  const tc = useTranslations('common')
+  const ti = useTranslations('import')
   const [files, setFiles] = useState<QueuedFile[]>([])
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -262,7 +271,7 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
       }
       onClose()
     } catch (e: any) {
-      setError(e.message ?? 'Upload failed')
+      setError(e.message ?? ti('errorUpload'))
     } finally {
       setUploading(false)
     }
@@ -285,7 +294,7 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
     <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-border-2 bg-surface">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <h2 className="text-base font-semibold text-text">Upload documents</h2>
+        <h2 className="text-base font-semibold text-text">{t('uploadDocs')}</h2>
         <button onClick={onClose} className="text-text-2"><X size={18} /></button>
       </div>
 
@@ -303,7 +312,7 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
           <input {...getInputProps()} />
           <CloudUpload size={24} className="mx-auto mb-2 text-text-2" />
           <p className="text-sm font-medium mb-1 text-text">
-            Drop files here or click to browse
+            {isDragActive ? ti('dropHere') : t('uploadDocs')}
           </p>
           <p className="text-xs text-text-2">
             PDF, JPG, PNG, HEIC
@@ -357,14 +366,14 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
             onClick={onBack}
             className="px-4 py-2 rounded-lg text-sm transition-colors bg-surface-2 text-text-2 border border-border"
           >
-            Back
+            {tc('back')}
           </button>
           <button
             disabled={files.length === 0 || uploading}
             onClick={handleUpload}
             className="px-4 py-2 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-40 bg-accent text-bg"
           >
-            {uploading ? 'Uploading…' : 'Upload & extract'}
+            {uploading ? ti('extracting') : t('uploadExtract')}
           </button>
         </div>
       </div>
