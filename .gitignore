@@ -69,3 +69,6 @@ progress.txt
 # Design specs and implementation plans (local only)
 docs/superpowers/specs/
 docs/superpowers/plans/
+
+# Electron build output
+code/apps/electron/dist-electron/

@@ -167,15 +167,29 @@ async function launch(): Promise<void> {
   mainWindow.focus()
 }
 
-app.whenReady().then(async () => {
-  try {
-    await launch()
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    dialog.showErrorBox('Failed to start Personal Finance', message)
-    app.quit()
-  }
-})
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    const win = BrowserWindow.getAllWindows()[0]
+    if (win) {
+      if (win.isMinimized()) win.restore()
+      win.focus()
+    }
+  })
+
+  app.whenReady().then(async () => {
+    try {
+      await launch()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      dialog.showErrorBox('Failed to start Personal Finance', message)
+      app.quit()
+    }
+  })
+}
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
