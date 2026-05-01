@@ -52,21 +52,21 @@ function attachProcessHandlers(proc: ChildProcess, name: string): void {
 
 async function startServices(backendPort: number, frontendPort: number): Promise<void> {
   const resources = getResourcesPath()
-  const dataDir = getDataDir()
-  const dbPath = path.join(dataDir, 'finance.db')
 
-  const backendEnv = {
-    ...process.env,
-    PORT: String(backendPort),
-    DATABASE_URL: `file:${dbPath}`,
-    NODE_ENV: 'production',
-  }
+  // In dev, use the existing dev.db via the backend's own .env file
+  // In production, use the app data directory
+  const backendEnv: NodeJS.ProcessEnv = isDev
+    ? { ...process.env, PORT: String(backendPort) }
+    : (() => {
+        const dataDir = getDataDir()
+        const dbPath = path.join(dataDir, 'finance.db')
+        return { ...process.env, PORT: String(backendPort), DATABASE_URL: `file:${dbPath}`, NODE_ENV: 'production' }
+      })()
 
   const frontendEnv = {
     ...process.env,
     PORT: String(frontendPort),
     BACKEND_PORT: String(backendPort),
-    NODE_ENV: 'production',
     HOSTNAME: '127.0.0.1',
   }
 
