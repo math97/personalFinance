@@ -1,0 +1,53 @@
+appId: com.personalfinance.app
+productName: Personal Finance
+copyright: Copyright © 2026
+
+directories:
+  output: dist-electron
+
+files:
+  - dist/**/*
+  - src/splash.html
+  - package.json
+
+extraResources:
+  - from: "../../apps/backend"
+    to: "backend"
+    filter:
+      - "dist/**"
+      - "node_modules/**"
+      - "prisma/migrations/**"
+      - "prisma/schema.prisma"
+      - "!node_modules/.cache/**"
+  - from: "../../apps/frontend/.next/standalone"
+    to: "frontend"
+  - from: "../../apps/frontend/.next/static"
+    to: "frontend/.next/static"
+  - from: "../../apps/frontend/public"
+    to: "frontend/public"
+
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  icon: assets/icon.icns
+  category: public.app-category.finance
+
+dmg:
+  title: Personal Finance
+  window:
+    width: 540
+    height: 380
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: assets/icon.ico
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+
+publish: null
