@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, dialog } from 'electron'
 import { spawn, ChildProcess } from 'child_process'
 import path from 'path'
 import fs from 'fs'
@@ -19,9 +19,12 @@ function getDataDir(): string {
   return dir
 }
 
-async function waitForPort(port: number, timeout = 30000): Promise<void> {
+async function waitForPort(port: number, proc: ChildProcess, timeout = 30000): Promise<void> {
   const start = Date.now()
   while (Date.now() - start < timeout) {
+    if (proc.exitCode !== null) {
+      throw new Error(`Process exited with code ${proc.exitCode} before port ${port} was ready`)
+    }
     try {
       await fetch(`http://localhost:${port}/`)
       return
@@ -34,6 +37,18 @@ async function waitForPort(port: number, timeout = 30000): Promise<void> {
 
 let backendProcess: ChildProcess | null = null
 let frontendProcess: ChildProcess | null = null
+
+function attachProcessHandlers(proc: ChildProcess, name: string): void {
+  proc.stderr?.on('data', (d) => console.error(`[${name}]`, d.toString()))
+  proc.on('error', (err) => {
+    dialog.showErrorBox(`${name} failed to start`, err.message)
+  })
+  proc.on('exit', (code, signal) => {
+    if (code !== 0 && signal !== 'SIGTERM' && signal !== 'SIGKILL') {
+      dialog.showErrorBox(`${name} crashed`, `Exit code: ${code ?? 'unknown'}`)
+    }
+  })
+}
 
 async function startServices(backendPort: number, frontendPort: number): Promise<void> {
   const resources = getResourcesPath()
@@ -79,19 +94,29 @@ async function startServices(backendPort: number, frontendPort: number): Promise
       migrateProc.on('close', (code) =>
         code === 0 ? resolve() : reject(new Error(`prisma migrate deploy failed with code ${code}`))
       )
+      migrateProc.on('error', reject)
     })
 
     backendProcess = spawn('node', [backendEntry], { env: backendEnv })
     frontendProcess = spawn('node', [frontendEntry], { env: frontendEnv })
   }
 
-  backendProcess?.stderr?.on('data', (d) => console.error('[backend]', d.toString()))
-  frontendProcess?.stderr?.on('data', (d) => console.error('[frontend]', d.toString()))
+  attachProcessHandlers(backendProcess, 'Backend')
+  attachProcessHandlers(frontendProcess, 'Frontend')
 }
 
 function killServices(): void {
-  backendProcess?.kill()
-  frontendProcess?.kill()
+  for (const [proc, name] of [[backendProcess, 'backend'], [frontendProcess, 'frontend']] as const) {
+    if (!proc) continue
+    proc.kill('SIGTERM')
+    const timer = setTimeout(() => {
+      if (proc.exitCode === null) {
+        console.warn(`[${name}] did not exit after SIGTERM, sending SIGKILL`)
+        proc.kill('SIGKILL')
+      }
+    }, 3000)
+    proc.once('exit', () => clearTimeout(timer))
+  }
 }
 
 async function createMainWindow(frontendPort: number): Promise<BrowserWindow> {
@@ -105,6 +130,7 @@ async function createMainWindow(frontendPort: number): Promise<BrowserWindow> {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
+      nodeIntegration: false,
     },
   })
   await win.loadURL(`http://localhost:${frontendPort}`)
@@ -112,7 +138,7 @@ async function createMainWindow(frontendPort: number): Promise<BrowserWindow> {
   return win
 }
 
-app.whenReady().then(async () => {
+async function launch(): Promise<void> {
   const [backendPort, frontendPort] = await Promise.all([
     getPort({ port: 47151 }),
     getPort({ port: 47150 }),
@@ -124,20 +150,40 @@ app.whenReady().then(async () => {
   await startServices(backendPort, frontendPort)
 
   updateSplashStatus(splash, 'Waiting for backend…')
-  await waitForPort(backendPort)
+  await waitForPort(backendPort, backendProcess!)
 
   updateSplashStatus(splash, 'Waiting for frontend…')
-  await waitForPort(frontendPort)
+  await waitForPort(frontendPort, frontendProcess!)
 
   const mainWindow = await createMainWindow(frontendPort)
 
   splash.close()
   mainWindow.focus()
+}
+
+app.whenReady().then(async () => {
+  try {
+    await launch()
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    dialog.showErrorBox('Failed to start Personal Finance', message)
+    app.quit()
+  }
 })
 
 app.on('window-all-closed', () => {
   killServices()
   if (process.platform !== 'darwin') app.quit()
+})
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    launch().catch((err) => {
+      const message = err instanceof Error ? err.message : String(err)
+      dialog.showErrorBox('Failed to restart Personal Finance', message)
+      app.quit()
+    })
+  }
 })
 
 app.on('before-quit', killServices)
