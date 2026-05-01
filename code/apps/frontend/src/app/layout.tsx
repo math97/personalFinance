@@ -7,6 +7,7 @@ import { getLocale, getMessages } from 'next-intl/server'
 export const metadata: Metadata = {
   title: 'Ember',
   description: 'Every ember grows into fire',
+  icons: { icon: '/ember-icon.png' },
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

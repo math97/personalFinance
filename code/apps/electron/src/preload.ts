@@ -1,5 +1,2 @@
-import { contextBridge } from 'electron'
-
-contextBridge.exposeInMainWorld('electron', {
-  platform: process.platform,
-})
+// Preload script for the main window.
+// Extend contextBridge.exposeInMainWorld here when native APIs are needed by the renderer.

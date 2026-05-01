@@ -2,12 +2,13 @@ appId: com.ember.finance
 productName: Ember
 copyright: Copyright © 2026
 
+afterPack: scripts/afterPack.js
+
 directories:
   output: dist-electron
 
 files:
   - dist/**/*
-  - src/splash.html
   - package.json
 
 extraResources:
@@ -18,6 +19,8 @@ extraResources:
       - "node_modules/**"
       - "prisma/migrations/**"
       - "prisma/schema.prisma"
+      - "package.json"
+      - "package-lock.json"
       - "!node_modules/.cache/**"
   - from: "../../apps/frontend/.next/standalone"
     to: "frontend"

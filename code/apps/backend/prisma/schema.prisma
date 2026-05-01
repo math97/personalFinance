@@ -75,6 +75,9 @@ model CategoryRule {
   keyword    String
 }
 
+/// aiApiKey is stored in plaintext in the SQLite file.
+/// Known limitation: consider migrating to the OS keychain (e.g. keytar) if
+/// the app is distributed more broadly.
 model AppSettings {
   id         String @id @default("singleton")
   aiProvider String @default("openrouter")

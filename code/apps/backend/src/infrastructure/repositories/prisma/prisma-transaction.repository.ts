@@ -38,6 +38,8 @@ export class PrismaTransactionRepository extends TransactionRepository {
     }
 
     if (filters.search) {
+      // SQLite LIKE is case-insensitive for ASCII by default; `mode: 'insensitive'` is
+      // a PostgreSQL-only Prisma option and will throw a runtime error on SQLite.
       where.description = { contains: filters.search }
     }
     if (filters.categoryId) {

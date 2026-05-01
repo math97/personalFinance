@@ -9,7 +9,10 @@ export function createSplashWindow(): BrowserWindow {
     resizable: false,
     center: true,
     alwaysOnTop: true,
-    webPreferences: { contextIsolation: true },
+    webPreferences: {
+      preload: path.join(__dirname, 'splash-preload.js'),
+      contextIsolation: true,
+    },
   })
   splash.loadFile(path.join(__dirname, 'splash.html'))
   return splash
@@ -17,6 +20,6 @@ export function createSplashWindow(): BrowserWindow {
 
 export function updateSplashStatus(splash: BrowserWindow, msg: string): void {
   if (!splash.isDestroyed()) {
-    splash.webContents.executeJavaScript(`window.setStatus(${JSON.stringify(msg)})`)
+    splash.webContents.send('splash:status', msg)
   }
 }

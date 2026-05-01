@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog } from 'electron'
 import { spawn, ChildProcess } from 'child_process'
+import net from 'net'
 import path from 'path'
 import fs from 'fs'
 import getPort from 'get-port'
@@ -15,7 +16,7 @@ function getResourcesPath(): string {
 
 function getDataDir(): string {
   const dir = path.join(app.getPath('userData'), 'Ember')
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+  fs.mkdirSync(dir, { recursive: true })
   return dir
 }
 
@@ -25,18 +26,20 @@ async function waitForPort(port: number, proc: ChildProcess, timeout = 30000): P
     if (proc.exitCode !== null) {
       throw new Error(`Process exited with code ${proc.exitCode} before port ${port} was ready`)
     }
-    try {
-      await fetch(`http://localhost:${port}/`)
-      return
-    } catch {
-      await new Promise((r) => setTimeout(r, 300))
-    }
+    const open = await new Promise<boolean>((resolve) => {
+      const socket = net.connect(port, '127.0.0.1')
+      socket.once('connect', () => { socket.destroy(); resolve(true) })
+      socket.once('error', () => resolve(false))
+    })
+    if (open) return
+    await new Promise((r) => setTimeout(r, 300))
   }
   throw new Error(`Service on port ${port} did not start within ${timeout}ms`)
 }
 
 let backendProcess: ChildProcess | null = null
 let frontendProcess: ChildProcess | null = null
+let activeFrontendPort: number | null = null
 
 function attachProcessHandlers(proc: ChildProcess, name: string): void {
   proc.stderr?.on('data', (d) => console.error(`[${name}]`, d.toString()))
@@ -85,7 +88,8 @@ async function startServices(backendPort: number, frontendPort: number): Promise
     const backendEntry = path.join(resources, 'backend', 'dist', 'main.js')
     const frontendEntry = path.join(resources, 'frontend', 'server.js')
 
-    const prismaClient = path.join(resources, 'backend', 'node_modules', '.bin', 'prisma')
+    const prismaBin = process.platform === 'win32' ? 'prisma.cmd' : 'prisma'
+    const prismaClient = path.join(resources, 'backend', 'node_modules', '.bin', prismaBin)
     const migrateProc = spawn(prismaClient, ['migrate', 'deploy'], {
       cwd: path.join(resources, 'backend'),
       env: backendEnv,
@@ -142,6 +146,7 @@ async function launch(): Promise<void> {
     getPort({ port: 47151 }),
     getPort({ port: 47150 }),
   ])
+  activeFrontendPort = frontendPort
 
   const splash = createSplashWindow()
 
@@ -171,17 +176,27 @@ app.whenReady().then(async () => {
 })
 
 app.on('window-all-closed', () => {
-  killServices()
-  if (process.platform !== 'darwin') app.quit()
+  if (process.platform !== 'darwin') {
+    killServices()
+    app.quit()
+  }
 })
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    launch().catch((err) => {
-      const message = err instanceof Error ? err.message : String(err)
-      dialog.showErrorBox('Failed to restart Personal Finance', message)
-      app.quit()
-    })
+    if (activeFrontendPort !== null && backendProcess !== null && frontendProcess !== null) {
+      // Services are still running — just reopen the window
+      createMainWindow(activeFrontendPort).catch((err) => {
+        const message = err instanceof Error ? err.message : String(err)
+        dialog.showErrorBox('Failed to reopen window', message)
+      })
+    } else {
+      launch().catch((err) => {
+        const message = err instanceof Error ? err.message : String(err)
+        dialog.showErrorBox('Failed to restart Ember', message)
+        app.quit()
+      })
+    }
   }
 })
 

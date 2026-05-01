@@ -4,7 +4,7 @@
   "private": true,
   "main": "dist/main.js",
   "scripts": {
-    "build": "tsc && node -e \"const fs=require('fs');fs.copyFileSync('src/splash.html','dist/splash.html');fs.copyFileSync('assets/icon.png','dist/ember-icon.png')\"",
+    "build": "tsc && node scripts/copy-assets.js",
     "electron:dev": "npm run build && electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
@@ -13,7 +13,7 @@
     "get-port": "^5.1.1"
   },
   "devDependencies": {
-    "electron": "^31.0.0",
+    "electron": "^35.0.0",
     "electron-builder": "^25.0.0",
     "@types/node": "^20.0.0",
     "typescript": "^5.4.0"

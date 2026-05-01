@@ -1,4 +1,4 @@
-import { TransactionEntity } from '../../../domain/entities/transaction.entity'
+import { TransactionEntity, assertTransactionSource } from '../../../domain/entities/transaction.entity'
 
 export class TransactionMapper {
   static toDomain(p: any): TransactionEntity {
@@ -7,7 +7,7 @@ export class TransactionMapper {
       Number(p.amount),
       p.date,
       p.description,
-      p.source,
+      assertTransactionSource(p.source),
       p.categoryId ?? null,
       p.category
         ? { id: p.category.id, name: p.category.name, color: p.category.color }
