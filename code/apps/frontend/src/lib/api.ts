@@ -2,8 +2,8 @@ function getApiBase(): string {
   if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL
   // Electron/production: proxy through Next.js rewrites
   if (typeof window !== 'undefined') return '/api'
-  // Server-side in Next.js: call through own server (which rewrites to backend)
-  return `http://localhost:${process.env.PORT ?? 3000}/api`
+  // Server-side in Next.js: call backend directly (BACKEND_PORT is set by Electron)
+  return `http://localhost:${process.env.BACKEND_PORT ?? 3001}/api`
 }
 const BASE = getApiBase()
 
