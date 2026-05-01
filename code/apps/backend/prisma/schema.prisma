@@ -1,21 +1,22 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "darwin", "darwin-arm64", "windows"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model Transaction {
   id           String               @id @default(cuid())
-  amount       Decimal              @db.Decimal(10, 2)
+  amount       Decimal
   date         DateTime
   description  String
   merchant     String?
   account      String?
-  notes        String?   @db.Text
-  source       TransactionSource
+  notes        String?
+  source       String
   categoryId   String?
   category     Category?            @relation(fields: [categoryId], references: [id])
   importedFrom ImportedTransaction?
@@ -26,7 +27,7 @@ model Category {
   id                String                @id @default(cuid())
   name              String                @unique
   color             String
-  monthlyBudget     Decimal?              @db.Decimal(10, 2)
+  monthlyBudget     Decimal?
   transactions      Transaction[]
   rules             CategoryRule[]
   aiSuggestions     ImportedTransaction[] @relation("AiCategory")
@@ -37,7 +38,7 @@ model RecurringPattern {
   id            String    @id @default(cuid())
   description   String    @unique
   typicalDay    Int
-  typicalAmount Decimal   @db.Decimal(10, 2)
+  typicalAmount Decimal
   categoryId    String?
   category      Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   active        Boolean   @default(true)
@@ -49,7 +50,7 @@ model ImportBatch {
   id         String                @id @default(cuid())
   filename   String
   uploadedAt DateTime              @default(now())
-  status     BatchStatus
+  status     String
   imported   ImportedTransaction[]
 }
 
@@ -59,7 +60,7 @@ model ImportedTransaction {
   batch          ImportBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
   rawDate        String
   rawDescription String
-  rawAmount      Decimal      @db.Decimal(10, 2)
+  rawAmount      Decimal
   aiCategoryId   String?
   aiCategory     Category?    @relation("AiCategory", fields: [aiCategoryId], references: [id])
   aiCategorized  Boolean      @default(false)
@@ -74,23 +75,12 @@ model CategoryRule {
   keyword    String
 }
 
+/// aiApiKey is stored in plaintext in the SQLite file.
+/// Known limitation: consider migrating to the OS keychain (e.g. keytar) if
+/// the app is distributed more broadly.
 model AppSettings {
-  id        String @id @default("singleton")
+  id         String @id @default("singleton")
   aiProvider String @default("openrouter")
-  aiApiKey  String @default("")
-  aiModel   String @default("")
-}
-
-enum TransactionSource {
-  manual
-  pdf
-  photo
-  csv
-}
-
-enum BatchStatus {
-  processing
-  reviewing
-  confirmed
-  discarded
+  aiApiKey   String @default("")
+  aiModel    String @default("")
 }

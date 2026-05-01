@@ -1,4 +1,4 @@
-import { ImportBatchEntity, BatchStatus } from '../../../domain/entities/import-batch.entity'
+import { ImportBatchEntity, assertBatchStatus } from '../../../domain/entities/import-batch.entity'
 import { ImportedTransactionEntity } from '../../../domain/entities/imported-transaction.entity'
 
 export class ImportBatchMapper {
@@ -23,7 +23,7 @@ export class ImportBatchMapper {
       p.id,
       p.filename,
       p.uploadedAt,
-      p.status as BatchStatus,
+      assertBatchStatus(p.status),
       (p.imported ?? []).map(ImportBatchMapper.importedToDomain),
       p._count?.imported ?? p.imported?.length ?? 0,
     )

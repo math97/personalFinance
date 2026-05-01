@@ -1,4 +1,12 @@
-export type TransactionSource = 'manual' | 'pdf' | 'photo' | 'csv'
+const TRANSACTION_SOURCES = ['manual', 'pdf', 'photo', 'csv'] as const
+export type TransactionSource = (typeof TRANSACTION_SOURCES)[number]
+
+export function assertTransactionSource(value: string): TransactionSource {
+  if (!(TRANSACTION_SOURCES as readonly string[]).includes(value)) {
+    throw new Error(`Invalid TransactionSource in DB: "${value}"`)
+  }
+  return value as TransactionSource
+}
 
 export interface CategoryRef {
   id: string
