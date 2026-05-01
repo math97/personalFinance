@@ -5,8 +5,8 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 
 export const metadata: Metadata = {
-  title: 'Personal Finance',
-  description: 'Track your spending',
+  title: 'Ember',
+  description: 'Every ember grows into fire',
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

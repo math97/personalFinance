@@ -1,5 +1,5 @@
-appId: com.personalfinance.app
-productName: Personal Finance
+appId: com.ember.finance
+productName: Ember
 copyright: Copyright © 2026
 
 directories:
@@ -30,11 +30,11 @@ mac:
   target:
     - target: dmg
       arch: [x64, arm64]
-  icon: assets/icon.icns
+  icon: assets/icon.png
   category: public.app-category.finance
 
 dmg:
-  title: Personal Finance
+  title: Ember
   window:
     width: 540
     height: 380
@@ -43,7 +43,7 @@ win:
   target:
     - target: nsis
       arch: [x64]
-  icon: assets/icon.ico
+  icon: assets/icon.png
 
 nsis:
   oneClick: false

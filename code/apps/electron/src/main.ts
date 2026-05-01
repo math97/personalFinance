@@ -14,7 +14,7 @@ function getResourcesPath(): string {
 }
 
 function getDataDir(): string {
-  const dir = path.join(app.getPath('userData'), 'PersonalFinance')
+  const dir = path.join(app.getPath('userData'), 'Ember')
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
   return dir
 }

@@ -67,12 +67,12 @@ export function Sidebar({ onAddClick, inboxCount = 0, className, ...props }: Sid
     <aside className={cn('flex h-screen w-64 shrink-0 flex-col border-r border-border bg-surface', className)} {...props}>
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5">
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold shrink-0 bg-accent text-bg">
-          F
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg text-sm shrink-0 bg-accent text-bg">
+          🔥
         </div>
         <div>
-          <p className="text-sm font-semibold text-text">Finance</p>
-          <p className="text-xs text-text-2">Personal tracker</p>
+          <p className="text-sm font-semibold text-text">Ember</p>
+          <p className="text-xs text-text-2">Every ember grows</p>
         </div>
       </div>
 
