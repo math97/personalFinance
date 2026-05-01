@@ -17,14 +17,15 @@
       user-select: none;
     }
     .icon {
-      width: 56px;
-      height: 56px;
-      background: #f59e0b;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+    .icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     h1 { font-size: 22px; font-weight: 600; }
     .subtitle { font-size: 12px; color: #a1a1aa; margin-top: -8px; }
@@ -51,7 +52,7 @@
   </style>
 </head>
 <body>
-  <div class="icon">🔥</div>
+  <div class="icon"><img src="./ember-icon.png" alt="Ember" /></div>
   <h1>Ember</h1>
   <p class="subtitle">Every ember grows into fire</p>
   <p class="status" id="status">Starting up…</p>
