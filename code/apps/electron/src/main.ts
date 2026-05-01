@@ -88,9 +88,11 @@ async function startServices(backendPort: number, frontendPort: number): Promise
     const backendEntry = path.join(resources, 'backend', 'dist', 'main.js')
     const frontendEntry = path.join(resources, 'frontend', 'server.js')
 
-    const prismaBin = process.platform === 'win32' ? 'prisma.cmd' : 'prisma'
-    const prismaClient = path.join(resources, 'backend', 'node_modules', '.bin', prismaBin)
-    const migrateProc = spawn(prismaClient, ['migrate', 'deploy'], {
+    // Use process.execPath (the Electron binary = Node.js runtime) to invoke the
+    // prisma CLI script directly. The .bin/prisma shell wrapper calls `node`, which
+    // is not in PATH inside a packaged Electron app, causing exit code 127.
+    const prismaCliJs = path.join(resources, 'backend', 'node_modules', 'prisma', 'build', 'index.js')
+    const migrateProc = spawn(process.execPath, [prismaCliJs, 'migrate', 'deploy'], {
       cwd: path.join(resources, 'backend'),
       env: backendEnv,
     })
