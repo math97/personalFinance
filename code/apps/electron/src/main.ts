@@ -126,7 +126,6 @@ async function createMainWindow(frontendPort: number): Promise<BrowserWindow> {
     minWidth: 900,
     minHeight: 600,
     show: false,
-    titleBarStyle: 'hiddenInset',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
