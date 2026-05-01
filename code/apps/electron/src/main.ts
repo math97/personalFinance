@@ -1,0 +1,143 @@
+import { app, BrowserWindow } from 'electron'
+import { spawn, ChildProcess } from 'child_process'
+import path from 'path'
+import fs from 'fs'
+import getPort from 'get-port'
+import { createSplashWindow, updateSplashStatus } from './splash'
+
+const isDev = !app.isPackaged
+
+function getResourcesPath(): string {
+  return isDev
+    ? path.join(__dirname, '..', '..', '..') // code/ root in dev
+    : process.resourcesPath
+}
+
+function getDataDir(): string {
+  const dir = path.join(app.getPath('userData'), 'PersonalFinance')
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+  return dir
+}
+
+async function waitForPort(port: number, timeout = 30000): Promise<void> {
+  const start = Date.now()
+  while (Date.now() - start < timeout) {
+    try {
+      await fetch(`http://localhost:${port}/`)
+      return
+    } catch {
+      await new Promise((r) => setTimeout(r, 300))
+    }
+  }
+  throw new Error(`Service on port ${port} did not start within ${timeout}ms`)
+}
+
+let backendProcess: ChildProcess | null = null
+let frontendProcess: ChildProcess | null = null
+
+async function startServices(backendPort: number, frontendPort: number): Promise<void> {
+  const resources = getResourcesPath()
+  const dataDir = getDataDir()
+  const dbPath = path.join(dataDir, 'finance.db')
+
+  const backendEnv = {
+    ...process.env,
+    PORT: String(backendPort),
+    DATABASE_URL: `file:${dbPath}`,
+    NODE_ENV: 'production',
+  }
+
+  const frontendEnv = {
+    ...process.env,
+    PORT: String(frontendPort),
+    BACKEND_PORT: String(backendPort),
+    NODE_ENV: 'production',
+    HOSTNAME: '127.0.0.1',
+  }
+
+  if (isDev) {
+    backendProcess = spawn('npm', ['run', 'start:dev'], {
+      cwd: path.join(resources, 'apps', 'backend'),
+      env: backendEnv,
+      shell: true,
+    })
+    frontendProcess = spawn('npm', ['run', 'dev'], {
+      cwd: path.join(resources, 'apps', 'frontend'),
+      env: { ...frontendEnv, PORT: String(frontendPort) },
+      shell: true,
+    })
+  } else {
+    const backendEntry = path.join(resources, 'backend', 'dist', 'main.js')
+    const frontendEntry = path.join(resources, 'frontend', 'server.js')
+
+    const prismaClient = path.join(resources, 'backend', 'node_modules', '.bin', 'prisma')
+    const migrateProc = spawn(prismaClient, ['migrate', 'deploy'], {
+      cwd: path.join(resources, 'backend'),
+      env: backendEnv,
+    })
+    await new Promise<void>((resolve, reject) => {
+      migrateProc.on('close', (code) =>
+        code === 0 ? resolve() : reject(new Error(`prisma migrate deploy failed with code ${code}`))
+      )
+    })
+
+    backendProcess = spawn('node', [backendEntry], { env: backendEnv })
+    frontendProcess = spawn('node', [frontendEntry], { env: frontendEnv })
+  }
+
+  backendProcess?.stderr?.on('data', (d) => console.error('[backend]', d.toString()))
+  frontendProcess?.stderr?.on('data', (d) => console.error('[frontend]', d.toString()))
+}
+
+function killServices(): void {
+  backendProcess?.kill()
+  frontendProcess?.kill()
+}
+
+async function createMainWindow(frontendPort: number): Promise<BrowserWindow> {
+  const win = new BrowserWindow({
+    width: 1400,
+    height: 900,
+    minWidth: 900,
+    minHeight: 600,
+    show: false,
+    titleBarStyle: 'hiddenInset',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+    },
+  })
+  await win.loadURL(`http://localhost:${frontendPort}`)
+  win.show()
+  return win
+}
+
+app.whenReady().then(async () => {
+  const [backendPort, frontendPort] = await Promise.all([
+    getPort({ port: 47151 }),
+    getPort({ port: 47150 }),
+  ])
+
+  const splash = createSplashWindow()
+
+  updateSplashStatus(splash, 'Starting backend…')
+  await startServices(backendPort, frontendPort)
+
+  updateSplashStatus(splash, 'Waiting for backend…')
+  await waitForPort(backendPort)
+
+  updateSplashStatus(splash, 'Waiting for frontend…')
+  await waitForPort(frontendPort)
+
+  const mainWindow = await createMainWindow(frontendPort)
+
+  splash.close()
+  mainWindow.focus()
+})
+
+app.on('window-all-closed', () => {
+  killServices()
+  if (process.platform !== 'darwin') app.quit()
+})
+
+app.on('before-quit', killServices)
