@@ -58,7 +58,14 @@ export class ImportService {
       if (isCsv) {
         extracted = this.csvParser.parse(file.buffer)
       } else {
-        const ai = await this.settings.createAIPort()
+        let ai: Awaited<ReturnType<typeof this.settings.createAIPort>>
+        try {
+          ai = await this.settings.createAIPort()
+        } catch (e: any) {
+          throw new BadRequestException(
+            'No AI API key configured. Go to Settings and enter your API key before uploading images or PDFs.'
+          )
+        }
         extracted = await ai.extractTransactions(file.buffer, file.mimetype)
         categorization = new CategorizationDomainService(ai)
       }

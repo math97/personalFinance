@@ -20,6 +20,51 @@ function getDataDir(): string {
   return dir
 }
 
+function findNodeBinary(): string {
+  const isWin = process.platform === 'win32'
+  const bin = isWin ? 'node.exe' : 'node'
+  const pathSep = isWin ? ';' : ':'
+  const home = process.env.HOME ?? process.env.USERPROFILE ?? ''
+
+  const candidates = [
+    // PATH entries (works when launched from terminal)
+    ...(process.env.PATH?.split(pathSep).map(p => path.join(p, bin)) ?? []),
+    // macOS: Homebrew on Apple Silicon
+    '/opt/homebrew/bin/node',
+    // macOS: Homebrew on Intel
+    '/usr/local/bin/node',
+    // macOS: nvm — scan all installed versions
+    ...(() => {
+      try {
+        const nvmVersionsDir = path.join(home, '.nvm', 'versions', 'node')
+        if (!fs.existsSync(nvmVersionsDir)) return []
+        return fs.readdirSync(nvmVersionsDir)
+          .map(v => path.join(nvmVersionsDir, v, 'bin', 'node'))
+      } catch { return [] }
+    })(),
+    // Windows: standard installer locations
+    path.join('C:\\Program Files\\nodejs', bin),
+    path.join('C:\\Program Files (x86)\\nodejs', bin),
+    // Windows: nvm-windows
+    ...(() => {
+      try {
+        const nvmWinDir = process.env.NVM_HOME ?? path.join(home, 'AppData', 'Roaming', 'nvm')
+        if (!fs.existsSync(nvmWinDir)) return []
+        return fs.readdirSync(nvmWinDir)
+          .map(v => path.join(nvmWinDir, v, bin))
+      } catch { return [] }
+    })(),
+  ]
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) return candidate
+  }
+
+  throw new Error(
+    'Node.js not found. Please install Node.js from nodejs.org and reopen Ember.'
+  )
+}
+
 async function waitForPort(port: number, proc: ChildProcess, timeout = 30000): Promise<void> {
   const start = Date.now()
   while (Date.now() - start < timeout) {
@@ -40,21 +85,26 @@ async function waitForPort(port: number, proc: ChildProcess, timeout = 30000): P
 let backendProcess: ChildProcess | null = null
 let frontendProcess: ChildProcess | null = null
 let activeFrontendPort: number | null = null
+let isShuttingDown = false
 
 function attachProcessHandlers(proc: ChildProcess, name: string): void {
   proc.stderr?.on('data', (d) => console.error(`[${name}]`, d.toString()))
   proc.on('error', (err) => {
-    dialog.showErrorBox(`${name} failed to start`, err.message)
+    if (!isShuttingDown) dialog.showErrorBox(`${name} failed to start`, err.message)
   })
   proc.on('exit', (code, signal) => {
-    if (code !== 0 && signal !== 'SIGTERM' && signal !== 'SIGKILL') {
-      dialog.showErrorBox(`${name} crashed`, `Exit code: ${code ?? 'unknown'}`)
+    console.log(`[${name}] exited with code ${code}, signal ${signal}`)
+    const isSigterm = signal === 'SIGTERM' || signal === 'SIGKILL' || code === 143 || code === 137
+    if (!isShuttingDown && code !== 0 && !isSigterm) {
+      const logPath = path.join(app.getPath('userData'), 'Ember', 'ember.log')
+      dialog.showErrorBox(`${name} crashed`, `Exit code: ${code ?? 'unknown'}\n\nSee log: ${logPath}`)
     }
   })
 }
 
 async function startServices(backendPort: number, frontendPort: number): Promise<void> {
   const resources = getResourcesPath()
+  console.log('Resources path:', resources)
 
   // In dev, use the existing dev.db via the backend's own .env file
   // In production, use the app data directory
@@ -63,7 +113,15 @@ async function startServices(backendPort: number, frontendPort: number): Promise
     : (() => {
         const dataDir = getDataDir()
         const dbPath = path.join(dataDir, 'finance.db')
-        return { ...process.env, PORT: String(backendPort), DATABASE_URL: `file:${dbPath}`, NODE_ENV: 'production' }
+        return {
+          ...process.env,
+          PORT: String(backendPort),
+          DATABASE_URL: `file:${dbPath}`,
+          NODE_ENV: 'production',
+          AI_PROVIDER: 'openrouter',
+          AI_API_KEY: '',
+          AI_MODEL: 'google/gemini-3-flash-preview',
+        }
       })()
 
   const frontendEnv = {
@@ -85,26 +143,49 @@ async function startServices(backendPort: number, frontendPort: number): Promise
       shell: true,
     })
   } else {
-    const backendEntry = path.join(resources, 'backend', 'dist', 'main.js')
-    const frontendEntry = path.join(resources, 'frontend', 'server.js')
+    const backendEntry = path.join(resources, 'backend', 'dist', 'src', 'main.js')
+    const frontendEntry = path.join(resources, 'frontend', 'apps', 'frontend', 'server.js')
 
-    // Use process.execPath (the Electron binary = Node.js runtime) to invoke the
-    // prisma CLI script directly. The .bin/prisma shell wrapper calls `node`, which
-    // is not in PATH inside a packaged Electron app, causing exit code 127.
+    const nodeBin = findNodeBinary()
+
+    const logDir = getDataDir()
+    const logStream = fs.createWriteStream(path.join(logDir, 'ember.log'), { flags: 'a' })
+    const log = (msg: string) => {
+      const line = `[${new Date().toISOString()}] ${msg}\n`
+      process.stdout.write(line)
+      logStream.write(line)
+    }
+
+    const spawnLogged = (bin: string, args: string[], opts: Parameters<typeof spawn>[2]) => {
+      const proc = spawn(bin, args, { ...opts, stdio: ['ignore', 'pipe', 'pipe'] })
+      proc.stdout?.on('data', (d: Buffer) => logStream.write(d))
+      proc.stderr?.on('data', (d: Buffer) => logStream.write(d))
+      return proc
+    }
+
+    // Run migrations before starting the backend so the SQLite schema is up to date
     const prismaCliJs = path.join(resources, 'backend', 'node_modules', 'prisma', 'build', 'index.js')
-    const migrateProc = spawn(process.execPath, [prismaCliJs, 'migrate', 'deploy'], {
-      cwd: path.join(resources, 'backend'),
-      env: backendEnv,
-    })
+    log(`Running prisma migrate deploy (node: ${nodeBin}, prisma: ${prismaCliJs})`)
     await new Promise<void>((resolve, reject) => {
-      migrateProc.on('close', (code) =>
-        code === 0 ? resolve() : reject(new Error(`prisma migrate deploy failed with code ${code}`))
-      )
+      const migrateProc = spawnLogged(nodeBin, [prismaCliJs, 'migrate', 'deploy'], {
+        cwd: path.join(resources, 'backend'),
+        env: backendEnv,
+      })
       migrateProc.on('error', reject)
+      migrateProc.on('exit', (code) => {
+        log(`prisma migrate deploy exited with code ${code}`)
+        if (code === 0) resolve()
+        else reject(new Error(`prisma migrate deploy exited with code ${code}`))
+      })
     })
 
-    backendProcess = spawn('node', [backendEntry], { env: backendEnv })
-    frontendProcess = spawn('node', [frontendEntry], { env: frontendEnv })
+    log(`Starting backend: ${backendEntry}`)
+    backendProcess = spawnLogged(nodeBin, [backendEntry], { env: backendEnv })
+    backendProcess.on('error', (err) => log(`Backend error: ${err.message}`))
+
+    log(`Starting frontend: ${frontendEntry}`)
+    frontendProcess = spawnLogged(nodeBin, [frontendEntry], { env: frontendEnv })
+    frontendProcess.on('error', (err) => log(`Frontend error: ${err.message}`))
   }
 
   attachProcessHandlers(backendProcess, 'Backend')
@@ -112,6 +193,7 @@ async function startServices(backendPort: number, frontendPort: number): Promise
 }
 
 function killServices(): void {
+  isShuttingDown = true
   for (const [proc, name] of [[backendProcess, 'backend'], [frontendProcess, 'frontend']] as const) {
     if (!proc) continue
     proc.kill('SIGTERM')
@@ -143,16 +225,25 @@ async function createMainWindow(frontendPort: number): Promise<BrowserWindow> {
   return win
 }
 
+async function requirePort(port: number): Promise<number> {
+  const available = await getPort({ port })
+  if (available !== port) {
+    throw new Error(
+      `Port ${port} is already in use by another application. Please free port ${port} and reopen Ember.`
+    )
+  }
+  return port
+}
+
 async function launch(): Promise<void> {
-  const [backendPort, frontendPort] = await Promise.all([
-    getPort({ port: 47151 }),
-    getPort({ port: 47150 }),
-  ])
+  const [backendPort, frontendPort] = isDev
+    ? await Promise.all([getPort({ port: 47151 }), getPort({ port: 47150 })])
+    : await Promise.all([requirePort(3001), getPort({ port: 47150 })])
   activeFrontendPort = frontendPort
 
   const splash = createSplashWindow()
 
-  updateSplashStatus(splash, 'Starting backend…')
+  updateSplashStatus(splash, 'Preparing database…')
   await startServices(backendPort, frontendPort)
 
   updateSplashStatus(splash, 'Waiting for backend…')

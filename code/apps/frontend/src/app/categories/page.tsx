@@ -41,7 +41,7 @@ export default function CategoriesPage() {
           currentMonthSpent: spendMap[c.id] ?? 0,
         })))
       })
-      .catch(() => setError(t('errorLoad')))
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
       .finally(() => setIsLoading(false))
   }, [])
 

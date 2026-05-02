@@ -124,16 +124,7 @@ export function Sidebar({ onAddClick, inboxCount = 0, className, ...props }: Sid
         ))}
       </nav>
 
-      {/* User footer */}
-      <div className="flex items-center gap-3 px-4 py-4 border-t border-border">
-        <div className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold shrink-0 bg-surface-2 text-text">
-          M
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-medium truncate text-text">Matheus</p>
-          <p className="text-xs truncate text-text-2">math.albuquerque97@gmail.com</p>
-        </div>
-      </div>
+
     </aside>
   )
 }

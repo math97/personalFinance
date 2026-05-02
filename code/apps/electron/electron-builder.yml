@@ -25,9 +25,9 @@ extraResources:
   - from: "../../apps/frontend/.next/standalone"
     to: "frontend"
   - from: "../../apps/frontend/.next/static"
-    to: "frontend/.next/static"
+    to: "frontend/apps/frontend/.next/static"
   - from: "../../apps/frontend/public"
-    to: "frontend/public"
+    to: "frontend/apps/frontend/public"
 
 mac:
   target:
