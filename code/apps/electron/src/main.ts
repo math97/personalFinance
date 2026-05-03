@@ -20,50 +20,6 @@ function getDataDir(): string {
   return dir
 }
 
-function findNodeBinary(): string {
-  const isWin = process.platform === 'win32'
-  const bin = isWin ? 'node.exe' : 'node'
-  const pathSep = isWin ? ';' : ':'
-  const home = process.env.HOME ?? process.env.USERPROFILE ?? ''
-
-  const candidates = [
-    // PATH entries (works when launched from terminal)
-    ...(process.env.PATH?.split(pathSep).map(p => path.join(p, bin)) ?? []),
-    // macOS: Homebrew on Apple Silicon
-    '/opt/homebrew/bin/node',
-    // macOS: Homebrew on Intel
-    '/usr/local/bin/node',
-    // macOS: nvm — scan all installed versions
-    ...(() => {
-      try {
-        const nvmVersionsDir = path.join(home, '.nvm', 'versions', 'node')
-        if (!fs.existsSync(nvmVersionsDir)) return []
-        return fs.readdirSync(nvmVersionsDir)
-          .map(v => path.join(nvmVersionsDir, v, 'bin', 'node'))
-      } catch { return [] }
-    })(),
-    // Windows: standard installer locations
-    path.join('C:\\Program Files\\nodejs', bin),
-    path.join('C:\\Program Files (x86)\\nodejs', bin),
-    // Windows: nvm-windows
-    ...(() => {
-      try {
-        const nvmWinDir = process.env.NVM_HOME ?? path.join(home, 'AppData', 'Roaming', 'nvm')
-        if (!fs.existsSync(nvmWinDir)) return []
-        return fs.readdirSync(nvmWinDir)
-          .map(v => path.join(nvmWinDir, v, bin))
-      } catch { return [] }
-    })(),
-  ]
-
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) return candidate
-  }
-
-  throw new Error(
-    'Node.js not found. Please install Node.js from nodejs.org and reopen Ember.'
-  )
-}
 
 async function waitForPort(port: number, proc: ChildProcess, timeout = 30000): Promise<void> {
   const start = Date.now()
@@ -146,7 +102,9 @@ async function startServices(backendPort: number, frontendPort: number): Promise
     const backendEntry = path.join(resources, 'backend', 'dist', 'src', 'main.js')
     const frontendEntry = path.join(resources, 'frontend', 'apps', 'frontend', 'server.js')
 
-    const nodeBin = findNodeBinary()
+    // Use Electron's own bundled Node runtime — no external Node.js installation required
+    const nodeBin = process.execPath
+    const nodeEnv = { ELECTRON_RUN_AS_NODE: '1' }
 
     const logDir = getDataDir()
     const logStream = fs.createWriteStream(path.join(logDir, 'ember.log'), { flags: 'a' })
@@ -156,8 +114,8 @@ async function startServices(backendPort: number, frontendPort: number): Promise
       logStream.write(line)
     }
 
-    const spawnLogged = (bin: string, args: string[], opts: Parameters<typeof spawn>[2]) => {
-      const proc = spawn(bin, args, { ...opts, stdio: ['ignore', 'pipe', 'pipe'] })
+    const spawnLogged = (bin: string, args: string[], opts: Parameters<typeof spawn>[2] & { env?: NodeJS.ProcessEnv }) => {
+      const proc = spawn(bin, args, { ...opts, env: { ...nodeEnv, ...opts?.env }, stdio: ['ignore', 'pipe', 'pipe'] })
       proc.stdout?.on('data', (d: Buffer) => logStream.write(d))
       proc.stderr?.on('data', (d: Buffer) => logStream.write(d))
       return proc
@@ -165,7 +123,7 @@ async function startServices(backendPort: number, frontendPort: number): Promise
 
     // Run migrations before starting the backend so the SQLite schema is up to date
     const prismaCliJs = path.join(resources, 'backend', 'node_modules', 'prisma', 'build', 'index.js')
-    log(`Running prisma migrate deploy (node: ${nodeBin}, prisma: ${prismaCliJs})`)
+    log(`Running prisma migrate deploy (execPath: ${nodeBin}, prisma: ${prismaCliJs})`)
     await new Promise<void>((resolve, reject) => {
       const migrateProc = spawnLogged(nodeBin, [prismaCliJs, 'migrate', 'deploy'], {
         cwd: path.join(resources, 'backend'),
