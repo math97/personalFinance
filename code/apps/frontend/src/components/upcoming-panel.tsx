@@ -1,6 +1,10 @@
-import { Calendar } from 'lucide-react'
-import { getTranslations } from 'next-intl/server'
+'use client'
+
+import { useState } from 'react'
+import { Calendar, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { CurrencyAmount } from './currency-amount'
+import { api } from '@/lib/api'
 
 type UpcomingItem = {
   patternId: string
@@ -17,8 +21,18 @@ type Props = {
   currentMonthLabel: string
 }
 
-export async function UpcomingPanel({ items, currentMonthLabel }: Props) {
-  const t = await getTranslations('dashboard')
+export function UpcomingPanel({ items: initialItems, currentMonthLabel }: Props) {
+  const t = useTranslations('dashboard')
+  const [items, setItems] = useState(initialItems)
+
+  async function dismiss(patternId: string) {
+    setItems(prev => prev.filter(i => i.patternId !== patternId))
+    try {
+      await api.recurring.dismissPattern(patternId)
+    } catch {
+      setItems(initialItems)
+    }
+  }
 
   if (items.length === 0) return null
 
@@ -58,6 +72,12 @@ export async function UpcomingPanel({ items, currentMonthLabel }: Props) {
           <span className="text-sm font-semibold tabular-nums shrink-0 text-accent">
             −<CurrencyAmount amount={Math.abs(item.typicalAmount)} />
           </span>
+          <button
+            onClick={() => dismiss(item.patternId)}
+            className="flex items-center justify-center w-6 h-6 rounded-md shrink-0 text-red-400 hover:bg-red-400/10 transition-colors"
+          >
+            <X size={12} />
+          </button>
         </div>
       ))}
     </div>
