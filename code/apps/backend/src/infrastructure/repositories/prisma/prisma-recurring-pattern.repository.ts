@@ -41,15 +41,16 @@ export class PrismaRecurringPatternRepository extends RecurringPatternRepository
 
   async findByDescription(description: string): Promise<RecurringPatternEntity | null> {
     const row = await this.prisma.recurringPattern.findFirst({
-      where: { description: { equals: description, mode: 'insensitive' } },
+      where: { description: description.toLowerCase() },
       include: { category: true },
     })
     return row ? toEntity(row) : null
   }
 
   async upsert(data: UpsertPatternData): Promise<RecurringPatternEntity> {
+    const normalized = data.description.toLowerCase()
     const existing = await this.prisma.recurringPattern.findFirst({
-      where: { description: { equals: data.description, mode: 'insensitive' } },
+      where: { description: normalized },
       include: { category: true },
     })
 
@@ -68,7 +69,7 @@ export class PrismaRecurringPatternRepository extends RecurringPatternRepository
 
     const row = await this.prisma.recurringPattern.create({
       data: {
-        description:   data.description,
+        description:   normalized,
         typicalDay:    data.typicalDay,
         typicalAmount: data.typicalAmount,
         categoryId:    data.categoryId,

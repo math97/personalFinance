@@ -15,8 +15,8 @@ export class PrismaSettingsRepository extends SettingsRepository {
   async upsertSettings(data: AppSettingsRow): Promise<void> {
     await this.prisma.appSettings.upsert({
       where:  { id: 'singleton' },
-      create: { id: 'singleton', aiProvider: data.aiProvider, aiApiKey: data.aiApiKey, aiModel: data.aiModel },
-      update: { aiProvider: data.aiProvider, aiModel: data.aiModel, ...(data.aiApiKey ? { aiApiKey: data.aiApiKey } : {}) },
+      create: { id: 'singleton', aiProvider: data.aiProvider, aiApiKey: data.aiApiKey ?? undefined, aiModel: data.aiModel ?? undefined },
+      update: { aiProvider: data.aiProvider, aiModel: data.aiModel ?? undefined, ...(data.aiApiKey ? { aiApiKey: data.aiApiKey } : {}) },
     })
   }
 }

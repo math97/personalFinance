@@ -118,12 +118,27 @@ jobs:
         run: node scripts/update-baseline.mjs
 
       - name: Commit updated baseline
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f scripts/baseline.json
-          git diff --staged --quiet || git commit -m "chore: update quality gate baseline [skip ci]"
-          git push
+          if git diff --quiet scripts/baseline.json; then
+            echo "baseline unchanged, nothing to commit"
+            exit 0
+          fi
+          CONTENT=$(base64 < scripts/baseline.json | tr -d '\n')
+          SHA=$(gh api "repos/${{ github.repository }}/contents/scripts/baseline.json" --jq '.sha' 2>/dev/null || echo "")
+          if [ -n "$SHA" ]; then
+            gh api "repos/${{ github.repository }}/contents/scripts/baseline.json" \
+              -X PUT \
+              -f message="chore: update quality gate baseline [skip ci]" \
+              -f content="$CONTENT" \
+              -f sha="$SHA"
+          else
+            gh api "repos/${{ github.repository }}/contents/scripts/baseline.json" \
+              -X PUT \
+              -f message="chore: update quality gate baseline [skip ci]" \
+              -f content="$CONTENT"
+          fi
 
   build-electron:
     name: Build Electron (Windows)
