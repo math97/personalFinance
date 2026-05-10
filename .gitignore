@@ -17,6 +17,10 @@ out/
 # testing
 coverage/
 
+# quality gate tooling
+jscpd-report/
+quality-gate-report.md
+
 # env files — keep .env.example in git, ignore everything else
 .env*
 !.env.example

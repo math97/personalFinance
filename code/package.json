@@ -16,6 +16,7 @@
     "build:electron": "npm run build:frontend && npm run build:backend && npm run build --workspace=apps/electron && npm run dist --workspace=apps/electron"
   },
   "devDependencies": {
-    "concurrently": "^9.0.0"
+    "concurrently": "^9.0.0",
+    "jscpd": "^4.0.5"
   }
 }
