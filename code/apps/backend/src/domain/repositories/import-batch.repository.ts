@@ -1,5 +1,6 @@
 import { ImportBatchEntity } from '../entities/import-batch.entity'
 import { ImportedTransactionEntity } from '../entities/imported-transaction.entity'
+import { TransactionEntity } from '../entities/transaction.entity'
 import { BatchStatus } from '../entities/import-batch.entity'
 
 export interface CreateImportedTxData {
@@ -18,6 +19,11 @@ export interface UpdateImportedTxData {
   aiCategoryId?: string | null
 }
 
+export interface ConfirmItem {
+  importedId: string
+  tx: TransactionEntity
+}
+
 export abstract class ImportBatchRepository {
   abstract findAllReviewing(): Promise<ImportBatchEntity[]>
   abstract findById(id: string): Promise<ImportBatchEntity | null>
@@ -26,6 +32,7 @@ export abstract class ImportBatchRepository {
   abstract createImportedTransactions(items: CreateImportedTxData[]): Promise<void>
   abstract updateImportedTransaction(id: string, data: UpdateImportedTxData): Promise<ImportedTransactionEntity>
   abstract promoteToTransaction(importedId: string, transactionId: string): Promise<void>
+  abstract confirmAll(items: ConfirmItem[]): Promise<void>
   abstract countReviewing(): Promise<number>
   abstract tryClaimConfirm(batchId: string): Promise<boolean>
   abstract deleteImportedTransaction(id: string): Promise<void>

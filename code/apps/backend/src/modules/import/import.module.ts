@@ -7,10 +7,8 @@ import { SettingsModule } from '../settings/settings.module'
 import { RecurringModule } from '../recurring/recurring.module'
 import { ImportBatchRepository } from '../../domain/repositories/import-batch.repository'
 import { CategoryRepository } from '../../domain/repositories/category.repository'
-import { TransactionRepository } from '../../domain/repositories/transaction.repository'
 import { PrismaImportBatchRepository } from '../../infrastructure/repositories/prisma/prisma-import-batch.repository'
 import { PrismaCategoryRepository } from '../../infrastructure/repositories/prisma/prisma-category.repository'
-import { PrismaTransactionRepository } from '../../infrastructure/repositories/prisma/prisma-transaction.repository'
 import { CsvParser } from '../../lib/csv-parser'
 
 @Module({
@@ -25,7 +23,6 @@ import { CsvParser } from '../../lib/csv-parser'
     CsvParser,
     { provide: ImportBatchRepository, useClass: PrismaImportBatchRepository },
     { provide: CategoryRepository,    useClass: PrismaCategoryRepository    },
-    { provide: TransactionRepository, useClass: PrismaTransactionRepository },
   ],
 })
 export class ImportModule {}

@@ -3,11 +3,9 @@ import { BadRequestException, ConflictException } from '@nestjs/common'
 import { ImportService } from '../modules/import/import.service'
 import { ImportBatchRepository } from '../domain/repositories/import-batch.repository'
 import { CategoryRepository } from '../domain/repositories/category.repository'
-import { TransactionRepository } from '../domain/repositories/transaction.repository'
 import { SettingsService } from '../modules/settings/settings.service'
 import { InMemoryImportBatchRepository } from '../infrastructure/repositories/in-memory/in-memory-import-batch.repository'
 import { InMemoryCategoryRepository } from '../infrastructure/repositories/in-memory/in-memory-category.repository'
-import { InMemoryTransactionRepository } from '../infrastructure/repositories/in-memory/in-memory-transaction.repository'
 import { RecurringService } from '../modules/recurring/recurring.service'
 import { CsvParser } from '../lib/csv-parser'
 
@@ -18,14 +16,12 @@ function makeFile(mimetype: string, buffer = Buffer.from('fake')): Express.Multe
 describe('ImportService', () => {
   let service: ImportService
   let batchRepo: InMemoryImportBatchRepository
-  let txRepo: InMemoryTransactionRepository
   let categoryRepo: InMemoryCategoryRepository
   let aiMock: { extractTransactions: ReturnType<typeof vi.fn>; suggestCategory: ReturnType<typeof vi.fn> }
 
   beforeEach(async () => {
     batchRepo = new InMemoryImportBatchRepository()
     categoryRepo = new InMemoryCategoryRepository()
-    txRepo = new InMemoryTransactionRepository()
     aiMock = { extractTransactions: vi.fn(), suggestCategory: vi.fn().mockResolvedValue(null) }
 
     const settingsMock = { createAIPort: vi.fn().mockResolvedValue(aiMock) }
@@ -35,7 +31,6 @@ describe('ImportService', () => {
         ImportService,
         { provide: ImportBatchRepository, useValue: batchRepo },
         { provide: CategoryRepository,    useValue: categoryRepo },
-        { provide: TransactionRepository, useValue: txRepo },
         { provide: SettingsService, useValue: settingsMock },
         { provide: RecurringService, useValue: { detect: vi.fn().mockResolvedValue(undefined) } },
         CsvParser,
@@ -79,7 +74,6 @@ describe('ImportService', () => {
     })
 
     it('discards the batch when AI extraction fails', async () => {
-      // Call directly (not via uploadPdf helper which sets its own mock)
       aiMock.extractTransactions.mockRejectedValue(new Error('API error'))
       await expect(
         service.uploadAndExtract(makeFile('application/pdf'))
@@ -103,7 +97,7 @@ describe('ImportService', () => {
         { date: '2026-04-16', description: 'NETFLIX', amount: -15 },
       ])
       await service.confirmBatch(batchId)
-      expect(txRepo.store.size).toBe(2)
+      expect(batchRepo.txStore.size).toBe(2)
     })
 
     it('sets batch status to confirmed via atomic claim', async () => {
@@ -116,7 +110,7 @@ describe('ImportService', () => {
       aiMock.extractTransactions.mockResolvedValue([{ date: '2026-04-01', description: 'Test', amount: -10 }])
       const { batchId } = await service.uploadAndExtract(makeFile('application/pdf'))
       await service.confirmBatch(batchId)
-      const [tx] = [...txRepo.store.values()]
+      const [tx] = [...batchRepo.txStore.values()]
       expect(tx.source).toBe('pdf')
     })
 
@@ -124,7 +118,7 @@ describe('ImportService', () => {
       aiMock.extractTransactions.mockResolvedValue([{ date: '2026-04-01', description: 'Test', amount: -10 }])
       const { batchId } = await service.uploadAndExtract(makeFile('image/jpeg'))
       await service.confirmBatch(batchId)
-      const [tx] = [...txRepo.store.values()]
+      const [tx] = [...batchRepo.txStore.values()]
       expect(tx.source).toBe('photo')
     })
 
@@ -133,24 +127,19 @@ describe('ImportService', () => {
         { date: '2026-04-15', description: 'TESCO', amount: -20 },
       ])
       await service.confirmBatch(batchId)
-      // manually reset status to reviewing to simulate re-confirm
       await batchRepo.updateStatus(batchId, 'reviewing')
-      // tryClaimConfirm will fail since it's now reviewing again — it succeeds
-      // but promoted items are skipped
       await service.confirmBatch(batchId)
-      expect(txRepo.store.size).toBe(1) // not doubled
+      expect(batchRepo.txStore.size).toBe(1)
     })
 
     it('throws BadRequestException when batch is already confirmed', async () => {
       const { batchId } = await uploadPdf()
       await service.confirmBatch(batchId)
-      // status is now 'confirmed' → isReviewing() is false → BadRequestException
       await expect(service.confirmBatch(batchId)).rejects.toThrow(BadRequestException)
     })
 
     it('throws ConflictException when tryClaimConfirm loses the race (still reviewing but claim fails)', async () => {
       const { batchId } = await uploadPdf()
-      // Simulate the race: status stays 'reviewing' but tryClaimConfirm returns false
       vi.spyOn(batchRepo, 'tryClaimConfirm').mockResolvedValueOnce(false)
       await expect(service.confirmBatch(batchId)).rejects.toThrow(ConflictException)
     })
@@ -162,8 +151,29 @@ describe('ImportService', () => {
     it('preserves positive amounts when promoting income transactions', async () => {
       const { batchId } = await uploadPdf([{ date: '2026-04-01', description: 'Salary', amount: 3702.85 }])
       await service.confirmBatch(batchId)
-      const [tx] = [...txRepo.store.values()]
+      const [tx] = [...batchRepo.txStore.values()]
       expect(tx.amount).toBe(3702.85)
+    })
+
+    it('logs but does not throw when recurring.detect rejects', async () => {
+      const recurringMock = { detect: vi.fn().mockRejectedValue(new Error('detect failed')) }
+      const module2 = await Test.createTestingModule({
+        providers: [
+          ImportService,
+          { provide: ImportBatchRepository, useValue: batchRepo },
+          { provide: CategoryRepository,    useValue: categoryRepo },
+          { provide: SettingsService, useValue: { createAIPort: vi.fn().mockResolvedValue(aiMock) } },
+          { provide: RecurringService, useValue: recurringMock },
+          CsvParser,
+        ],
+      }).compile()
+      const svc2 = module2.get<ImportService>(ImportService)
+
+      aiMock.extractTransactions.mockResolvedValue([{ date: '2026-04-15', description: 'X', amount: -10 }])
+      const { batchId } = await svc2.uploadAndExtract(makeFile('application/pdf'))
+      await expect(svc2.confirmBatch(batchId)).resolves.toEqual({ confirmed: true })
+      await new Promise(r => setTimeout(r, 0))
+      expect(recurringMock.detect).toHaveBeenCalled()
     })
   })
 

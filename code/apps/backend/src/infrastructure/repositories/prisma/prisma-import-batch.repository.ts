@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../../../prisma/prisma.service'
-import { ImportBatchRepository, CreateImportedTxData, UpdateImportedTxData } from '../../../domain/repositories/import-batch.repository'
+import { ImportBatchRepository, CreateImportedTxData, UpdateImportedTxData, ConfirmItem } from '../../../domain/repositories/import-batch.repository'
 import { ImportBatchEntity, BatchStatus } from '../../../domain/entities/import-batch.entity'
 import { ImportedTransactionEntity } from '../../../domain/entities/imported-transaction.entity'
 import { ImportBatchMapper } from './import-batch.mapper'
@@ -67,6 +67,27 @@ export class PrismaImportBatchRepository extends ImportBatchRepository {
     await this.prisma.importedTransaction.update({
       where: { id: importedId },
       data: { transactionId },
+    })
+  }
+
+  async confirmAll(items: ConfirmItem[]): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      for (const item of items) {
+        const created = await tx.transaction.create({
+          data: {
+            amount:      item.tx.amount,
+            date:        item.tx.date,
+            description: item.tx.description,
+            source:      item.tx.source,
+            categoryId:  item.tx.categoryId,
+            createdAt:   item.tx.createdAt,
+          },
+        })
+        await tx.importedTransaction.update({
+          where: { id: item.importedId },
+          data:  { transactionId: created.id },
+        })
+      }
     })
   }
 
