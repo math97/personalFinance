@@ -121,7 +121,7 @@ export async function collectMetrics() {
       fileSize: backendFileSize,
     },
     frontend: {
-      audit,
+      audit: { ...audit },
       coverage: frontendCoverage,
       duplication: frontendDuplication,
       fileSize: frontendFileSize,
