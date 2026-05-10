@@ -93,29 +93,31 @@ export function buildReport(current, baseline, failures) {
 
 // ── Main ────────────────────────────────────────────────────────────────────
 
-const current = collectMetrics()
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const current = collectMetrics()
 
-if (!existsSync(BASELINE_PATH)) {
-  writeFileSync(BASELINE_PATH, JSON.stringify(current, null, 2))
-  console.log('✅ Baseline seeded — quality gate passed on first run.')
-  process.exit(0)
-}
-
-const baseline = JSON.parse(readFileSync(BASELINE_PATH, 'utf8'))
-const failures = checkRatchet(current, baseline)
-const report = buildReport(current, baseline, failures)
-
-writeFileSync(REPORT_PATH, report)
-console.log(report)
-
-if (failures.length > 0) {
-  const prNumber = process.env.PR_NUMBER
-  if (prNumber) {
-    try {
-      execSync(`gh pr comment ${prNumber} --body-file "${REPORT_PATH}"`, { stdio: 'inherit' })
-    } catch (err) {
-      console.error('Warning: could not post PR comment:', err.message)
-    }
+  if (!existsSync(BASELINE_PATH)) {
+    writeFileSync(BASELINE_PATH, JSON.stringify(current, null, 2))
+    console.log('✅ Baseline seeded — quality gate passed on first run.')
+    process.exit(0)
   }
-  process.exit(1)
+
+  const baseline = JSON.parse(readFileSync(BASELINE_PATH, 'utf8'))
+  const failures = checkRatchet(current, baseline)
+  const report = buildReport(current, baseline, failures)
+
+  writeFileSync(REPORT_PATH, report)
+  console.log(report)
+
+  if (failures.length > 0) {
+    const prNumber = process.env.PR_NUMBER
+    if (prNumber) {
+      try {
+        execSync(`gh pr comment ${prNumber} --body-file "${REPORT_PATH}"`, { stdio: 'inherit' })
+      } catch (err) {
+        console.error('Warning: could not post PR comment:', err.message)
+      }
+    }
+    process.exit(1)
+  }
 }
