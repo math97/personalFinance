@@ -15,6 +15,7 @@ export class OpenRouterAdapter extends AIPort {
     this.client = new OpenAI({
       apiKey: key,
       baseURL: 'https://openrouter.ai/api/v1',
+      timeout: 60_000,
       defaultHeaders: {
         'HTTP-Referer': 'https://personal-finance-app',
         'X-Title': 'Personal Finance',
