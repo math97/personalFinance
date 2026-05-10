@@ -11,7 +11,7 @@ export class AnthropicAdapter extends AIPort {
     super()
     const key = apiKey || process.env.AI_API_KEY || process.env.ANTHROPIC_API_KEY
     if (!key) throw new Error('Missing API key: set AI_API_KEY (or ANTHROPIC_API_KEY) for the anthropic provider')
-    this.client = new Anthropic({ apiKey: key })
+    this.client = new Anthropic({ apiKey: key, timeout: 60_000 })
     this.model = model || process.env.AI_MODEL || 'claude-haiku-4-5-20251001'
   }
 

@@ -1,10 +1,12 @@
-import { ImportBatchRepository, CreateImportedTxData, UpdateImportedTxData } from '../../../domain/repositories/import-batch.repository'
+import { ImportBatchRepository, CreateImportedTxData, UpdateImportedTxData, ConfirmItem } from '../../../domain/repositories/import-batch.repository'
 import { ImportBatchEntity, BatchStatus } from '../../../domain/entities/import-batch.entity'
 import { ImportedTransactionEntity } from '../../../domain/entities/imported-transaction.entity'
+import { TransactionEntity } from '../../../domain/entities/transaction.entity'
 
 export class InMemoryImportBatchRepository extends ImportBatchRepository {
   public readonly batchStore = new Map<string, ImportBatchEntity>()
   public readonly importedStore = new Map<string, ImportedTransactionEntity>()
+  public readonly txStore = new Map<string, TransactionEntity>()
   private counter = 0
 
   async findAllReviewing(): Promise<ImportBatchEntity[]> {
@@ -64,6 +66,18 @@ export class InMemoryImportBatchRepository extends ImportBatchRepository {
       existing.rawAmount, existing.aiCategoryId, existing.aiCategorized,
       existing.aiCategory, transactionId,
     ))
+  }
+
+  async confirmAll(items: ConfirmItem[]): Promise<void> {
+    for (const item of items) {
+      const txId = `tx-${Math.random().toString(36).slice(2)}`
+      const entity = new TransactionEntity(
+        txId, item.tx.amount, item.tx.date, item.tx.description,
+        item.tx.source, item.tx.categoryId, null, null, null, item.tx.createdAt, null,
+      )
+      this.txStore.set(txId, entity)
+      await this.promoteToTransaction(item.importedId, txId)
+    }
   }
 
   async countReviewing(): Promise<number> {

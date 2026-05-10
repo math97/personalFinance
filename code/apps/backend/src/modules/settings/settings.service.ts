@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../../prisma/prisma.service'
+import { SettingsRepository } from '../../domain/repositories/settings.repository'
 import { AIPort } from '../../domain/ports/ai.port'
 import { AnthropicAdapter } from '../../infrastructure/ai/anthropic.adapter'
 import { OpenRouterAdapter } from '../../infrastructure/ai/openrouter.adapter'
@@ -7,23 +7,27 @@ import { UpdateSettingsDto, TestConnectionDto } from './dto/settings.dto'
 
 @Injectable()
 export class SettingsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private cachedAIPort: AIPort | null = null
+
+  constructor(private readonly settingsRepo: SettingsRepository) {}
 
   async getSettings() {
-    const row = await this.prisma.appSettings.findUnique({ where: { id: 'singleton' } })
+    const row = await this.settingsRepo.findSettings()
     return {
-      aiProvider: row?.aiProvider ?? process.env.AI_PROVIDER ?? 'openrouter',
-      aiModel:    row?.aiModel    ?? process.env.AI_MODEL    ?? '',
+      aiProvider:         row?.aiProvider ?? process.env.AI_PROVIDER ?? 'openrouter',
+      aiModel:            row?.aiModel    ?? process.env.AI_MODEL    ?? '',
       aiApiKeyConfigured: !!(row?.aiApiKey),
     }
   }
 
   async updateSettings(dto: UpdateSettingsDto) {
-    await this.prisma.appSettings.upsert({
-      where:  { id: 'singleton' },
-      create: { id: 'singleton', aiProvider: dto.aiProvider, aiApiKey: dto.aiApiKey, aiModel: dto.aiModel },
-      update: { aiProvider: dto.aiProvider, aiModel: dto.aiModel, ...(dto.aiApiKey ? { aiApiKey: dto.aiApiKey } : {}) },
+    const current = await this.settingsRepo.findSettings()
+    await this.settingsRepo.upsertSettings({
+      aiProvider: dto.aiProvider,
+      aiModel:    dto.aiModel ?? null,
+      aiApiKey:   dto.aiApiKey ?? current?.aiApiKey ?? null,
     })
+    this.cachedAIPort = null
     return this.getSettings()
   }
 
@@ -38,11 +42,13 @@ export class SettingsService {
   }
 
   async createAIPort(): Promise<AIPort> {
-    const row = await this.prisma.appSettings.findUnique({ where: { id: 'singleton' } })
+    if (this.cachedAIPort) return this.cachedAIPort
+    const row = await this.settingsRepo.findSettings()
     const provider = row?.aiProvider ?? process.env.AI_PROVIDER ?? 'openrouter'
     const apiKey   = row?.aiApiKey   || undefined
     const model    = row?.aiModel    || undefined
-    return this.buildAIPort(provider, apiKey, model)
+    this.cachedAIPort = this.buildAIPort(provider, apiKey, model)
+    return this.cachedAIPort
   }
 
   private buildAIPort(provider: string, apiKey?: string, model?: string): AIPort {

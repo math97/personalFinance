@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException, ConflictException, Logger } from '@nestjs/common'
 import { fromBuffer as fileTypeFromBuffer } from 'file-type'
+import pLimit from 'p-limit'
 import { ImportBatchRepository } from '../../domain/repositories/import-batch.repository'
 import { CategoryRepository } from '../../domain/repositories/category.repository'
-import { TransactionRepository } from '../../domain/repositories/transaction.repository'
 import { CategorizationDomainService } from '../../domain/services/categorization.domain-service'
 import { TransactionEntity } from '../../domain/entities/transaction.entity'
 import { SettingsService } from '../settings/settings.service'
@@ -12,10 +12,11 @@ import { UpdateImportedTransactionDto, SaveRuleDto } from './dto/import.dto'
 
 @Injectable()
 export class ImportService {
+  private readonly logger = new Logger(ImportService.name)
+
   constructor(
     private readonly batchRepo: ImportBatchRepository,
     private readonly categoryRepo: CategoryRepository,
-    private readonly txRepo: TransactionRepository,
     private readonly settings: SettingsService,
     private readonly recurring: RecurringService,
     private readonly csvParser: CsvParser,
@@ -61,7 +62,7 @@ export class ImportService {
         let ai: Awaited<ReturnType<typeof this.settings.createAIPort>>
         try {
           ai = await this.settings.createAIPort()
-        } catch (e: any) {
+        } catch {
           throw new BadRequestException(
             'No AI API key configured. Go to Settings and enter your API key before uploading images or PDFs.'
           )
@@ -70,8 +71,9 @@ export class ImportService {
         categorization = new CategorizationDomainService(ai)
       }
 
+      const limit = pLimit(5)
       const importedData = await Promise.all(
-        extracted.map(async t => {
+        extracted.map(t => limit(async () => {
           let categoryId: string | null = null
           let aiCategorized = false
 
@@ -94,7 +96,7 @@ export class ImportService {
             aiCategoryId: categoryId,
             aiCategorized,
           }
-        }),
+        })),
       )
 
       await this.batchRepo.createImportedTransactions(importedData)
@@ -132,17 +134,21 @@ export class ImportService {
                  : batch.isPdf()             ? 'pdf'
                  :                             'photo'
 
-    for (const imp of batch.imported.filter(i => !i.transactionId)) {
-      const tx = await this.txRepo.save(
-        new TransactionEntity(
+    const toConfirm = batch.imported
+      .filter(i => !i.transactionId)
+      .map(imp => ({
+        importedId: imp.id,
+        tx: new TransactionEntity(
           '', Number(imp.rawAmount), new Date(imp.rawDate), imp.rawDescription,
           source, imp.aiCategoryId, null, null, null, new Date(), null,
         ),
-      )
-      await this.batchRepo.promoteToTransaction(imp.id, tx.id)
-    }
+      }))
 
-    this.recurring.detect().catch(() => {})
+    await this.batchRepo.confirmAll(toConfirm)
+
+    this.recurring.detect().catch(err =>
+      this.logger.error('recurring.detect failed', err instanceof Error ? err.stack : String(err))
+    )
 
     return { confirmed: true }
   }
