@@ -20,7 +20,6 @@ coverage/
 # quality gate tooling
 jscpd-report/
 quality-gate-report.md
-scripts/baseline.json
 
 # env files — keep .env.example in git, ignore everything else
 .env*
