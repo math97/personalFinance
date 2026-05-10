@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: code/package-lock.json
+
+      - name: Install dependencies
+        working-directory: code
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: code/apps/backend
+        run: npx prisma generate
+
+      - name: Run backend tests
+        working-directory: code
+        run: npm run test --workspace=apps/backend
+
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: code/package-lock.json
+
+      - name: Install dependencies
+        working-directory: code
+        run: npm ci
+
+      - name: Run frontend tests
+        working-directory: code
+        run: npm run test --workspace=apps/frontend
+
+  build-electron:
+    name: Build Electron (Windows)
+    needs: [test-backend, test-frontend]
+    if: github.event_name != 'pull_request'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: code/package-lock.json
+
+      - name: Install dependencies
+        working-directory: code
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: code/apps/backend
+        run: npx prisma generate
+
+      - name: Build backend
+        working-directory: code/apps/backend
+        run: npm run build
+
+      - name: Build frontend
+        working-directory: code/apps/frontend
+        run: npm run build
+        env:
+          BACKEND_PORT: '3001'
+
+      - name: Build Electron
+        working-directory: code/apps/electron
+        run: npm run build && npx electron-builder --win --x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ember-Windows
+          path: code/apps/electron/dist-electron/*.exe
+          retention-days: 30
