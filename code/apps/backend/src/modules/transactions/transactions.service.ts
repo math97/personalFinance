@@ -5,6 +5,12 @@ import { CreateTransactionDto } from './dto/create-transaction.dto'
 import { UpdateTransactionDto } from './dto/update-transaction.dto'
 import { TransactionQueryDto } from './dto/transaction-query.dto'
 
+const CSV_FORMULA_CHARS = /^[=+\-@\t\r]/
+
+function sanitizeCsvCell(value: string): string {
+  return CSV_FORMULA_CHARS.test(value) ? `'${value}` : value
+}
+
 @Injectable()
 export class TransactionsService {
   constructor(private readonly repo: TransactionRepository) {}
@@ -59,9 +65,13 @@ export class TransactionsService {
     const header = 'date,description,category,amount,notes'
     const rows = sorted.map(tx => {
       const date        = tx.date.toISOString().slice(0, 10)
-      const description = `"${tx.description.replace(/"/g, '""')}"`
-      const category    = tx.category?.name ? `"${tx.category.name.replace(/"/g, '""')}"` : ''
-      const notes       = tx.notes ? `"${tx.notes.replace(/"/g, '""')}"` : ''
+      const description = `"${sanitizeCsvCell(tx.description).replace(/"/g, '""')}"`
+      const category    = tx.category?.name
+        ? `"${sanitizeCsvCell(tx.category.name).replace(/"/g, '""')}"`
+        : ''
+      const notes       = tx.notes
+        ? `"${sanitizeCsvCell(tx.notes).replace(/"/g, '""')}"`
+        : ''
       return `${date},${description},${category},${tx.amount},${notes}`
     })
 
@@ -79,7 +89,7 @@ export class TransactionsService {
     return this.repo.update(id, {
       ...(dto.amount      !== undefined && { amount:      dto.amount             }),
       ...(dto.date                      && { date:        new Date(dto.date)     }),
-      ...(dto.description               && { description: dto.description        }),
+      ...(dto.description !== undefined  && { description: dto.description        }),
       ...(dto.categoryId  !== undefined && { categoryId:  dto.categoryId ?? null }),
       ...('notes' in dto                && { notes:       dto.notes ?? null      }),
     })
