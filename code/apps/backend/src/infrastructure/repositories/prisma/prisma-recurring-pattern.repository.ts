@@ -40,26 +40,38 @@ export class PrismaRecurringPatternRepository extends RecurringPatternRepository
   }
 
   async findByDescription(description: string): Promise<RecurringPatternEntity | null> {
-    const row = await this.prisma.recurringPattern.findUnique({
-      where: { description },
+    const row = await this.prisma.recurringPattern.findFirst({
+      where: { description: { equals: description, mode: 'insensitive' } },
       include: { category: true },
     })
     return row ? toEntity(row) : null
   }
 
   async upsert(data: UpsertPatternData): Promise<RecurringPatternEntity> {
-    const row = await this.prisma.recurringPattern.upsert({
-      where: { description: data.description },
-      create: {
-        description: data.description,
-        typicalDay: data.typicalDay,
+    const existing = await this.prisma.recurringPattern.findFirst({
+      where: { description: { equals: data.description, mode: 'insensitive' } },
+      include: { category: true },
+    })
+
+    if (existing) {
+      const row = await this.prisma.recurringPattern.update({
+        where: { id: existing.id },
+        data: {
+          typicalDay:    data.typicalDay,
+          typicalAmount: data.typicalAmount,
+          categoryId:    data.categoryId,
+        },
+        include: { category: true },
+      })
+      return toEntity(row)
+    }
+
+    const row = await this.prisma.recurringPattern.create({
+      data: {
+        description:   data.description,
+        typicalDay:    data.typicalDay,
         typicalAmount: data.typicalAmount,
-        categoryId: data.categoryId,
-      },
-      update: {
-        typicalDay: data.typicalDay,
-        typicalAmount: data.typicalAmount,
-        categoryId: data.categoryId,
+        categoryId:    data.categoryId,
       },
       include: { category: true },
     })

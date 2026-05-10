@@ -13,11 +13,13 @@ export class InMemoryRecurringPatternRepository extends RecurringPatternReposito
   }
 
   async findByDescription(description: string): Promise<RecurringPatternEntity | null> {
-    return [...this.store.values()].find(p => p.description === description) ?? null
+    const key = description.toLowerCase()
+    return [...this.store.values()].find(p => p.description.toLowerCase() === key) ?? null
   }
 
   async upsert(data: UpsertPatternData): Promise<RecurringPatternEntity> {
-    const existing = [...this.store.values()].find(p => p.description === data.description)
+    const key = data.description.toLowerCase()
+    const existing = [...this.store.values()].find(p => p.description.toLowerCase() === key)
     const now = new Date()
     if (existing) {
       const updated = new RecurringPatternEntity(
