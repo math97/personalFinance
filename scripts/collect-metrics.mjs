@@ -10,12 +10,11 @@ const FRONTEND_DIR = join(CODE_DIR, 'apps/frontend')
 const FILE_SIZE_LIMIT = 300
 
 function run(cmd, cwd) {
-  const result = spawnSync(cmd, { shell: true, cwd, encoding: 'utf8', stdio: 'pipe' })
-  return result.stdout ?? ''
+  return spawnSync(cmd, { shell: true, cwd, encoding: 'utf8', stdio: 'pipe' })
 }
 
 function collectAudit() {
-  const output = run('npm audit --json', CODE_DIR)
+  const output = run('npm audit --json', CODE_DIR).stdout ?? ''
   try {
     const data = JSON.parse(output)
     const v = data.metadata?.vulnerabilities ?? {}
@@ -26,19 +25,24 @@ function collectAudit() {
 }
 
 function collectLint() {
-  const output = run('npx eslint "src/**/*.ts" --format json', BACKEND_DIR)
+  const result = run('npx eslint "src/**/*.ts" --format json', BACKEND_DIR)
   try {
-    const files = JSON.parse(output)
+    const files = JSON.parse(result.stdout ?? '')
     const errors = files.reduce((sum, f) => sum + (f.errorCount ?? 0), 0)
     const warnings = files.reduce((sum, f) => sum + (f.warningCount ?? 0), 0)
     return { errors, warnings }
   } catch {
+    if (result.stderr) process.stderr.write(`[lint] eslint error: ${result.stderr}\n`)
     return { errors: 0, warnings: 0 }
   }
 }
 
 function collectCoverage(appDir) {
-  run('npx vitest run --coverage --coverage.reporter=json-summary', appDir)
+  const result = run('npx vitest run --coverage --coverage.reporter=json-summary', appDir)
+  if (result.status !== 0) {
+    process.stderr.write(`[coverage] vitest failed (exit ${result.status})\n`)
+    return { lines: 0, branches: 0, functions: 0, statements: 0 }
+  }
   const summaryPath = join(appDir, 'coverage/coverage-summary.json')
   try {
     const summary = JSON.parse(readFileSync(summaryPath, 'utf8'))
@@ -83,11 +87,17 @@ function collectFileSize(appDir) {
     }
   }
 
-  if (existsSync(srcDir)) scan(srcDir)
+  if (existsSync(srcDir)) {
+    try {
+      scan(srcDir)
+    } catch (err) {
+      process.stderr.write(`[fileSize] scan error: ${err.message}\n`)
+    }
+  }
   return { maxLines: FILE_SIZE_LIMIT, violations }
 }
 
-export async function collectMetrics() {
+export function collectMetrics() {
   process.stdout.write('📊 Collecting metrics...\n')
 
   const audit = collectAudit()
