@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
-import { execSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { collectMetrics } from './collect-metrics.mjs'
@@ -14,6 +14,7 @@ export function checkRatchet(current, baseline) {
   const failures = []
 
   function check(label, cur, base, mode) {
+    if (cur == null || base == null || Number.isNaN(cur) || Number.isNaN(base)) return
     const pass = mode === 'lte' ? cur <= base : cur >= base
     if (!pass) failures.push({ label, baseline: base, current: cur })
   }
@@ -111,11 +112,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 
   if (failures.length > 0) {
     const prNumber = process.env.PR_NUMBER
-    if (prNumber) {
-      try {
-        execSync(`gh pr comment ${prNumber} --body-file "${REPORT_PATH}"`, { stdio: 'inherit' })
-      } catch (err) {
-        console.error('Warning: could not post PR comment:', err.message)
+    if (prNumber && /^\d+$/.test(prNumber)) {
+      const result = spawnSync('gh', ['pr', 'comment', prNumber, '--body-file', REPORT_PATH], { stdio: 'inherit' })
+      if (result.status !== 0) {
+        console.error('Warning: could not post PR comment')
       }
     }
     process.exit(1)
