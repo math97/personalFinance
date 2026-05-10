@@ -219,7 +219,7 @@ describe('BatchReviewClient', () => {
       await triggerSaveRulePrompt()
       const prompt = screen.getByText(/always categorize/i).closest('div') as HTMLElement
       expect(prompt).toBeInTheDocument()
-      expect(within(prompt).getByText('Food')).toBeInTheDocument()
+      expect(within(prompt).getByText(/always categorize/i)).toHaveTextContent('Food')
     })
 
     it('does not show prompt for already-categorized items', async () => {
