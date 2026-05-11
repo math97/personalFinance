@@ -110,14 +110,15 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   writeFileSync(REPORT_PATH, report)
   console.log(report)
 
-  if (failures.length > 0) {
-    const prNumber = process.env.PR_NUMBER
-    if (prNumber && /^\d+$/.test(prNumber)) {
-      const result = spawnSync('gh', ['pr', 'comment', prNumber, '--body-file', REPORT_PATH], { stdio: 'inherit' })
-      if (result.status !== 0) {
-        console.error('Warning: could not post PR comment')
-      }
+  const prNumber = process.env.PR_NUMBER
+  if (prNumber && /^\d+$/.test(prNumber)) {
+    const result = spawnSync('gh', ['pr', 'comment', prNumber, '--body-file', REPORT_PATH], { stdio: 'inherit' })
+    if (result.status !== 0) {
+      console.error('Warning: could not post PR comment')
     }
+  }
+
+  if (failures.length > 0) {
     process.exit(1)
   }
 }
