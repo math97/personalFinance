@@ -178,7 +178,7 @@ async function createMainWindow(frontendPort: number): Promise<BrowserWindow> {
       nodeIntegration: false,
     },
   })
-  await win.loadURL(`http://localhost:${frontendPort}`)
+  await win.loadURL(`http://127.0.0.1:${frontendPort}`)
   win.show()
   return win
 }
