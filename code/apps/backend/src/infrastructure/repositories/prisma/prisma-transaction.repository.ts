@@ -122,6 +122,22 @@ export class PrismaTransactionRepository extends TransactionRepository {
     }))
   }
 
+  async groupByIncomeCategory(year: number, month: number): Promise<CategorySpending[]> {
+    const start = startOfMonth(new Date(year, month - 1))
+    const end = endOfMonth(new Date(year, month - 1))
+
+    const grouped = await this.prisma.transaction.groupBy({
+      by: ['categoryId'],
+      where: { date: { gte: start, lte: end }, amount: { gt: 0 } },
+      _sum: { amount: true },
+    })
+
+    return grouped.map(row => ({
+      categoryId: row.categoryId ?? null,
+      total: Number(row._sum.amount ?? 0),
+    }))
+  }
+
   async monthlyTotal(year: number, month: number): Promise<number> {
     const start = startOfMonth(new Date(year, month - 1))
     const end = endOfMonth(new Date(year, month - 1))

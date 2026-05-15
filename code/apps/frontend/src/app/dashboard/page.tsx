@@ -55,7 +55,7 @@ export default async function DashboardPage({
   const nextMonth = month === 12 ? 1  : month + 1
   const nextYear  = month === 12 ? year + 1 : year
 
-  const [{ summary, byCategory, monthlyTotals, upcoming, dailyTotals }, { items: recentTxs }, prevSummary] = await Promise.all([
+  const [{ summary, byCategory, byIncomeCategory, monthlyTotals, upcoming, dailyTotals }, { items: recentTxs }, prevSummary] = await Promise.all([
     api.dashboard.summary(year, month),
     api.transactions.list({ year, month, page: 1, perPage: 5 }),
     api.dashboard.summary(prevYear, prevMonth),
@@ -172,6 +172,7 @@ export default async function DashboardPage({
                 data={byCategory}
                 grandTotal={Number(summary.totalSpent)}
                 totalIncome={Number(summary.totalIncome ?? 0)}
+                byIncomeCategory={byIncomeCategory ?? []}
                 year={year}
                 month={month}
               />

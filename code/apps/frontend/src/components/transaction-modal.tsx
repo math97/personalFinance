@@ -113,7 +113,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
       amount: type === 'expense' ? -Math.abs(Number(form.amount)) : Math.abs(Number(form.amount)),
       date: form.date,
       description: form.description,
-      categoryId: type === 'expense' ? (form.categoryId || undefined) : undefined,
+      categoryId: form.categoryId || undefined,
       source: 'manual',
     })
     setLoading(false)
@@ -199,29 +199,28 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
           />
         </div>
 
-        {/* Category + rule hint — expenses only */}
+        {/* Category */}
+        <div>
+          <label className="text-xs font-medium mb-1.5 block text-text-2">{tb('category')}</label>
+          <select
+            value={form.categoryId}
+            onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
+            className="w-full rounded-lg px-3 py-2.5 text-sm outline-none bg-surface-2 border border-border-2 text-text"
+          >
+            <option value="">— none —</option>
+            {categories.map((c: any) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+        {/* Keyword hint — expenses only */}
         {type === 'expense' && (
-          <>
-            <div>
-              <label className="text-xs font-medium mb-1.5 block text-text-2">{tb('category')}</label>
-              <select
-                value={form.categoryId}
-                onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
-                className="w-full rounded-lg px-3 py-2.5 text-sm outline-none bg-surface-2 border border-border-2 text-text"
-              >
-                <option value="">— none —</option>
-                {categories.map((c: any) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-start gap-2.5 rounded-lg px-3 py-2.5 bg-accent-dim border border-accent/10">
-              <Sparkles size={14} className="text-accent mt-0.5 shrink-0" />
-              <p className="text-xs leading-relaxed text-accent">
-                {t('keywordHint')}
-              </p>
-            </div>
-          </>
+          <div className="flex items-start gap-2.5 rounded-lg px-3 py-2.5 bg-accent-dim border border-accent/10">
+            <Sparkles size={14} className="text-accent mt-0.5 shrink-0" />
+            <p className="text-xs leading-relaxed text-accent">
+              {t('keywordHint')}
+            </p>
+          </div>
         )}
       </div>
 

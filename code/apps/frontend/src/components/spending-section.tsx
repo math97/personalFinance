@@ -13,12 +13,14 @@ export function SpendingSection({
   data,
   grandTotal,
   totalIncome = 0,
+  byIncomeCategory = [],
   year,
   month,
 }: {
   data: Row[]
   grandTotal: number
   totalIncome?: number
+  byIncomeCategory?: Row[]
   year: number
   month: number
 }) {
@@ -67,10 +69,15 @@ export function SpendingSection({
   const budget = effectiveIncome + leftover
 
   const incomeData: Row[] = mode === 'income'
-    ? [
-        { name: totalIncome > 0 ? 'Income' : 'Salary', total: effectiveIncome, color: '#4ade80' },
-        { name: tTerms('saved.label'), total: leftover, color: '#a78bfa' },
-      ]
+    ? byIncomeCategory.length > 0
+      ? [
+          ...byIncomeCategory,
+          ...(leftover > 0 ? [{ name: tTerms('saved.label'), total: leftover, color: '#a78bfa' }] : []),
+        ]
+      : [
+          { name: totalIncome > 0 ? 'Income' : 'Salary', total: effectiveIncome, color: '#4ade80' },
+          { name: tTerms('saved.label'), total: leftover, color: '#a78bfa' },
+        ]
     : data
 
   const displayTotal = mode === 'income'

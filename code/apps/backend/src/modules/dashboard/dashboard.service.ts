@@ -33,6 +33,24 @@ export class DashboardService {
       .sort((a, b) => b.total - a.total)
   }
 
+  async getIncomeByCategory(year: number, month: number) {
+    const [grouped, categories] = await Promise.all([
+      this.txRepo.groupByIncomeCategory(year, month),
+      this.catRepo.findAll(),
+    ])
+
+    const catMap = Object.fromEntries(categories.map(c => [c.id, c]))
+
+    return grouped
+      .map(row => ({
+        categoryId: row.categoryId,
+        name:       row.categoryId ? (catMap[row.categoryId]?.name  ?? 'Uncategorized') : 'Uncategorized',
+        color:      row.categoryId ? (catMap[row.categoryId]?.color ?? '#4ade80')        : '#4ade80',
+        total:      row.total,
+      }))
+      .sort((a, b) => b.total - a.total)
+  }
+
   async getMonthlyTotals(year: number, month: number, months = 4) {
     const reference = new Date(year, month - 1)
     const promises = Array.from({ length: months }, (_, i) => {
@@ -63,9 +81,10 @@ export class DashboardService {
   }
 
   async getSummary(year: number, month: number) {
-    const [summary, byCategory, monthlyTotals, upcomingItems, dailyTotals] = await Promise.all([
+    const [summary, byCategory, byIncomeCategory, monthlyTotals, upcomingItems, dailyTotals] = await Promise.all([
       this.getSummaryCards(year, month),
       this.getSpendingByCategory(year, month),
+      this.getIncomeByCategory(year, month),
       this.getMonthlyTotals(year, month, 4),
       this.recurring.getUpcoming(year, month),
       this.recurring.getDailyTotals(year, month, 3),
@@ -76,6 +95,7 @@ export class DashboardService {
     return {
       summary,
       byCategory,
+      byIncomeCategory,
       monthlyTotals,
       upcoming: { total: upcomingTotal, items: upcomingItems },
       dailyTotals,

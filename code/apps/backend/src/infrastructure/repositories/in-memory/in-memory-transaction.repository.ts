@@ -92,6 +92,20 @@ export class InMemoryTransactionRepository extends TransactionRepository {
       .reduce((sum, tx) => sum + Math.abs(tx.amount), 0)
   }
 
+  async groupByIncomeCategory(year: number, month: number): Promise<CategorySpending[]> {
+    const start = startOfMonth(new Date(year, month - 1))
+    const end = endOfMonth(new Date(year, month - 1))
+    const map = new Map<string | null, number>()
+
+    for (const tx of this.store.values()) {
+      if (tx.date < start || tx.date > end || tx.amount <= 0) continue
+      const key = tx.categoryId
+      map.set(key, (map.get(key) ?? 0) + tx.amount)
+    }
+
+    return [...map.entries()].map(([categoryId, total]) => ({ categoryId, total }))
+  }
+
   async monthlyIncome(year: number, month: number): Promise<number> {
     const start = startOfMonth(new Date(year, month - 1))
     const end = endOfMonth(new Date(year, month - 1))
