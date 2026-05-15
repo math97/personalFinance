@@ -32,6 +32,7 @@ export abstract class TransactionRepository {
   ): Promise<TransactionEntity>
   abstract delete(id: string): Promise<void>
   abstract groupByCategory(year: number, month: number): Promise<CategorySpending[]>
+  abstract groupByIncomeCategory(year: number, month: number): Promise<CategorySpending[]>
   abstract monthlyTotal(year: number, month: number): Promise<number>
   abstract monthlyIncome(year: number, month: number): Promise<number>
   abstract countByMonth(year: number, month: number): Promise<number>

@@ -160,7 +160,7 @@ function TransactionsContent() {
       description: d.description,
       date: d.date,
       amount: d.isIncome ? Math.abs(Number(d.amount)) : -Math.abs(Number(d.amount)),
-      categoryId: d.isIncome ? undefined : (d.categoryId || undefined),
+      categoryId: d.categoryId || undefined,
       notes: d.notes?.trim() === '' ? null : (d.notes?.trim() ?? null),
     })
     setEditing(null)
@@ -440,16 +440,12 @@ function TransactionsContent() {
                         <input value={ed.description}
                           onChange={e => updateField(tx.id, { description: e.target.value })}
                           className="w-full rounded-md border border-border-2 bg-surface px-3 py-2 text-sm text-text outline-none" />
-                        {ed.isIncome ? (
-                          <span className="text-sm text-green">{tc('income')}</span>
-                        ) : (
-                          <select value={ed.categoryId}
-                            onChange={e => updateField(tx.id, { categoryId: e.target.value })}
-                            className="w-full rounded-md border border-border-2 bg-surface px-3 py-2 text-sm text-text outline-none">
-                            <option value="">— none —</option>
-                            {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                          </select>
-                        )}
+                        <select value={ed.categoryId}
+                          onChange={e => updateField(tx.id, { categoryId: e.target.value })}
+                          className="w-full rounded-md border border-border-2 bg-surface px-3 py-2 text-sm text-text outline-none">
+                          <option value="">— none —</option>
+                          {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
                         <button
                           onClick={() => updateField(tx.id, { isIncome: !ed.isIncome })}
                           className="rounded-md px-3 py-2 text-sm font-medium"
@@ -751,14 +747,12 @@ function TransactionsContent() {
 
               {/* Category */}
               {isEditing ? (
-                ed.isIncome
-                  ? <span className="text-xs pr-4 text-green">{tc('income')}</span>
-                  : <select value={ed.categoryId}
-                      onChange={e => updateField(tx.id, { categoryId: e.target.value })}
-                      className="text-xs rounded-md px-2 py-1 outline-none pr-4 bg-surface border border-border-2 text-text">
-                      <option value="">— none —</option>
-                      {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
+                <select value={ed.categoryId}
+                  onChange={e => updateField(tx.id, { categoryId: e.target.value })}
+                  className="text-xs rounded-md px-2 py-1 outline-none pr-4 bg-surface border border-border-2 text-text">
+                  <option value="">— none —</option>
+                  {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
               ) : (
                 <div className="pr-4">
                   {tx.category
