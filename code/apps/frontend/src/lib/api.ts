@@ -75,6 +75,7 @@ export const api = {
       get<{
         summary: any
         byCategory: any[]
+        byIncomeCategory: any[]
         monthlyTotals: any[]
         upcoming: { total: number; items: UpcomingItem[] }
         dailyTotals: DailySeries[]
