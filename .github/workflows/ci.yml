@@ -1,0 +1,208 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: code/package-lock.json
+
+      - name: Install dependencies
+        working-directory: code
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: code/apps/backend
+        run: npx prisma generate
+
+      - name: Run backend tests
+        working-directory: code
+        run: npm run test --workspace=apps/backend
+
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: code/package-lock.json
+
+      - name: Install dependencies
+        working-directory: code
+        run: npm ci
+
+      - name: Run frontend tests
+        working-directory: code
+        run: npm run test --workspace=apps/frontend
+
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: code/package-lock.json
+
+      - name: Install dependencies
+        working-directory: code
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: code/apps/frontend
+        run: npm run build
+        env:
+          BACKEND_PORT: '3001'
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: code/package-lock.json
+
+      - name: Install dependencies
+        working-directory: code
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: code/apps/backend
+        run: npx prisma generate
+
+      - name: Run quality gate
+        run: node scripts/quality-gate.mjs
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-report
+          path: quality-gate-report.md
+          if-no-files-found: ignore
+          retention-days: 30
+
+  update-baseline:
+    name: Update Quality Baseline
+    needs: [test-backend, test-frontend, build-frontend, quality-gate]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: code/package-lock.json
+
+      - name: Install dependencies
+        working-directory: code
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: code/apps/backend
+        run: npx prisma generate
+
+      - name: Update baseline
+        run: node scripts/update-baseline.mjs
+
+      - name: Commit updated baseline
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet scripts/baseline.json; then
+            echo "baseline unchanged, nothing to commit"
+            exit 0
+          fi
+          CONTENT=$(base64 < scripts/baseline.json | tr -d '\n')
+          SHA=$(gh api "repos/${{ github.repository }}/contents/scripts/baseline.json" --jq '.sha' 2>/dev/null || echo "")
+          if [ -n "$SHA" ]; then
+            gh api "repos/${{ github.repository }}/contents/scripts/baseline.json" \
+              -X PUT \
+              -f message="chore: update quality gate baseline [skip ci]" \
+              -f content="$CONTENT" \
+              -f sha="$SHA"
+          else
+            gh api "repos/${{ github.repository }}/contents/scripts/baseline.json" \
+              -X PUT \
+              -f message="chore: update quality gate baseline [skip ci]" \
+              -f content="$CONTENT"
+          fi
+
+  build-electron:
+    name: Build Electron (Windows)
+    needs: [test-backend, test-frontend, build-frontend, quality-gate]
+    if: github.event_name != 'pull_request'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: code/package-lock.json
+
+      - name: Install dependencies
+        working-directory: code
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: code/apps/backend
+        run: npx prisma generate
+
+      - name: Build backend
+        working-directory: code/apps/backend
+        run: npm run build
+
+      - name: Build frontend
+        working-directory: code/apps/frontend
+        run: npm run build
+        env:
+          BACKEND_PORT: '3001'
+
+      - name: Build Electron
+        working-directory: code/apps/electron
+        run: npm run build && npx electron-builder --win --x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ember-Windows
+          path: code/apps/electron/dist-electron/*.exe
+          retention-days: 30

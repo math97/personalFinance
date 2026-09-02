@@ -3,6 +3,7 @@ import { subMonths, format } from 'date-fns'
 import { TransactionRepository } from '../../domain/repositories/transaction.repository'
 import { CategoryRepository } from '../../domain/repositories/category.repository'
 import { ImportBatchRepository } from '../../domain/repositories/import-batch.repository'
+import { RecurringService } from '../recurring/recurring.service'
 
 @Injectable()
 export class DashboardService {
@@ -10,6 +11,7 @@ export class DashboardService {
     private readonly txRepo: TransactionRepository,
     private readonly catRepo: CategoryRepository,
     private readonly batchRepo: ImportBatchRepository,
+    private readonly recurring: RecurringService,
   ) {}
 
   async getSpendingByCategory(year: number, month: number) {
@@ -22,10 +24,29 @@ export class DashboardService {
 
     return grouped
       .map(row => ({
+        categoryId:    row.categoryId,
+        name:          row.categoryId ? (catMap[row.categoryId]?.name          ?? 'Uncategorized') : 'Uncategorized',
+        color:         row.categoryId ? (catMap[row.categoryId]?.color         ?? '#6b7280')       : '#6b7280',
+        total:         row.total,
+        monthlyBudget: row.categoryId ? (catMap[row.categoryId]?.monthlyBudget ?? null)            : null,
+      }))
+      .sort((a, b) => b.total - a.total)
+  }
+
+  async getIncomeByCategory(year: number, month: number) {
+    const [grouped, categories] = await Promise.all([
+      this.txRepo.groupByIncomeCategory(year, month),
+      this.catRepo.findAll(),
+    ])
+
+    const catMap = Object.fromEntries(categories.map(c => [c.id, c]))
+
+    return grouped
+      .map(row => ({
         categoryId: row.categoryId,
-        name:  row.categoryId ? (catMap[row.categoryId]?.name  ?? 'Uncategorized') : 'Uncategorized',
-        color: row.categoryId ? (catMap[row.categoryId]?.color ?? '#6b7280')       : '#6b7280',
-        total: row.total,
+        name:       row.categoryId ? (catMap[row.categoryId]?.name  ?? 'Uncategorized') : 'Uncategorized',
+        color:      row.categoryId ? (catMap[row.categoryId]?.color ?? '#4ade80')        : '#4ade80',
+        total:      row.total,
       }))
       .sort((a, b) => b.total - a.total)
   }
@@ -60,11 +81,24 @@ export class DashboardService {
   }
 
   async getSummary(year: number, month: number) {
-    const [summary, byCategory, monthlyTotals] = await Promise.all([
+    const [summary, byCategory, byIncomeCategory, monthlyTotals, upcomingItems, dailyTotals] = await Promise.all([
       this.getSummaryCards(year, month),
       this.getSpendingByCategory(year, month),
+      this.getIncomeByCategory(year, month),
       this.getMonthlyTotals(year, month, 4),
+      this.recurring.getUpcoming(year, month),
+      this.recurring.getDailyTotals(year, month, 3),
     ])
-    return { summary, byCategory, monthlyTotals }
+
+    const upcomingTotal = upcomingItems.reduce((sum, i) => sum + Math.abs(i.typicalAmount), 0)
+
+    return {
+      summary,
+      byCategory,
+      byIncomeCategory,
+      monthlyTotals,
+      upcoming: { total: upcomingTotal, items: upcomingItems },
+      dailyTotals,
+    }
   }
 }

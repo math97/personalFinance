@@ -4,16 +4,19 @@ import { useCallback, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useDropzone } from 'react-dropzone'
 import { useRouter } from 'next/navigation'
-import { CloudUpload, FileText, ChevronRight, Loader2 } from 'lucide-react'
+import { CloudUpload, FileText, ChevronRight, Loader2, Info } from 'lucide-react'
 import { format } from 'date-fns'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 
 export default function ImportPage() {
+  const t = useTranslations('import')
   const router = useRouter()
   const [batches, setBatches] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState<{ current: number; total: number; filename: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showTooltip, setShowTooltip] = useState(false)
 
   useEffect(() => {
     api.import.batches().then(setBatches).catch(() => {})
@@ -36,7 +39,7 @@ export default function ImportPage() {
         router.push('/import/inbox')
       }
     } catch (e: any) {
-      setError(e.message ?? 'Upload failed')
+      setError(e.message ?? t('errorUpload'))
       setUploading(false)
       setUploadStatus(null)
     }
@@ -49,18 +52,20 @@ export default function ImportPage() {
       'image/jpeg': ['.jpg', '.jpeg'],
       'image/png': ['.png'],
       'image/heic': ['.heic'],
+      'text/csv': ['.csv'],
+      'application/vnd.ms-excel': ['.csv'],
     },
     multiple: true,
     disabled: uploading,
   })
 
   return (
-    <div className="px-8 py-6 max-w-3xl mx-auto">
-      <h1 className="text-xl font-semibold mb-6" style={{ color: 'var(--text)' }}>Upload Files</h1>
+    <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-6">
+      <h1 className="text-xl font-semibold mb-6" style={{ color: 'var(--text)' }}>{t('title')}</h1>
 
       <div
         {...getRootProps()}
-        className="rounded-2xl text-center cursor-pointer transition-all py-16 mb-6"
+        className="mb-6 cursor-pointer rounded-2xl px-4 py-14 text-center transition-all sm:px-6 sm:py-16"
         style={{
           border: `2px dashed ${isDragActive ? 'var(--accent)' : uploading ? 'var(--border)' : 'var(--border-2)'}`,
           background: isDragActive ? 'var(--accent-dim)' : 'var(--surface)',
@@ -73,8 +78,8 @@ export default function ImportPage() {
             <Loader2 size={32} className="mx-auto mb-3 animate-spin" style={{ color: 'var(--accent)' }} />
             <p className="text-base font-medium mb-1" style={{ color: 'var(--text)' }}>
               {uploadStatus
-                ? `Extracting transactions… (${uploadStatus.current}/${uploadStatus.total})`
-                : 'Extracting transactions…'}
+                ? t('extractingOf', { current: uploadStatus.current, total: uploadStatus.total })
+                : t('extracting')}
             </p>
             {uploadStatus && (
               <p className="text-sm" style={{ color: 'var(--text-2)' }}>{uploadStatus.filename}</p>
@@ -85,14 +90,55 @@ export default function ImportPage() {
             <CloudUpload size={32} className="mx-auto mb-3"
               style={{ color: isDragActive ? 'var(--accent)' : 'var(--text-2)' }} />
             <p className="text-base font-medium mb-1.5" style={{ color: 'var(--text)' }}>
-              Drop PDFs or photos here
+              {isDragActive ? t('dropHere') : t('dropHere')}
             </p>
-            <p className="text-sm mb-4" style={{ color: 'var(--text-2)' }}>
-              Bank statements, receipts — PDF, JPG, PNG, HEIC
-            </p>
+            <div className="mb-4 flex flex-wrap items-center justify-center gap-1.5">
+              <p className="text-sm" style={{ color: 'var(--text-2)' }}>
+                {t('fileHint')}
+              </p>
+              <div
+                className="relative"
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+              >
+                <button
+                  type="button"
+                  aria-label="CSV format info"
+                  onClick={e => { e.stopPropagation(); setShowTooltip(v => !v) }}
+                  style={{ color: 'var(--text-3)', lineHeight: 1 }}
+                >
+                  <Info size={14} />
+                </button>
+                {showTooltip && (
+                  <div
+                    role="tooltip"
+                    className="absolute bottom-full left-1/2 z-10 mb-2 w-56 -translate-x-1/2 rounded-lg px-3 py-2.5 text-left max-sm:left-auto max-sm:right-0 max-sm:translate-x-0"
+                    style={{
+                      background: 'var(--surface-2)',
+                      border: '1px solid var(--border-2)',
+                      boxShadow: '0 4px 12px #0006',
+                    }}
+                  >
+                    <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--text)' }}>
+                      {t('csvFormatTitle')}
+                    </p>
+                    <code
+                      className="text-xs block mb-1.5 px-2 py-1 rounded"
+                      style={{ background: 'var(--surface)', color: 'var(--accent)', fontFamily: 'monospace' }}
+                    >
+                      date,description,amount
+                    </code>
+                    <ul className="text-xs space-y-0.5" style={{ color: 'var(--text-2)' }}>
+                      <li>• date: YYYY-MM-DD or DD/MM/YYYY</li>
+                      <li>• amount: negative for expenses</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
             <button className="inline-flex px-4 py-2 rounded-lg text-sm font-medium"
               style={{ background: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border-2)' }}>
-              Browse files
+              {t('browseFiles')}
             </button>
           </>
         )}
@@ -102,11 +148,11 @@ export default function ImportPage() {
 
       {batches.length > 0 && (
         <div>
-          <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-2)' }}>PENDING REVIEW</h2>
+          <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-2)' }}>{t('pendingReview')}</h2>
           <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             {batches.map((batch: any, i: number) => (
               <Link key={batch.id} href={`/import/${batch.id}`}
-                className="flex items-center gap-4 px-5 py-4"
+                className="flex items-center gap-3 px-4 py-4 sm:gap-4 sm:px-5"
                 style={{ background: 'var(--surface)', borderBottom: i < batches.length - 1 ? '1px solid var(--border)' : 'none' }}>
                 <FileText size={18} style={{ color: 'var(--text-2)', flexShrink: 0 }} />
                 <div className="flex-1 min-w-0">
@@ -117,7 +163,7 @@ export default function ImportPage() {
                 </div>
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0"
                   style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}>
-                  Review
+                  {t('review')}
                 </span>
                 <ChevronRight size={14} style={{ color: 'var(--text-2)' }} />
               </Link>

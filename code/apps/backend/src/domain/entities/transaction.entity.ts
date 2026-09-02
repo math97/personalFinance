@@ -1,4 +1,12 @@
-export type TransactionSource = 'manual' | 'pdf' | 'photo'
+const TRANSACTION_SOURCES = ['manual', 'pdf', 'photo', 'csv'] as const
+export type TransactionSource = (typeof TRANSACTION_SOURCES)[number]
+
+export function assertTransactionSource(value: string): TransactionSource {
+  if (!(TRANSACTION_SOURCES as readonly string[]).includes(value)) {
+    throw new Error(`Invalid TransactionSource in DB: "${value}"`)
+  }
+  return value as TransactionSource
+}
 
 export interface CategoryRef {
   id: string
@@ -14,6 +22,7 @@ export interface CreateTransactionData {
   categoryId?: string | null
   merchant?: string | null
   account?: string | null
+  notes?: string | null
 }
 
 export class TransactionEntity {
@@ -28,9 +37,9 @@ export class TransactionEntity {
     public readonly merchant: string | null,
     public readonly account: string | null,
     public readonly createdAt: Date,
+    public readonly notes: string | null,
   ) {}
 
-  // Used only for in-memory repository (Prisma generates id on its own)
   static fromData(data: CreateTransactionData): Omit<TransactionEntity, 'id' | 'createdAt'> {
     return {
       amount: data.amount,
@@ -41,6 +50,7 @@ export class TransactionEntity {
       category: null,
       merchant: data.merchant ?? null,
       account: data.account ?? null,
+      notes: data.notes ?? null,
     }
   }
 }

@@ -10,16 +10,15 @@ export class InMemoryTransactionRepository extends TransactionRepository {
   }
 
   async findAll(filters: TransactionFilters): Promise<PaginatedResult<TransactionEntity>> {
-    const now = new Date()
-    const year = filters.year ?? now.getFullYear()
-    const month = filters.month ?? now.getMonth() + 1
-    const page = filters.page ?? 1
+    const page    = filters.page    ?? 1
     const perPage = filters.perPage ?? 10
-    const start = startOfMonth(new Date(year, month - 1))
-    const end = endOfMonth(new Date(year, month - 1))
 
     let items = [...this.store.values()].filter(tx => {
-      if (tx.date < start || tx.date > end) return false
+      if (filters.year !== undefined && filters.month !== undefined) {
+        const start = startOfMonth(new Date(filters.year, filters.month - 1))
+        const end   = endOfMonth(new Date(filters.year, filters.month - 1))
+        if (tx.date < start || tx.date > end) return false
+      }
       if (filters.search && !tx.description.toLowerCase().includes(filters.search.toLowerCase())) return false
       if (filters.categoryId && tx.categoryId !== filters.categoryId) return false
       return true
@@ -27,9 +26,8 @@ export class InMemoryTransactionRepository extends TransactionRepository {
 
     items.sort((a, b) => b.date.getTime() - a.date.getTime())
 
-    const total = items.length
+    const total     = items.length
     const paginated = items.slice((page - 1) * perPage, page * perPage)
-
     return { items: paginated, total, page, perPage, totalPages: Math.ceil(total / perPage) }
   }
 
@@ -39,12 +37,16 @@ export class InMemoryTransactionRepository extends TransactionRepository {
       id, entity.amount, entity.date, entity.description,
       entity.source, entity.categoryId, entity.category,
       entity.merchant, entity.account, entity.createdAt,
+      entity.notes,
     )
     this.store.set(id, persisted)
     return persisted
   }
 
-  async update(id: string, data: Partial<Pick<TransactionEntity, 'amount' | 'date' | 'description' | 'categoryId'>>): Promise<TransactionEntity> {
+  async update(
+    id: string,
+    data: Partial<Pick<TransactionEntity, 'amount' | 'date' | 'description' | 'categoryId' | 'notes'>>,
+  ): Promise<TransactionEntity> {
     const existing = this.store.get(id)
     if (!existing) throw new Error(`Transaction ${id} not found`)
     const updated = new TransactionEntity(
@@ -58,6 +60,7 @@ export class InMemoryTransactionRepository extends TransactionRepository {
       existing.merchant,
       existing.account,
       existing.createdAt,
+      'notes' in data ? (data.notes ?? null) : existing.notes,
     )
     this.store.set(id, updated)
     return updated
@@ -89,6 +92,20 @@ export class InMemoryTransactionRepository extends TransactionRepository {
       .reduce((sum, tx) => sum + Math.abs(tx.amount), 0)
   }
 
+  async groupByIncomeCategory(year: number, month: number): Promise<CategorySpending[]> {
+    const start = startOfMonth(new Date(year, month - 1))
+    const end = endOfMonth(new Date(year, month - 1))
+    const map = new Map<string | null, number>()
+
+    for (const tx of this.store.values()) {
+      if (tx.date < start || tx.date > end || tx.amount <= 0) continue
+      const key = tx.categoryId
+      map.set(key, (map.get(key) ?? 0) + tx.amount)
+    }
+
+    return [...map.entries()].map(([categoryId, total]) => ({ categoryId, total }))
+  }
+
   async monthlyIncome(year: number, month: number): Promise<number> {
     const start = startOfMonth(new Date(year, month - 1))
     const end = endOfMonth(new Date(year, month - 1))
@@ -101,5 +118,40 @@ export class InMemoryTransactionRepository extends TransactionRepository {
     const start = startOfMonth(new Date(year, month - 1))
     const end = endOfMonth(new Date(year, month - 1))
     return [...this.store.values()].filter(tx => tx.date >= start && tx.date <= end).length
+  }
+
+  async dailyTotals(year: number, month: number): Promise<{ day: number; total: number }[]> {
+    const start = startOfMonth(new Date(year, month - 1))
+    const end = endOfMonth(new Date(year, month - 1))
+    const map = new Map<number, number>()
+    for (const tx of this.store.values()) {
+      if (tx.date < start || tx.date > end || tx.amount >= 0) continue
+      const day = tx.date.getDate()
+      map.set(day, (map.get(day) ?? 0) + Math.abs(tx.amount))
+    }
+    return [...map.entries()].map(([day, total]) => ({ day, total })).sort((a, b) => a.day - b.day)
+  }
+
+  async findAllExpensesByDateRange(start: Date, end: Date): Promise<TransactionEntity[]> {
+    return [...this.store.values()]
+      .filter(tx => tx.date >= start && tx.date <= end && tx.amount < 0)
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+  }
+
+  async bulkUpdateCategory(ids: string[], categoryId: string | null): Promise<number> {
+    if (ids.length === 0) return 0
+    let count = 0
+    for (const id of ids) {
+      const existing = this.store.get(id)
+      if (!existing) continue
+      this.store.set(id, new TransactionEntity(
+        existing.id, existing.amount, existing.date, existing.description,
+        existing.source, categoryId, null,
+        existing.merchant, existing.account, existing.createdAt,
+        existing.notes,
+      ))
+      count++
+    }
+    return count
   }
 }

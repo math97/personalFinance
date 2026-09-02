@@ -1,13 +1,13 @@
 export default function DashboardLoading() {
   return (
-    <div className="px-8 py-6 max-w-5xl mx-auto animate-pulse">
-      <div className="flex items-center gap-4 mb-6">
+    <div className="mx-auto max-w-5xl animate-pulse px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+      <div className="mb-6 flex items-center gap-4">
         <div className="h-7 w-36 rounded-lg" style={{ background: 'var(--surface-2)' }} />
         <div className="flex-1" />
         <div className="w-8 h-8 rounded-lg" style={{ background: 'var(--surface-2)' }} />
         <div className="w-8 h-8 rounded-lg" style={{ background: 'var(--surface-2)' }} />
       </div>
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {[0,1,2].map(i => (
           <div key={i} className="rounded-xl p-5 h-24" style={{ background: 'var(--surface)' }}>
             <div className="h-3 w-24 rounded mb-3" style={{ background: 'var(--surface-2)' }} />
@@ -15,7 +15,7 @@ export default function DashboardLoading() {
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
         {[0,1].map(i => (
           <div key={i} className="rounded-xl p-5 h-64" style={{ background: 'var(--surface)' }}>
             <div className="h-4 w-32 rounded mb-4" style={{ background: 'var(--surface-2)' }} />

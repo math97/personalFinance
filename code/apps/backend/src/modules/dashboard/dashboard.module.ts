@@ -7,8 +7,10 @@ import { ImportBatchRepository } from '../../domain/repositories/import-batch.re
 import { PrismaTransactionRepository } from '../../infrastructure/repositories/prisma/prisma-transaction.repository'
 import { PrismaCategoryRepository } from '../../infrastructure/repositories/prisma/prisma-category.repository'
 import { PrismaImportBatchRepository } from '../../infrastructure/repositories/prisma/prisma-import-batch.repository'
+import { RecurringModule } from '../recurring/recurring.module'
 
 @Module({
+  imports: [RecurringModule],
   controllers: [DashboardController],
   providers: [
     DashboardService,

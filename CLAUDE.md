@@ -1,154 +1,59 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with code in this repository.
-
 ## Project Structure
 
 ```
 personalFinance/
-  code/           ← monorepo root — ALL commands run from here unless noted
+  code/                     ← monorepo root (npm workspaces)
     apps/
-      frontend/   ← Next.js 14 (App Router), port 3000
-      backend/    ← NestJS REST API, port 3001
-    packages/
+      frontend/             ← Next.js 14 App Router  :3000
+      backend/              ← NestJS REST API         :3001
     docker-compose.yml
-    package.json
-  design/         ← Pencil design files (financeDesign.pen, design.pen)
-  research/       ← competitor research
-  docs/
-    superpowers/
-      specs/      ← 2026-04-15-personal-finance-mvp-design.md
-      plans/      ← 2026-04-15-personal-finance-mvp.md
-  progress.txt    ← what's done / what's missing
-  CLAUDE.md       ← this file
+  design/                   ← Pencil design files (.pen)
+  docs/superpowers/
+    specs/                  ← approved design specs
+    plans/                  ← implementation plans
+  .worktrees/               ← GIT worktrees
+  progress.txt              ← roadmap / what's done
 ```
 
-## Tech Stack
-
-Next.js 14 (App Router), TypeScript, NestJS, PostgreSQL (Docker Compose), Prisma ORM v5, Anthropic SDK (Claude API), Recharts, react-dropzone, date-fns.
-
-## Commands
+## Starting the project
 
 ```bash
-# Start database (from code/)
+# 1. Start DB (from code/)
 docker compose up -d
 
-# Dev — frontend (port 3000)
-cd code/apps/frontend && npm run dev
-
-# Dev — backend (port 3001)
+# 2. Backend
 cd code/apps/backend && npm run start:dev
 
-# Unit tests (no DB needed — uses in-memory repos)
-cd code/apps/backend && npm test -- --testPathPattern="src/tests"
-
-# All backend tests
-cd code/apps/backend && npm test
-
-# Database migrations
-cd code/apps/backend && npx prisma migrate dev --name <name>
-
-# Seed categories (9 default)
-cd code/apps/backend && npx ts-node prisma/seed.ts
-
-# Prisma Studio
-cd code/apps/backend && npx prisma studio
+# 3. Frontend
+cd code/apps/frontend && npm run dev
 ```
 
-## Backend Architecture (Repository Pattern + Light DDD)
+## App-specific instructions
 
-```
-src/
-  domain/
-    entities/          ← plain TS classes, no Prisma types
-      transaction.entity.ts
-      category.entity.ts
-      category-rule.entity.ts
-      import-batch.entity.ts
-      imported-transaction.entity.ts
-    repositories/      ← abstract classes used as NestJS DI tokens
-      transaction.repository.ts
-      category.repository.ts
-      import-batch.repository.ts
-    services/
-      categorization.domain-service.ts  ← rules → AI → uncategorized pipeline
+Each app has its own CLAUDE.md with architecture, commands, patterns, and rules:
 
-  infrastructure/
-    repositories/
-      prisma/          ← real Prisma implementations + mappers
-      in-memory/       ← for unit tests (no DB needed)
+- **Backend** → `code/apps/backend/CLAUDE.md`
+  Architecture, API endpoints, DI pattern, DB safety rules, environment variables.
 
-  modules/             ← NestJS modules (controller + service + DI wiring)
-    transactions/
-    categories/
-    import/
-    dashboard/
+- **Frontend** → `code/apps/frontend/CLAUDE.md`
+  Tailwind v4 patterns, component conventions, `cn`, `tv`, `components/ui/`.
 
-  prisma/              ← PrismaService (singleton)
-  lib/
-    claude.service.ts  ← implements AICategorizationPort
-    rules.ts           ← applyRules() pure function
-  tests/               ← unit tests using in-memory repos
+## Database Safety
+
+Real personal financial data. **Always take a backup before any migration or destructive DB operation:**
+
+```bash
+docker exec code-db-1 pg_dump -U finance finance > ~/finance-backup-$(date +%Y%m%d-%H%M%S).sql
 ```
 
-### DI Pattern (how repositories are wired)
-```typescript
-// Module provides abstract class → concrete Prisma impl
-{ provide: TransactionRepository, useClass: PrismaTransactionRepository }
+See `code/apps/backend/CLAUDE.md` for full DB safety rules.
 
-// In tests — swap to in-memory without touching service code
-{ provide: TransactionRepository, useValue: new InMemoryTransactionRepository() }
-```
+## Common Rules
 
-### Services inject repositories (no direct Prisma calls in services)
-- `TransactionsService` → `TransactionRepository`
-- `CategoriesService` → `CategoryRepository`
-- `ImportService` → `ImportBatchRepository` + `CategoryRepository` + `TransactionRepository` + `CategorizationDomainService`
-- `DashboardService` → `TransactionRepository` + `CategoryRepository` + `ImportBatchRepository`
-
-## API Endpoints
-
-| Method | Path | Description |
-|---|---|---|
-| GET | `/api/transactions` | List with `?year&month&search&categoryId&page&perPage` |
-| POST | `/api/transactions` | Create transaction |
-| PATCH | `/api/transactions/:id` | Update transaction |
-| DELETE | `/api/transactions/:id` | Delete transaction |
-| GET | `/api/categories` | List all with rules + tx count |
-| POST | `/api/categories` | Create category |
-| DELETE | `/api/categories/:id` | Delete category |
-| POST | `/api/categories/:id/rules` | Add keyword rule |
-| DELETE | `/api/categories/rules/:ruleId` | Delete rule |
-| GET | `/api/import/batches` | Reviewing batches |
-| GET | `/api/import/batches/:id` | Single batch with imported transactions |
-| POST | `/api/import/upload` | Upload file → Claude extraction |
-| POST | `/api/import/batches/:id/confirm` | Promote to transactions |
-| DELETE | `/api/import/batches/:id` | Discard batch |
-| PATCH | `/api/import/transactions/:id` | Edit imported transaction |
-| POST | `/api/import/transactions/:id/save-rule` | Save categorization as rule |
-| GET | `/api/dashboard/summary` | `?year&month` → summary + charts data |
-
-## Frontend Pages
-
-| Route | Component type | Data source |
-|---|---|---|
-| `/dashboard` | Server Component | `api.dashboard.summary()` |
-| `/transactions` | Client Component | `api.transactions.list()` via useEffect |
-| `/import` | Client Component | `api.import.batches()` via useEffect |
-| `/import/inbox` | Server Component | `api.import.batches()` |
-| `/import/[batchId]` | Server → Client | `api.import.batch(id)` + `BatchReviewClient` |
-| `/categories` | Client Component | `api.categories.list()` via useEffect |
-
-Key files:
-- `code/apps/frontend/src/lib/api.ts` — typed fetch client (skip undefined params)
-- `code/apps/frontend/src/components/sidebar.tsx` — fetches inbox count on each navigation
-- `code/apps/frontend/src/components/batch-review-client.tsx` — batch review interactive state
-
-## Environment Variables
-
-`code/apps/backend/.env`:
-```
-DATABASE_URL="postgresql://finance:finance@localhost:5432/finance"
-ANTHROPIC_API_KEY="your-key-here"
-PORT=3001
-```
+- Treat `code/` as the active application workspace.
+- Keep backend and frontend guidance scoped to their own folders.
+- For any database migration or destructive database operation, take a backup first.
+- Do not assume framework defaults are current; read the local docs in the app folder before changing behavior.
+- Always use worktrees on the folder .worktrees

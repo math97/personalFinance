@@ -25,21 +25,22 @@ export class PrismaTransactionRepository extends TransactionRepository {
   }
 
   async findAll(filters: TransactionFilters): Promise<PaginatedResult<TransactionEntity>> {
-    const now = new Date()
-    const year = filters.year ?? now.getFullYear()
-    const month = filters.month ?? now.getMonth() + 1
-    const page = filters.page ?? 1
+    const page    = filters.page    ?? 1
     const perPage = filters.perPage ?? 10
 
-    const where: any = {
-      date: {
-        gte: startOfMonth(new Date(year, month - 1)),
-        lte: endOfMonth(new Date(year, month - 1)),
-      },
+    const where: any = {}
+
+    if (filters.year !== undefined && filters.month !== undefined) {
+      where.date = {
+        gte: startOfMonth(new Date(filters.year, filters.month - 1)),
+        lte: endOfMonth(new Date(filters.year, filters.month - 1)),
+      }
     }
 
     if (filters.search) {
-      where.description = { contains: filters.search, mode: 'insensitive' }
+      // SQLite LIKE is case-insensitive for ASCII by default; `mode: 'insensitive'` is
+      // a PostgreSQL-only Prisma option and will throw a runtime error on SQLite.
+      where.description = { contains: filters.search }
     }
     if (filters.categoryId) {
       where.categoryId = filters.categoryId
@@ -49,8 +50,8 @@ export class PrismaTransactionRepository extends TransactionRepository {
       this.prisma.transaction.findMany({
         where,
         orderBy: { date: 'desc' },
-        skip: (page - 1) * perPage,
-        take: perPage,
+        skip:  (page - 1) * perPage,
+        take:  perPage,
         include: { category: true },
       }),
       this.prisma.transaction.count({ where }),
@@ -76,6 +77,7 @@ export class PrismaTransactionRepository extends TransactionRepository {
         categoryId: entity.categoryId,
         merchant: entity.merchant,
         account: entity.account,
+        notes: entity.notes,
       },
       include: { category: true },
     })
@@ -84,7 +86,7 @@ export class PrismaTransactionRepository extends TransactionRepository {
 
   async update(
     id: string,
-    data: Partial<Pick<TransactionEntity, 'amount' | 'date' | 'description' | 'categoryId'>>,
+    data: Partial<Pick<TransactionEntity, 'amount' | 'date' | 'description' | 'categoryId' | 'notes'>>,
   ): Promise<TransactionEntity> {
     const p = await this.prisma.transaction.update({
       where: { id },
@@ -93,6 +95,7 @@ export class PrismaTransactionRepository extends TransactionRepository {
         ...(data.date && { date: data.date }),
         ...(data.description && { description: data.description }),
         ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
+        ...('notes' in data && { notes: data.notes }),
       },
       include: { category: true },
     })
@@ -116,6 +119,22 @@ export class PrismaTransactionRepository extends TransactionRepository {
     return grouped.map(row => ({
       categoryId: row.categoryId ?? null,
       total: Math.abs(Number(row._sum.amount ?? 0)),
+    }))
+  }
+
+  async groupByIncomeCategory(year: number, month: number): Promise<CategorySpending[]> {
+    const start = startOfMonth(new Date(year, month - 1))
+    const end = endOfMonth(new Date(year, month - 1))
+
+    const grouped = await this.prisma.transaction.groupBy({
+      by: ['categoryId'],
+      where: { date: { gte: start, lte: end }, amount: { gt: 0 } },
+      _sum: { amount: true },
+    })
+
+    return grouped.map(row => ({
+      categoryId: row.categoryId ?? null,
+      total: Number(row._sum.amount ?? 0),
     }))
   }
 
@@ -145,5 +164,38 @@ export class PrismaTransactionRepository extends TransactionRepository {
     return this.prisma.transaction.count({
       where: { date: { gte: start, lte: end } },
     })
+  }
+
+  async dailyTotals(year: number, month: number): Promise<{ day: number; total: number }[]> {
+    const start = startOfMonth(new Date(year, month - 1))
+    const end = endOfMonth(new Date(year, month - 1))
+    const rows = await this.prisma.transaction.findMany({
+      where: { date: { gte: start, lte: end }, amount: { lt: 0 } },
+      select: { date: true, amount: true },
+    })
+    const map = new Map<number, number>()
+    for (const row of rows) {
+      const day = new Date(row.date).getDate()
+      map.set(day, (map.get(day) ?? 0) + Math.abs(Number(row.amount)))
+    }
+    return [...map.entries()].map(([day, total]) => ({ day, total })).sort((a, b) => a.day - b.day)
+  }
+
+  async findAllExpensesByDateRange(start: Date, end: Date): Promise<TransactionEntity[]> {
+    const rows = await this.prisma.transaction.findMany({
+      where: { date: { gte: start, lte: end }, amount: { lt: 0 } },
+      include: { category: true },
+      orderBy: { date: 'asc' },
+    })
+    return rows.map(TransactionMapper.toDomain)
+  }
+
+  async bulkUpdateCategory(ids: string[], categoryId: string | null): Promise<number> {
+    if (ids.length === 0) return 0
+    const result = await this.prisma.transaction.updateMany({
+      where: { id: { in: ids } },
+      data:  { categoryId },
+    })
+    return result.count
   }
 }

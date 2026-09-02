@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { CategoryRepository } from '../../domain/repositories/category.repository'
 import { CategoryEntity } from '../../domain/entities/category.entity'
 import { CreateCategoryDto, AddRuleDto } from './dto/create-category.dto'
+import { UpdateCategoryDto } from './dto/update-category.dto'
 
 @Injectable()
 export class CategoriesService {
@@ -22,7 +23,7 @@ export class CategoriesService {
     return this.repo.save(entity)
   }
 
-  async update(id: string, dto: Partial<CreateCategoryDto>) {
+  async update(id: string, dto: UpdateCategoryDto) {
     await this.findOne(id)
     return this.repo.update(id, dto)
   }

@@ -1,6 +1,14 @@
 import { ImportedTransactionEntity } from './imported-transaction.entity'
 
-export type BatchStatus = 'processing' | 'reviewing' | 'confirmed' | 'discarded'
+const BATCH_STATUSES = ['processing', 'reviewing', 'confirmed', 'discarded'] as const
+export type BatchStatus = (typeof BATCH_STATUSES)[number]
+
+export function assertBatchStatus(value: string): BatchStatus {
+  if (!(BATCH_STATUSES as readonly string[]).includes(value)) {
+    throw new Error(`Invalid BatchStatus in DB: "${value}"`)
+  }
+  return value as BatchStatus
+}
 
 export class ImportBatchEntity {
   constructor(

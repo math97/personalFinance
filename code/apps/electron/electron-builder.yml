@@ -1,0 +1,56 @@
+appId: com.ember.finance
+productName: Ember
+copyright: Copyright © 2026
+
+afterPack: scripts/afterPack.js
+
+directories:
+  output: dist-electron
+
+files:
+  - dist/**/*
+  - package.json
+
+extraResources:
+  - from: "../../apps/backend"
+    to: "backend"
+    filter:
+      - "dist/**"
+      - "node_modules/**"
+      - "prisma/migrations/**"
+      - "prisma/schema.prisma"
+      - "package.json"
+      - "package-lock.json"
+      - "!node_modules/.cache/**"
+  - from: "../../apps/frontend/.next/standalone"
+    to: "frontend"
+  - from: "../../apps/frontend/.next/static"
+    to: "frontend/apps/frontend/.next/static"
+  - from: "../../apps/frontend/public"
+    to: "frontend/apps/frontend/public"
+
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  icon: assets/icon.png
+  category: public.app-category.finance
+
+dmg:
+  title: Ember
+  window:
+    width: 540
+    height: 380
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: assets/icon.png
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+
+publish: null

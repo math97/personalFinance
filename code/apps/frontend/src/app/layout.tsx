@@ -1,22 +1,24 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { SidebarWrapper } from '@/components/sidebar-wrapper'
+import { NextIntlClientProvider } from 'next-intl'
+import { getLocale, getMessages } from 'next-intl/server'
 
 export const metadata: Metadata = {
-  title: 'Personal Finance',
-  description: 'Track your spending',
+  title: 'Ember',
+  description: 'Every ember grows into fire',
+  icons: { icon: '/ember-icon.png' },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale()
+  const messages = await getMessages()
   return (
-    <html lang="en" className="h-full">
+    <html lang={locale} className="h-full">
       <body className="h-full">
-        <div className="flex h-full overflow-hidden">
-          <SidebarWrapper />
-          <main className="flex-1 overflow-y-auto" style={{ background: 'var(--bg)' }}>
-            {children}
-          </main>
-        </div>
+        <NextIntlClientProvider messages={messages}>
+          <SidebarWrapper>{children}</SidebarWrapper>
+        </NextIntlClientProvider>
       </body>
     </html>
   )

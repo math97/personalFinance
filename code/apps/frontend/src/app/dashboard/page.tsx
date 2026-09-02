@@ -1,47 +1,34 @@
 import Link from 'next/link'
-import { MonthComparisonChart } from '@/components/month-comparison-chart'
 import { SpendingSection } from '@/components/spending-section'
 import { CurrencyAmount } from '@/components/currency-amount'
+import { BudgetProgressPanel } from '@/components/budget-progress-panel'
+import { UpcomingPanel } from '@/components/upcoming-panel'
+import { ChartsToggleCard } from '@/components/charts-toggle-card'
+import { CategoryPill } from '@/components/ui/category-pill'
+import { Card } from '@/components/ui/card'
+import { InfoIcon } from '@/components/ui/info-icon'
+import { getTranslations } from 'next-intl/server'
 import { api } from '@/lib/api'
+import { cn } from '@/lib/cn'
 import { format } from 'date-fns'
 import { ChevronLeft, ChevronRight, PlusCircle, Upload } from 'lucide-react'
-
-function CategoryPill({ name, color }: { name: string; color: string }) {
-  return (
-    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: color + '22', color }}>
-      {name}
-    </span>
-  )
-}
-
-function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-      {children}
-    </div>
-  )
-}
 
 function EmptyDashboard({ monthLabel, year, month }: { monthLabel: string; year: number; month: number }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center max-w-sm mx-auto">
-      <div
-        className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-      >
-        <PlusCircle size={24} style={{ color: 'var(--text-3)' }} />
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-surface border border-border">
+        <PlusCircle size={24} className="text-text-3" />
       </div>
-      <h2 className="text-base font-semibold mb-2" style={{ color: 'var(--text)' }}>
+      <h2 className="text-base font-semibold mb-2 text-text">
         No transactions in {monthLabel}
       </h2>
-      <p className="text-sm mb-6 leading-relaxed" style={{ color: 'var(--text-2)' }}>
+      <p className="text-sm mb-6 leading-relaxed text-text-2">
         Add transactions manually or upload a bank statement to get started.
       </p>
       <div className="flex gap-3">
         <Link
           href="/import"
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
-          style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' }}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-surface text-text border border-border"
         >
           <Upload size={14} /> Upload statement
         </Link>
@@ -56,6 +43,7 @@ export default async function DashboardPage({
   searchParams: Promise<{ year?: string; month?: string }>
 }) {
   const params = await searchParams
+  const tDash = await getTranslations('dashboard')
   const now = new Date()
   const rawYear  = Number(params.year)
   const rawMonth = Number(params.month)
@@ -67,7 +55,7 @@ export default async function DashboardPage({
   const nextMonth = month === 12 ? 1  : month + 1
   const nextYear  = month === 12 ? year + 1 : year
 
-  const [{ summary, byCategory, monthlyTotals }, { items: recentTxs }, prevSummary] = await Promise.all([
+  const [{ summary, byCategory, byIncomeCategory, monthlyTotals, upcoming, dailyTotals }, { items: recentTxs }, prevSummary] = await Promise.all([
     api.dashboard.summary(year, month),
     api.transactions.list({ year, month, page: 1, perPage: 5 }),
     api.dashboard.summary(prevYear, prevMonth),
@@ -93,20 +81,20 @@ export default async function DashboardPage({
   const isEmpty = summary.transactionCount === 0
 
   return (
-    <div className="px-8 py-6 max-w-5xl mx-auto">
+    <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <h1 className="text-xl font-semibold flex-1" style={{ color: 'var(--text)' }}>{monthLabel}</h1>
-        <Link href={`/dashboard?year=${prevYear}&month=${prevMonth}`}
-          className="flex items-center justify-center w-8 h-8 rounded-lg"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <ChevronLeft size={16} style={{ color: 'var(--text-2)' }} />
-        </Link>
-        <Link href={`/dashboard?year=${nextYear}&month=${nextMonth}`}
-          className="flex items-center justify-center w-8 h-8 rounded-lg"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <ChevronRight size={16} style={{ color: 'var(--text-2)' }} />
-        </Link>
+      <div className="mb-6 flex flex-wrap items-center gap-3 sm:gap-4">
+        <h1 className="flex-1 text-xl font-semibold text-text">{monthLabel}</h1>
+        <div className="ml-auto flex items-center gap-2">
+          <Link href={`/dashboard?year=${prevYear}&month=${prevMonth}`}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface">
+            <ChevronLeft size={16} className="text-text-2" />
+          </Link>
+          <Link href={`/dashboard?year=${nextYear}&month=${nextMonth}`}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface">
+            <ChevronRight size={16} className="text-text-2" />
+          </Link>
+        </div>
       </div>
 
       {isEmpty ? (
@@ -114,111 +102,163 @@ export default async function DashboardPage({
       ) : (
         <>
           {/* Summary cards */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--text-2)' }}>Spent this month</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--text)' }}>
+              <div className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
+                {tDash('moneyOut')}<InfoIcon term="moneyOut" />
+              </div>
+              <p className="text-3xl font-bold text-text">
                 <CurrencyAmount amount={Number(summary.totalSpent)} />
               </p>
               {prevTotal > 0 && (
-                <p className="text-xs mt-1" style={{ color: delta > 0 ? 'var(--red)' : 'var(--green)' }}>
+                <p className={cn('text-xs mt-1', delta > 0 ? 'text-red' : 'text-green')}>
                   {delta > 0 ? '▲' : '▼'} <CurrencyAmount amount={Math.abs(delta)} fractionDigits={0} /> vs last month
                 </p>
               )}
             </Card>
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--text-2)' }}>Biggest category</p>
+              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">Biggest category</p>
               {biggestCat ? (
                 <>
-                  <p className="text-xl font-bold mb-0.5" style={{ color: 'var(--text)' }}>{biggestCat.name}</p>
-                  <p className="text-sm" style={{ color: 'var(--text-2)' }}>
+                  <p className="text-xl font-bold mb-0.5 text-text">{biggestCat.name}</p>
+                  <p className="text-sm text-text-2">
                     <CurrencyAmount amount={Number(biggestCat.total)} /> · {summary.totalSpent > 0
                       ? Math.round((biggestCat.total / summary.totalSpent) * 100) : 0}% of total
                   </p>
                 </>
               ) : (
-                <p style={{ color: 'var(--text-3)' }} className="text-sm">No data</p>
+                <p className="text-sm text-text-3">No data</p>
               )}
             </Card>
             <Card>
-              <p className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--text-2)' }}>Transactions</p>
-              <p className="text-3xl font-bold mb-1" style={{ color: 'var(--text)' }}>{summary.transactionCount}</p>
+              <p className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">Transactions</p>
+              <p className="text-3xl font-bold mb-1 text-text">{summary.transactionCount}</p>
               {summary.inboxCount > 0 && (
-                <Link href="/import/inbox" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>
+                <Link href="/import/inbox" className="text-xs font-medium text-accent">
                   {summary.inboxCount} in inbox →
                 </Link>
               )}
             </Card>
+            <Card>
+              <div className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
+                {tDash('dueSoon')}<InfoIcon term="dueSoon" />
+              </div>
+              <p className="text-3xl font-bold text-accent">
+                {upcoming.items.length > 0
+                  ? <CurrencyAmount amount={upcoming.total} />
+                  : <span className="text-sm text-text-3">None detected</span>}
+              </p>
+              {upcoming.items.length > 0 && (
+                <p className="text-xs mt-1 text-text-2">
+                  {upcoming.items.length} recurring expected
+                </p>
+              )}
+            </Card>
+            <Card>
+              <div className="text-xs font-medium mb-2 uppercase tracking-wider text-text-2">
+                {tDash('availableNow')}<InfoIcon term="availableNow" />
+              </div>
+            <p className="text-3xl font-bold text-green">
+              <CurrencyAmount amount={Math.max(0, Number(summary.totalIncome) - Number(summary.totalSpent) - upcoming.total)} />
+            </p>
+            <p className="text-xs mt-1 text-text-2">money in − money out − due soon</p>
+            </Card>
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
             <Card>
               <SpendingSection
                 data={byCategory}
                 grandTotal={Number(summary.totalSpent)}
                 totalIncome={Number(summary.totalIncome ?? 0)}
+                byIncomeCategory={byIncomeCategory ?? []}
                 year={year}
                 month={month}
               />
             </Card>
             <Card>
-              <h2 className="text-sm font-semibold mb-1" style={{ color: 'var(--text)' }}>Last 4 months</h2>
-              {/* Delta callout */}
-              {prevTotal > 0 && delta !== 0 && (
-                <p className="text-xs mb-3" style={{ color: 'var(--text-2)' }}>
-                  <span style={{ color: delta > 0 ? 'var(--red)' : 'var(--green)', fontWeight: 600 }}>
-                    {delta > 0 ? '▲' : '▼'} <CurrencyAmount amount={Math.abs(delta)} fractionDigits={0} />
-                  </span>
-                  {' '}vs last month
-                  {biggestDriver && (
-                    <> · <span style={{ color: 'var(--text)' }}>{biggestDriver.name}</span>
-                    {' '}{biggestDriver.delta > 0 ? 'up' : 'down'} <CurrencyAmount amount={Math.abs(biggestDriver.delta)} fractionDigits={0} /></>
-                  )}
-                </p>
-              )}
-              <MonthComparisonChart
-                data={monthlyTotals}
+              <ChartsToggleCard
+                monthlyTotals={monthlyTotals}
+                dailyTotals={dailyTotals ?? []}
                 currentYear={year}
                 currentMonth={month}
                 prevMonthTotal={prevTotal}
                 biggestCategoryName={biggestDriver?.name}
+                delta={delta}
               />
             </Card>
           </div>
 
+          {/* Upcoming panel */}
+          {upcoming.items.length > 0 && (
+            <div className="mb-4">
+              <UpcomingPanel
+                items={upcoming.items}
+                currentMonthLabel={format(new Date(year, month - 1), 'MMM')}
+              />
+            </div>
+          )}
+
+          {/* Budget progress */}
+          {byCategory.some((r: any) => r.monthlyBudget != null) && (
+            <div className="mb-4">
+              <BudgetProgressPanel rows={byCategory} />
+            </div>
+          )}
+
           {/* Recent transactions */}
           <Card>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Recent transactions</h2>
+              <h2 className="text-sm font-semibold text-text">Recent transactions</h2>
               <Link
                 href={`/transactions?year=${year}&month=${month}`}
-                className="text-xs font-medium"
-                style={{ color: 'var(--accent)' }}
+                className="text-xs font-medium text-accent"
               >
                 View all →
               </Link>
             </div>
-            <table className="w-full text-sm">
-              <tbody>
-                {recentTxs.map((tx: any) => (
-                  <tr key={tx.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td className="py-3 pr-4 text-xs whitespace-nowrap" style={{ color: 'var(--text-2)', width: 80 }}>
-                      {format(new Date(tx.date), 'd MMM')}
-                    </td>
-                    <td className="py-3 pr-4" style={{ color: 'var(--text)' }}>{tx.description}</td>
-                    <td className="py-3 pr-4">
-                      {tx.category
-                        ? <CategoryPill name={tx.category.name} color={tx.category.color} />
-                        : <span style={{ color: 'var(--text-3)' }}>—</span>}
-                    </td>
-                    <td className="py-3 text-right font-medium tabular-nums" style={{ color: 'var(--text)' }}>
+            <div className="space-y-3 md:hidden">
+              {recentTxs.map((tx: any) => (
+                <div key={tx.id} className="rounded-xl border border-border bg-surface-2 px-4 py-3">
+                  <div className="mb-2 flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-text">{tx.description}</p>
+                      <p className="text-xs text-text-2">{format(new Date(tx.date), 'd MMM yyyy')}</p>
+                    </div>
+                    <p className="text-right text-sm font-medium tabular-nums text-text">
                       <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </p>
+                  </div>
+                  {tx.category
+                    ? <CategoryPill name={tx.category.name} color={tx.category.color} />
+                    : <span className="text-xs text-text-3">No category</span>}
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden md:block">
+              <table className="w-full text-sm">
+                <tbody>
+                  {recentTxs.map((tx: any) => (
+                    <tr key={tx.id} className="border-b border-border last:border-b-0">
+                      <td className="w-20 whitespace-nowrap py-3 pr-4 text-xs text-text-2">
+                        {format(new Date(tx.date), 'd MMM')}
+                      </td>
+                      <td className="py-3 pr-4 text-text">{tx.description}</td>
+                      <td className="py-3 pr-4">
+                        {tx.category
+                          ? <CategoryPill name={tx.category.name} color={tx.category.color} />
+                          : <span className="text-text-3">—</span>}
+                      </td>
+                      <td className="py-3 text-right font-medium tabular-nums text-text">
+                        <CurrencyAmount amount={Math.abs(Number(tx.amount))} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </Card>
         </>
       )}

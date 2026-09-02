@@ -1,6 +1,6 @@
 export default function InboxLoading() {
   return (
-    <div className="px-8 py-6 max-w-3xl mx-auto animate-pulse">
+    <div className="mx-auto max-w-3xl animate-pulse px-4 py-5 sm:px-6 sm:py-6">
       <div className="h-7 w-32 rounded-lg mb-6" style={{ background: 'var(--surface-2)' }} />
       <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
         {[0,1,2].map(i => (

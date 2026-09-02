@@ -178,7 +178,7 @@ describe('BatchReviewClient', () => {
       })
     })
 
-    it('saves amount as negative for expense', async () => {
+    it('saves amount as negative for spending', async () => {
       renderComponent()
       const [, pencil] = getRowButtons('Netflix subscription')
       fireEvent.click(pencil)
@@ -219,7 +219,7 @@ describe('BatchReviewClient', () => {
       await triggerSaveRulePrompt()
       const prompt = screen.getByText(/always categorize/i).closest('div') as HTMLElement
       expect(prompt).toBeInTheDocument()
-      expect(within(prompt).getByText('Food')).toBeInTheDocument()
+      expect(within(prompt).getByText(/always categorize/i)).toHaveTextContent('Food')
     })
 
     it('does not show prompt for already-categorized items', async () => {
@@ -287,7 +287,7 @@ describe('BatchReviewClient', () => {
   })
 
   describe('toggleIncome', () => {
-    it('flips expense to income', async () => {
+    it('flips spending to income', async () => {
       renderComponent()
 
       // Scope to the Netflix row to avoid ambiguity with the second expense row
@@ -302,10 +302,10 @@ describe('BatchReviewClient', () => {
       })
     })
 
-    it('flips income to expense', async () => {
+    it('flips income to spending', async () => {
       renderComponent({ ...BATCH, imported: [ITEM_INCOME] })
 
-      fireEvent.click(screen.getByTitle('Mark as expense'))
+      fireEvent.click(screen.getByTitle('Mark as spending'))
 
       await waitFor(() => {
         expect(mockApi.import.updateTransaction).toHaveBeenCalledWith(

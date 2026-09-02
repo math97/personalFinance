@@ -1,4 +1,11 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
+function getApiBase(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL
+  // Electron/production: proxy through Next.js rewrites (must be absolute for new URL())
+  if (typeof window !== 'undefined') return `${window.location.origin}/api`
+  // Server-side in Next.js: call backend directly (BACKEND_PORT is set by Electron)
+  return `http://localhost:${process.env.BACKEND_PORT ?? 3001}/api`
+}
+const BASE = getApiBase()
 
 async function get<T>(path: string, params?: Record<string, string | number>): Promise<T> {
   const url = new URL(`${BASE}${path}`)
@@ -44,11 +51,35 @@ async function postForm<T>(path: string, body: FormData): Promise<T> {
   return res.json()
 }
 
+type UpcomingItem = {
+  patternId: string
+  description: string
+  typicalAmount: number
+  expectedDay: number
+  categoryId: string | null
+  categoryName: string | null
+  categoryColor: string | null
+}
+
+type DailySeries = {
+  year: number
+  month: number
+  label: string
+  days: Array<{ day: number; cumulative: number }>
+}
+
 // ── Dashboard ─────────────────────────────────────────────
 export const api = {
   dashboard: {
     summary: (year: number, month: number) =>
-      get<{ summary: any; byCategory: any[]; monthlyTotals: any[] }>('/dashboard/summary', { year, month }),
+      get<{
+        summary: any
+        byCategory: any[]
+        byIncomeCategory: any[]
+        monthlyTotals: any[]
+        upcoming: { total: number; items: UpcomingItem[] }
+        dailyTotals: DailySeries[]
+      }>('/dashboard/summary', { year, month }),
   },
 
   transactions: {
@@ -56,9 +87,11 @@ export const api = {
       get<{ items: any[]; total: number; page: number; perPage: number; totalPages: number }>('/transactions', params as any),
     create: (data: { amount: number; date: string; description: string; categoryId?: string; source?: string }) =>
       post<any>('/transactions', data),
-    update: (id: string, data: Partial<{ amount: number; date: string; description: string; categoryId: string }>) =>
+    update: (id: string, data: Partial<{ amount: number; date: string; description: string; categoryId: string; notes: string | null }>) =>
       patch<any>(`/transactions/${id}`, data),
     remove: (id: string) => del<any>(`/transactions/${id}`),
+    bulkCategorize: (ids: string[], categoryId: string | null) =>
+      patch<{ updated: number }>('/transactions/bulk-categorize', { ids, categoryId }),
   },
 
   categories: {
@@ -67,6 +100,8 @@ export const api = {
     remove: (id: string) => del<any>(`/categories/${id}`),
     addRule: (categoryId: string, keyword: string) => post<any>(`/categories/${categoryId}/rules`, { keyword }),
     removeRule: (ruleId: string) => del<any>(`/categories/rules/${ruleId}`),
+    setBudget: (id: string, monthlyBudget: number | null) =>
+      patch<any>(`/categories/${id}`, { monthlyBudget }),
   },
 
   import: {
@@ -91,5 +126,36 @@ export const api = {
       patch<{ aiProvider: string; aiModel: string; aiApiKeyConfigured: boolean }>('/settings', data),
     test: (data: { aiProvider: string; aiApiKey: string; aiModel: string }) =>
       post<{ ok: boolean; error?: string }>('/settings/test', data),
+  },
+
+  recurring: {
+    upcoming: (year: number, month: number) =>
+      get<UpcomingItem[]>('/recurring/upcoming', { year, month }),
+    dismissPattern: (id: string) => del<void>(`/recurring/patterns/${id}`),
+  },
+
+  insights: {
+    categories: (year: number, month: number) =>
+      get<{
+        categories: Array<{
+          categoryId: string
+          name: string
+          color: string
+          monthlyBudget: number | null
+          months: Array<{ year: number; month: number; label: string; total: number }>
+          delta: number | null
+        }>
+      }>('/insights/categories', { year, month }),
+
+    chat: (message: string, context: {
+      year: number
+      month: number
+      categories: Array<{
+        name: string
+        months: { label: string; total: number }[]
+        monthlyBudget: number | null
+        delta: number | null
+      }>
+    }) => post<{ reply: string }>('/insights/chat', { message, context }),
   },
 }

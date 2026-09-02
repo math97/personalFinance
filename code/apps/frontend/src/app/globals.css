@@ -39,12 +39,13 @@
   --color-amber-bg:     var(--amber-bg);
   --color-green:        var(--green);
   --color-red:          var(--red);
+  --font-sans:          system-ui, -apple-system, sans-serif;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 

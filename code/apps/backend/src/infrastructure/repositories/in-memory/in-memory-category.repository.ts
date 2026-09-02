@@ -20,20 +20,24 @@ export class InMemoryCategoryRepository extends CategoryRepository {
 
   async save(entity: CategoryEntity): Promise<CategoryEntity> {
     const id = entity.id || crypto.randomUUID()
-    const persisted = new CategoryEntity(id, entity.name, entity.color, entity.rules, entity.transactionCount)
+    const persisted = new CategoryEntity(id, entity.name, entity.color, entity.rules, entity.transactionCount, entity.monthlyBudget)
     this.store.set(id, persisted)
     return persisted
   }
 
-  async update(id: string, data: Partial<{ name: string; color: string }>): Promise<CategoryEntity> {
+  async update(
+    id: string,
+    data: Partial<{ name: string; color: string; monthlyBudget: number | null }>,
+  ): Promise<CategoryEntity> {
     const existing = this.store.get(id)
     if (!existing) throw new Error(`Category ${id} not found`)
     const updated = new CategoryEntity(
       existing.id,
-      data.name ?? existing.name,
-      data.color ?? existing.color,
+      data.name  !== undefined ? data.name  : existing.name,
+      data.color !== undefined ? data.color : existing.color,
       existing.rules,
       existing.transactionCount,
+      data.monthlyBudget !== undefined ? data.monthlyBudget : existing.monthlyBudget,
     )
     this.store.set(id, updated)
     return updated

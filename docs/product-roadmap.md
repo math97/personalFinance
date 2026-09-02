@@ -5,6 +5,24 @@
 
 ---
 
+## Current Status (as of April 2026)
+
+**Phases 0–3 complete.** Core foundation, understanding, control, and polish layers are all shipped and tested.
+
+| Phase | Status |
+|---|---|
+| Phase 0 — Foundation | ✓ COMPLETE |
+| Phase 1 — Make It Yours | ✓ COMPLETE |
+| Phase 2 — Control | ✓ COMPLETE |
+| Phase 3 — Polish for Others | ✓ COMPLETE |
+| Phase 4 — Scale | Deferred — post-validation |
+
+**Active now:** Terminology & Financial Literacy Rebrand (`feature/terminology-rebrand`) — aligning UI language with proper financial vocabulary (outflow / inflow / net cash flow / predicted transactions).
+
+**Up next:** i18n (Portuguese BR/PT + English), Electron desktop app, product landing page.
+
+---
+
 ## Strategic Framing
 
 ### What the market is missing
@@ -34,7 +52,10 @@
 
 ---
 
-## Phase 0 — Foundation (Personal Use, Weeks 1–3)
+## Phase 0 — Foundation (Personal Use, Weeks 1–3) ✓ COMPLETE
+
+> **Completed April 2026.** Infrastructure, manual entry, categories, dashboard, PDF/image import, and AI categorization are all live.
+
 **Goal:** Get your own financial data flowing reliably. Nothing else matters until this works.
 
 > **Context (Europe):** Open Finance sync is not available in Europe. Data entry is via manual input and AI-assisted PDF/photo import. The pipeline below replaces bank sync as the foundation.
@@ -54,7 +75,10 @@
 
 ---
 
-## Phase 1 — Make It Yours (Personal Use, Weeks 4–6)
+## Phase 1 — Make It Yours (Personal Use, Weeks 4–6) ✓ COMPLETE
+
+> **Completed April 2026.** Custom categories, rules, monthly comparison view, recurring transaction detection, and insights page shipped.
+
 **Goal:** Stop observing, start understanding. Turn raw data into insight you act on.
 
 | # | Feature | Why now | Competitive insight |
@@ -69,7 +93,10 @@
 
 ---
 
-## Phase 2 — Control (Personal Use → Shareable, Weeks 7–10)
+## Phase 2 — Control (Personal Use → Shareable, Weeks 7–10) ✓ COMPLETE
+
+> **Completed April 2026.** Budget goals per category, budget vs actual progress bars, recurring transaction detection with predicted rows, and CSV import shipped.
+
 **Goal:** Move from passive tracking to active control. This is where most apps fail.
 
 | # | Feature | Why now | Notes |
@@ -84,7 +111,10 @@
 
 ---
 
-## Phase 3 — Polish for Others (Pre-Launch, Weeks 11–14)
+## Phase 3 — Polish for Others (Pre-Launch, Weeks 11–14) ✓ COMPLETE
+
+> **Completed April 2026.** Bulk categorization, all-months search, mobile-responsive layout, CSV export, transaction notes, loading skeletons, and empty states shipped. 201 tests passing (154 backend unit, 21 e2e, 26 frontend).
+
 **Goal:** Would you recommend this to a friend? Fix everything that makes the answer "not yet."
 
 | # | Feature | Why now | Notes |
@@ -99,7 +129,10 @@
 
 ---
 
-## Phase 4 — Scale (Post-Validation, Month 4+)
+## Phase 4 — Scale (Post-Validation, Month 4+) — DEFERRED
+
+> **Not started. Do not build speculatively.** Begin only after Phase 3 exit criteria are validated with real users.
+
 **Only if Phase 0–3 feels right. Don't build this speculatively.**
 
 | # | Feature | Strategic reason |
@@ -152,11 +185,13 @@ DIFF                       |                DIFF
 ## Summary: The Build Order
 
 ```
-Week 1–3   Phase 0: Data foundation (sync, import, categorize, dashboard)
-Week 4–6   Phase 1: Understanding (custom rules, heatmap, comparisons, projections)
-Week 7–10  Phase 2: Control (budgets, goals, carryover, AI roadmap)
-Week 11–14 Phase 3: Polish for others (manual entry, CSV, onboarding, export)
-Month 4+   Phase 4: Scale (mobile, investments, freemium, family)
+Week 1–3   Phase 0: Data foundation (sync, import, categorize, dashboard)     ✓ COMPLETE
+Week 4–6   Phase 1: Understanding (custom rules, heatmap, comparisons, projections) ✓ COMPLETE
+Week 7–10  Phase 2: Control (budgets, goals, carryover, AI roadmap)            ✓ COMPLETE
+Week 11–14 Phase 3: Polish for others (manual entry, CSV, onboarding, export)  ✓ COMPLETE
+Now        Active: Terminology rebrand (feature/terminology-rebrand)
+Next       i18n, Electron desktop app, product landing page
+Month 4+   Phase 4: Scale (mobile, investments, freemium, family)              DEFERRED
 ```
 
 **The north star metric at each phase:**

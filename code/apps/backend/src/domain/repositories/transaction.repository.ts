@@ -28,11 +28,15 @@ export abstract class TransactionRepository {
   abstract save(entity: TransactionEntity): Promise<TransactionEntity>
   abstract update(
     id: string,
-    data: Partial<Pick<TransactionEntity, 'amount' | 'date' | 'description' | 'categoryId'>>,
+    data: Partial<Pick<TransactionEntity, 'amount' | 'date' | 'description' | 'categoryId' | 'notes'>>,
   ): Promise<TransactionEntity>
   abstract delete(id: string): Promise<void>
   abstract groupByCategory(year: number, month: number): Promise<CategorySpending[]>
+  abstract groupByIncomeCategory(year: number, month: number): Promise<CategorySpending[]>
   abstract monthlyTotal(year: number, month: number): Promise<number>
   abstract monthlyIncome(year: number, month: number): Promise<number>
   abstract countByMonth(year: number, month: number): Promise<number>
+  abstract dailyTotals(year: number, month: number): Promise<{ day: number; total: number }[]>
+  abstract findAllExpensesByDateRange(start: Date, end: Date): Promise<TransactionEntity[]>
+  abstract bulkUpdateCategory(ids: string[], categoryId: string | null): Promise<number>
 }

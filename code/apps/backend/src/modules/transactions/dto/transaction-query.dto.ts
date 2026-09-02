@@ -25,4 +25,8 @@ export class TransactionQueryDto {
   @IsOptional()
   @IsNumberString()
   perPage?: string
+
+  @IsOptional()
+  @IsString()
+  scope?: string
 }

@@ -1,6 +1,6 @@
 export default function ImportLoading() {
   return (
-    <div className="px-8 py-6 max-w-2xl mx-auto animate-pulse">
+    <div className="mx-auto max-w-2xl animate-pulse px-4 py-5 sm:px-6 sm:py-6">
       <div className="h-7 w-36 rounded-lg mb-6" style={{ background: 'var(--surface-2)' }} />
       <div className="rounded-xl h-48 mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }} />
       <div className="rounded-xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>

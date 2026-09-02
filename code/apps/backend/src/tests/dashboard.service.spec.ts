@@ -8,6 +8,7 @@ import { InMemoryCategoryRepository } from '../infrastructure/repositories/in-me
 import { InMemoryImportBatchRepository } from '../infrastructure/repositories/in-memory/in-memory-import-batch.repository'
 import { TransactionEntity } from '../domain/entities/transaction.entity'
 import { CategoryEntity } from '../domain/entities/category.entity'
+import { RecurringService } from '../modules/recurring/recurring.service'
 
 describe('DashboardService', () => {
   let service: DashboardService
@@ -26,6 +27,13 @@ describe('DashboardService', () => {
         { provide: TransactionRepository, useValue: txRepo },
         { provide: CategoryRepository,    useValue: catRepo },
         { provide: ImportBatchRepository, useValue: batchRepo },
+        {
+          provide: RecurringService,
+          useValue: {
+            getUpcoming: vi.fn().mockResolvedValue([]),
+            getDailyTotals: vi.fn().mockResolvedValue([]),
+          },
+        },
       ],
     }).compile()
 
@@ -49,6 +57,7 @@ describe('DashboardService', () => {
       overrides.categoryId  ?? null,
       null, null, null,
       new Date(),
+      null,
     )
     return txRepo.save(e)
   }
@@ -214,6 +223,33 @@ describe('DashboardService', () => {
       expect(result).toHaveProperty('byCategory')
       expect(result).toHaveProperty('monthlyTotals')
       expect(result.monthlyTotals).toHaveLength(4)
+    })
+  })
+
+  // ── getSpendingByCategory — budget ───────────────────────────────
+  describe('getSpendingByCategory with budget', () => {
+    it('includes monthlyBudget on rows where category has a budget set', async () => {
+      const groceries = await catRepo.save(
+        new CategoryEntity('', 'Groceries', '#34d399', [], 0, 300),
+      )
+      await saveTx({ amount: -120, date: '2026-04-10', categoryId: groceries.id })
+
+      const rows = await service.getSpendingByCategory(2026, 4)
+
+      const row = rows.find(r => r.name === 'Groceries')
+      expect(row?.monthlyBudget).toBe(300)
+    })
+
+    it('returns null monthlyBudget for categories without a budget set', async () => {
+      const transport = await catRepo.save(
+        new CategoryEntity('', 'Transport', '#38bdf8', [], 0),
+      )
+      await saveTx({ amount: -40, date: '2026-04-05', categoryId: transport.id })
+
+      const rows = await service.getSpendingByCategory(2026, 4)
+
+      const row = rows.find(r => r.name === 'Transport')
+      expect(row?.monthlyBudget).toBeNull()
     })
   })
 })

@@ -3,7 +3,9 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { X, Sparkles, CloudUpload, PenLine, FileText, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
+import { cn } from '@/lib/cn'
 import { useCurrency } from '@/hooks/useCurrency'
 
 type Step = 'picker' | 'manual' | 'batch'
@@ -33,72 +35,68 @@ export function TransactionModal({ onClose }: { onClose: () => void }) {
 }
 
 function PickerStep({ onSelect, onClose }: { onSelect: (s: Step) => void; onClose: () => void }) {
+  const t = useTranslations('transactions')
+  const tc = useTranslations('common')
   const [hovered, setHovered] = useState<'manual' | 'batch' | null>('manual')
 
   const cards = [
     {
       id: 'manual' as const,
       icon: PenLine,
-      title: 'Add manually',
-      desc: 'Enter amount, description and date by hand',
+      title: t('addManually'),
+      desc: t('addManuallyDesc'),
     },
     {
       id: 'batch' as const,
       icon: CloudUpload,
-      title: 'Upload documents',
-      desc: 'Drop PDFs or photos — Claude extracts transactions automatically',
+      title: t('uploadDocs'),
+      desc: t('uploadDocsDesc'),
     },
   ]
 
   return (
-    <div
-      className="w-full max-w-sm rounded-2xl p-6 space-y-4"
-      style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}
-    >
+    <div className="w-full max-w-sm rounded-2xl p-6 space-y-4 bg-surface border border-border-2">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Add transaction</h2>
-        <button onClick={onClose} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
+        <h2 className="text-base font-semibold text-text">{t('addTransaction')}</h2>
+        <button onClick={onClose} className="text-text-2"><X size={18} /></button>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {cards.map(card => (
           <button
             key={card.id}
             onClick={() => onSelect(card.id)}
             onMouseEnter={() => setHovered(card.id)}
             onMouseLeave={() => setHovered(null)}
-            className="flex flex-col items-start gap-2 p-4 rounded-xl text-left transition-all"
+            className="flex flex-col items-start gap-2 p-4 rounded-xl text-left transition-all bg-surface-2"
             style={{
-              background: 'var(--surface-2)',
               border: `1.5px solid ${hovered === card.id ? 'var(--accent)' : 'var(--border)'}`,
             }}
           >
             <card.icon
               size={20}
-              style={{ color: hovered === card.id ? 'var(--accent)' : 'var(--text-2)' }}
+              className={cn(hovered === card.id ? 'text-accent' : 'text-text-2')}
             />
-            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{card.title}</p>
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-2)' }}>{card.desc}</p>
+            <p className="text-sm font-medium text-text">{card.title}</p>
+            <p className="text-xs leading-relaxed text-text-2">{card.desc}</p>
           </button>
         ))}
       </div>
 
       <button
         onClick={onClose}
-        className="w-full py-2 rounded-lg text-sm transition-colors"
-        style={{
-          background: 'var(--surface-2)',
-          color: 'var(--text-2)',
-          border: '1px solid var(--border)',
-        }}
+        className="w-full py-2 rounded-lg text-sm transition-colors bg-surface-2 text-text-2 border border-border"
       >
-        Cancel
+        {tc('cancel')}
       </button>
     </div>
   )
 }
 
 function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => void }) {
+  const t = useTranslations('transactions')
+  const tc = useTranslations('common')
+  const tb = useTranslations('import.batch')
   const [currency] = useCurrency()
   const [type, setType] = useState<'expense' | 'income'>('expense')
   const [amountFocused, setAmountFocused] = useState(false)
@@ -115,7 +113,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
       amount: type === 'expense' ? -Math.abs(Number(form.amount)) : Math.abs(Number(form.amount)),
       date: form.date,
       description: form.description,
-      categoryId: type === 'expense' ? (form.categoryId || undefined) : undefined,
+      categoryId: form.categoryId || undefined,
       source: 'manual',
     })
     setLoading(false)
@@ -126,50 +124,43 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
   const accentColor = type === 'income' ? 'var(--green)' : 'var(--accent)'
 
   return (
-    <div
-      className="w-full max-w-md rounded-2xl"
-      style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}
-    >
+    <div className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-border-2 bg-surface">
       {/* Header */}
-      <div
-        className="flex items-center justify-between px-6 py-4"
-        style={{ borderBottom: '1px solid var(--border)' }}
-      >
-        <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Add transaction</h2>
-        <button onClick={onClose} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <h2 className="text-base font-semibold text-text">{t('addTransaction')}</h2>
+        <button onClick={onClose} className="text-text-2"><X size={18} /></button>
       </div>
 
       {/* Body */}
       <div className="px-6 py-5 space-y-4">
         {/* Type toggle */}
-        <div className="flex gap-0.5 rounded-lg p-0.5" style={{ background: 'var(--surface-2)' }}>
-          {(['expense', 'income'] as const).map(t => (
+        <div className="flex gap-0.5 rounded-lg p-0.5 bg-surface-2">
+          {(['expense', 'income'] as const).map(tp => (
             <button
-              key={t}
-              onClick={() => setType(t)}
+              key={tp}
+              onClick={() => setType(tp)}
               className="flex-1 py-1.5 rounded-md text-xs font-medium capitalize transition-all"
               style={{
-                background: type === t ? 'var(--bg)' : 'transparent',
-                color: type === t ? (t === 'income' ? 'var(--green)' : 'var(--text)') : 'var(--text-2)',
-                border: type === t ? '1px solid var(--border-2)' : '1px solid transparent',
+                background: type === tp ? 'var(--bg)' : 'transparent',
+                color: type === tp ? (tp === 'income' ? 'var(--green)' : 'var(--text)') : 'var(--text-2)',
+                border: type === tp ? '1px solid var(--border-2)' : '1px solid transparent',
               }}
             >
-              {t === 'expense' ? 'Expense' : 'Income'}
+              {tp === 'expense' ? tc('spending') : tc('income')}
             </button>
           ))}
         </div>
 
         {/* Amount */}
         <div>
-          <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-2)' }}>Amount</label>
+          <label className="text-xs font-medium mb-1.5 block text-text-2">{tb('amount')}</label>
           <div
-            className="flex items-center rounded-lg px-3 py-2.5 transition-all"
+            className="flex items-center rounded-lg px-3 py-2.5 transition-all bg-surface-2"
             style={{
-              background: 'var(--surface-2)',
               border: `1.5px solid ${amountFocused ? accentColor : 'var(--border-2)'}`,
             }}
           >
-            <span className="text-sm mr-1" style={{ color: 'var(--text-2)' }}>{currency}</span>
+            <span className="text-sm mr-1 text-text-2">{currency}</span>
             <input
               type="number"
               step="0.01"
@@ -179,75 +170,67 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
               onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
               onFocus={() => setAmountFocused(true)}
               onBlur={() => setAmountFocused(false)}
-              className="flex-1 bg-transparent text-sm outline-none"
-              style={{ color: 'var(--text)' }}
+              className="flex-1 bg-transparent text-sm outline-none text-text"
             />
           </div>
         </div>
 
         {/* Description */}
         <div>
-          <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-2)' }}>Description</label>
+          <label className="text-xs font-medium mb-1.5 block text-text-2">{tb('description')}</label>
           <input
             type="text"
             placeholder={type === 'income' ? 'e.g. Rent contribution' : 'e.g. Tesco Metro'}
             value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-            className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition-all"
-            style={{ background: 'var(--surface-2)', border: '1.5px solid var(--border-2)', color: 'var(--text)' }}
+            className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition-all bg-surface-2 border border-border-2 text-text"
           />
         </div>
 
         {/* Date */}
         <div>
-          <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-2)' }}>Date</label>
+          <label className="text-xs font-medium mb-1.5 block text-text-2">{tb('date')}</label>
           <input
             type="date"
             value={form.date}
             onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-            className="w-full rounded-lg px-3 py-2.5 text-sm outline-none"
-            style={{ background: 'var(--surface-2)', border: '1.5px solid var(--border-2)', color: 'var(--text)', colorScheme: 'dark' }}
+            className="w-full rounded-lg px-3 py-2.5 text-sm outline-none bg-surface-2 border border-border-2 text-text"
+            style={{ colorScheme: 'dark' }}
           />
         </div>
 
-        {/* Category + rule hint — expenses only */}
+        {/* Category */}
+        <div>
+          <label className="text-xs font-medium mb-1.5 block text-text-2">{tb('category')}</label>
+          <select
+            value={form.categoryId}
+            onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
+            className="w-full rounded-lg px-3 py-2.5 text-sm outline-none bg-surface-2 border border-border-2 text-text"
+          >
+            <option value="">— none —</option>
+            {categories.map((c: any) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+        {/* Keyword hint — expenses only */}
         {type === 'expense' && (
-          <>
-            <div>
-              <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-2)' }}>Category</label>
-              <select
-                value={form.categoryId}
-                onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
-                className="w-full rounded-lg px-3 py-2.5 text-sm outline-none"
-                style={{ background: 'var(--surface-2)', border: '1.5px solid var(--border-2)', color: 'var(--text)' }}
-              >
-                <option value="">— none —</option>
-                {categories.map((c: any) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-            <div
-              className="flex items-start gap-2.5 rounded-lg px-3 py-2.5"
-              style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent)20' }}
-            >
-              <Sparkles size={14} style={{ color: 'var(--accent)', marginTop: 2, flexShrink: 0 }} />
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--accent)' }}>
-                Keyword rules will auto-categorize matching transactions going forward
-              </p>
-            </div>
-          </>
+          <div className="flex items-start gap-2.5 rounded-lg px-3 py-2.5 bg-accent-dim border border-accent/10">
+            <Sparkles size={14} className="text-accent mt-0.5 shrink-0" />
+            <p className="text-xs leading-relaxed text-accent">
+              {t('keywordHint')}
+            </p>
+          </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="flex gap-3 px-6 py-4" style={{ borderTop: '1px solid var(--border)' }}>
+      <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row">
         <button
           onClick={onBack}
-          className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors"
-          style={{ background: 'var(--surface-2)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
+          className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors bg-surface-2 text-text-2 border border-border"
         >
-          Back
+          {tc('back')}
         </button>
         <button
           onClick={handleSubmit}
@@ -255,7 +238,7 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
           className="flex-1 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-40"
           style={{ background: accentColor, color: '#0c0c0e' }}
         >
-          {loading ? 'Saving…' : type === 'income' ? 'Add Income' : 'Add Expense'}
+          {loading ? tc('saving') : type === 'income' ? t('addIncome') : t('addSpending')}
         </button>
       </div>
     </div>
@@ -263,6 +246,9 @@ function ManualStep({ onClose, onBack }: { onClose: () => void; onBack: () => vo
 }
 
 function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => void }) {
+  const t = useTranslations('transactions')
+  const tc = useTranslations('common')
+  const ti = useTranslations('import')
   const [files, setFiles] = useState<QueuedFile[]>([])
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -284,7 +270,7 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
       }
       onClose()
     } catch (e: any) {
-      setError(e.message ?? 'Upload failed')
+      setError(e.message ?? ti('errorUpload'))
     } finally {
       setUploading(false)
     }
@@ -304,17 +290,11 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
   const removeFile = (id: string) => setFiles(prev => prev.filter(f => f.id !== id))
 
   return (
-    <div
-      className="w-full max-w-lg rounded-2xl"
-      style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}
-    >
+    <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-border-2 bg-surface">
       {/* Header */}
-      <div
-        className="flex items-center justify-between px-6 py-4"
-        style={{ borderBottom: '1px solid var(--border)' }}
-      >
-        <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Upload documents</h2>
-        <button onClick={onClose} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <h2 className="text-base font-semibold text-text">{t('uploadDocs')}</h2>
+        <button onClick={onClose} className="text-text-2"><X size={18} /></button>
       </div>
 
       {/* Body */}
@@ -329,11 +309,11 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
           }}
         >
           <input {...getInputProps()} />
-          <CloudUpload size={24} className="mx-auto mb-2" style={{ color: 'var(--text-2)' }} />
-          <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>
-            Drop files here or click to browse
+          <CloudUpload size={24} className="mx-auto mb-2 text-text-2" />
+          <p className="text-sm font-medium mb-1 text-text">
+            {isDragActive ? ti('dropHere') : t('uploadDocs')}
           </p>
-          <p className="text-xs" style={{ color: 'var(--text-2)' }}>
+          <p className="text-xs text-text-2">
             PDF, JPG, PNG, HEIC
           </p>
         </div>
@@ -344,20 +324,16 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
             {files.map(({ file, id }) => (
               <div
                 key={id}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg"
-                style={{
-                  background: 'var(--surface-2)',
-                  border: '1px solid var(--border)',
-                }}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-2 border border-border"
               >
-                <FileText size={16} style={{ color: 'var(--text-2)', flexShrink: 0 }} />
+                <FileText size={16} className="text-text-2 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate" style={{ color: 'var(--text)' }}>{file.name}</p>
-                  <p className="text-xs" style={{ color: 'var(--text-2)' }}>
+                  <p className="text-sm truncate text-text">{file.name}</p>
+                  <p className="text-xs text-text-2">
                     {(file.size / 1024).toFixed(0)} KB
                   </p>
                 </div>
-                <button onClick={() => removeFile(id)} style={{ color: 'var(--red)' }}>
+                <button onClick={() => removeFile(id)} className="text-red">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -366,49 +342,37 @@ function BatchStep({ onClose, onBack }: { onClose: () => void; onBack: () => voi
         )}
 
         {/* AI hint */}
-        <div
-          className="flex items-start gap-2.5 rounded-lg px-3 py-2.5"
-          style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent)20' }}
-        >
-          <Sparkles size={14} style={{ color: 'var(--accent)', marginTop: 2, flexShrink: 0 }} />
-          <p className="text-xs leading-relaxed" style={{ color: 'var(--accent)' }}>
+        <div className="flex items-start gap-2.5 rounded-lg px-3 py-2.5 bg-accent-dim border border-accent/10">
+          <Sparkles size={14} className="text-accent mt-0.5 shrink-0" />
+          <p className="text-xs leading-relaxed text-accent">
             Claude will extract and auto-categorize transactions from each file
           </p>
         </div>
       </div>
 
       {/* Footer */}
-      <div
-        className="flex items-center justify-between px-6 py-4"
-        style={{ borderTop: '1px solid var(--border)' }}
-      >
+      <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         {error
-          ? <p className="text-xs" style={{ color: 'var(--red)' }}>{error}</p>
-          : <p className="text-xs" style={{ color: 'var(--text-2)' }}>
+          ? <p className="text-xs text-red">{error}</p>
+          : <p className="text-xs text-text-2">
               {files.length > 0
                 ? `${files.length} file${files.length > 1 ? 's' : ''} · ${files.length} batch${files.length > 1 ? 'es' : ''}`
                 : 'No files selected'}
             </p>
         }
-        <div className="flex gap-2">
+        <div className="flex gap-2 sm:justify-end">
           <button
             onClick={onBack}
-            className="px-4 py-2 rounded-lg text-sm transition-colors"
-            style={{
-              background: 'var(--surface-2)',
-              color: 'var(--text-2)',
-              border: '1px solid var(--border)',
-            }}
+            className="px-4 py-2 rounded-lg text-sm transition-colors bg-surface-2 text-text-2 border border-border"
           >
-            Back
+            {tc('back')}
           </button>
           <button
             disabled={files.length === 0 || uploading}
             onClick={handleUpload}
-            className="px-4 py-2 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-40"
-            style={{ background: 'var(--accent)', color: '#0c0c0e' }}
+            className="px-4 py-2 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-40 bg-accent text-bg"
           >
-            {uploading ? 'Uploading…' : 'Upload & extract'}
+            {uploading ? ti('extracting') : t('uploadExtract')}
           </button>
         </div>
       </div>

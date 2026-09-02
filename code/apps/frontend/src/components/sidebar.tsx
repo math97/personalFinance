@@ -1,10 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { cn } from '@/lib/cn'
 import {
   LayoutDashboard,
+  BarChart3,
   CreditCard,
   Upload,
   Inbox,
@@ -14,44 +17,42 @@ import {
 
 type NavItem = {
   href: string
-  label: string
+  labelKey: string
   icon: React.ComponentType<{ size?: number; className?: string }>
   badge?: number
   disabled?: boolean
 }
 
-export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
+interface SidebarProps extends React.ComponentProps<'aside'> {
+  onAddClick?: () => void
+  inboxCount?: number
+}
+
+export function Sidebar({ onAddClick, inboxCount = 0, className, ...props }: SidebarProps) {
   const pathname = usePathname()
-  const [inboxCount, setInboxCount] = useState(0)
+  const t = useTranslations('sidebar')
 
-  useEffect(() => {
-    const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
-    fetch(`${base}/import/batches`)
-      .then(r => r.json())
-      .then((batches: any[]) => setInboxCount(batches.length))
-      .catch(() => {})
-  }, [pathname]) // re-fetch when navigating
-
-  const sections: { label: string; items: NavItem[] }[] = [
+  const sections: { labelKey: string; items: NavItem[] }[] = [
     {
-      label: 'OVERVIEW',
+      labelKey: 'overview',
       items: [
-        { href: '/dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
-        { href: '/transactions', label: 'Transactions', icon: CreditCard      },
+        { href: '/dashboard',    labelKey: 'dashboard',    icon: LayoutDashboard },
+        { href: '/insights',     labelKey: 'insights',     icon: BarChart3       },
+        { href: '/transactions', labelKey: 'transactions', icon: CreditCard      },
       ],
     },
     {
-      label: 'IMPORT',
+      labelKey: 'import',
       items: [
-        { href: '/import',       label: 'Upload Files', icon: Upload },
-        { href: '/import/inbox', label: 'Import Inbox', icon: Inbox, badge: inboxCount || undefined },
+        { href: '/import',       labelKey: 'uploadFiles',  icon: Upload },
+        { href: '/import/inbox', labelKey: 'importInbox',  icon: Inbox, badge: inboxCount || undefined },
       ],
     },
     {
-      label: 'MANAGE',
+      labelKey: 'manage',
       items: [
-        { href: '/categories', label: 'Categories', icon: Tag },
-        { href: '/settings',   label: 'Settings',   icon: Settings },
+        { href: '/categories', labelKey: 'categories', icon: Tag },
+        { href: '/settings',   labelKey: 'settings',   icon: Settings },
       ],
     },
   ]
@@ -64,24 +65,13 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
   }
 
   return (
-    <aside
-      className="flex flex-col w-64 shrink-0 h-screen"
-      style={{ background: 'var(--surface)', borderRight: '1px solid var(--border)' }}
-    >
+    <aside className={cn('flex h-screen w-64 shrink-0 flex-col border-r border-border bg-surface', className)} {...props}>
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5">
-        <div
-          className="flex items-center justify-center text-sm font-bold shrink-0"
-          style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: 'var(--accent)', color: '#0c0c0e',
-          }}
-        >
-          F
-        </div>
+        <Image src="/ember-icon.png" alt="Ember" width={32} height={32} className="rounded-lg shrink-0" />
         <div>
-          <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Finance</p>
-          <p className="text-xs" style={{ color: 'var(--text-2)' }}>Personal tracker</p>
+          <p className="text-sm font-semibold text-text">Ember</p>
+          <p className="text-xs text-text-2">Every ember grows</p>
         </div>
       </div>
 
@@ -90,10 +80,9 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
         <div className="px-3 mb-2">
           <button
             onClick={onAddClick}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-colors"
-            style={{ background: 'var(--accent)', color: '#0c0c0e' }}
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-colors bg-accent text-bg"
           >
-            + Add transaction
+            {t('addTransaction')}
           </button>
         </div>
       )}
@@ -101,40 +90,29 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
       {/* Nav */}
       <nav className="flex-1 px-3 py-2 overflow-y-auto space-y-5">
         {sections.map(section => (
-          <div key={section.label}>
-            <p
-              className="text-xs font-semibold tracking-wider px-2 mb-1"
-              style={{ color: 'var(--text-3)' }}
-            >
-              {section.label}
+          <div key={section.labelKey}>
+            <p className="text-xs font-semibold tracking-wider px-2 mb-1 text-text-3">
+              {t(section.labelKey)}
             </p>
             <div className="space-y-0.5">
               {section.items.map(item => {
                 const active = isActive(item.href)
                 return (
                   <Link
-                    key={item.label}
+                    key={item.labelKey}
                     href={item.disabled ? '#' : item.href}
-                    className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors"
-                    style={{
-                      background: active ? 'var(--surface-2)' : 'transparent',
-                      color: active ? 'var(--text)' : 'var(--text-2)',
-                      pointerEvents: item.disabled ? 'none' : undefined,
-                      opacity: item.disabled ? 0.4 : 1,
-                    }}
+                    className={cn(
+                      'flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors',
+                      active ? 'bg-surface-2 text-text' : 'text-text-2',
+                      item.disabled && 'pointer-events-none opacity-40',
+                    )}
                   >
-                    <span style={{ color: active ? 'var(--accent)' : 'var(--text-2)', display: 'flex' }}>
+                    <span className={cn('flex', active ? 'text-accent' : 'text-text-2')}>
                       <item.icon size={16} />
                     </span>
-                    <span className="flex-1">{item.label}</span>
+                    <span className="flex-1">{t(item.labelKey)}</span>
                     {item.badge && (
-                      <span
-                        className="flex items-center justify-center text-xs font-bold"
-                        style={{
-                          width: 18, height: 18, borderRadius: 9,
-                          background: 'var(--accent)', color: '#0c0c0e',
-                        }}
-                      >
+                      <span className="flex items-center justify-center w-[18px] h-[18px] rounded-full text-xs font-bold bg-accent text-bg">
                         {item.badge}
                       </span>
                     )}
@@ -146,25 +124,7 @@ export function Sidebar({ onAddClick }: { onAddClick?: () => void }) {
         ))}
       </nav>
 
-      {/* User footer */}
-      <div
-        className="flex items-center gap-3 px-4 py-4"
-        style={{ borderTop: '1px solid var(--border)' }}
-      >
-        <div
-          className="flex items-center justify-center text-sm font-semibold shrink-0"
-          style={{
-            width: 32, height: 32, borderRadius: 16,
-            background: 'var(--surface-2)', color: 'var(--text)',
-          }}
-        >
-          M
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>Matheus</p>
-          <p className="text-xs truncate" style={{ color: 'var(--text-2)' }}>math.albuquerque97@gmail.com</p>
-        </div>
-      </div>
+
     </aside>
   )
 }
